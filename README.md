@@ -8,12 +8,12 @@ Project purpose:
 ### Stack
 
 - **Kinozal**: read RSS feed, retrieve data from html (no api), search and filter content, download torrent files;
-- Optional*: any VPN client application and/or proxy server for access to Kinozal;
+- **Optional**: any VPN client application and/or proxy server for access to Kinozal;
 - **Telegram api**: sending messages to the channel, reading (commands only) and sending reply messages in menu format (keyboard);
 - **qBittorrent api**: download data and torrent files and manage data (pause, delete, change priority);
 - **Plex Media Server api**: synchronize data and get information about content of sections and child files.
 
-* It is planned to add additional information using third-party api (e.g. tmdb or videocdn) and disk size (e.g. Open Hardware Monitor via web api).
+> It is planned to add additional information using third-party api (e.g. tmdb or videocdn) and disk size (e.g. Open Hardware Monitor via web api).
 
 ### Example
 
@@ -31,21 +31,21 @@ All settings are set in the configuration file: **kinozal-bot.conf**.
 
 1. Register an account in **Kinozal** and fill in the parameters in the configuration:
 
-`KZ_PROFILE="id_you_profile"` - used to get information from the profile\
-`KZ_USER="LOGIN"` - used at the stage of torrent file downloading and obtaining information in the profile\
+`KZ_PROFILE="id_you_profile"` - used to get information from the profile \
+`KZ_USER="LOGIN"` - used at the stage of torrent file downloading and obtaining information in the profile \
 `KZ_PASS="PASSWORD"`
 
 2. If you do not have direct access to Kinozal, you can use a VPN or proxy server (I use **Handy Cache** in conjunction with **VPN Hotspot Shield** in Split Tunneling mode on Windows) through which the bot can proxy its requests.
 
-`PROXY="True"` - enable the use of a proxy server in curl-requests when accessing Kinozal \.
+`PROXY="True"` - enable the use of a proxy server in curl-requests when accessing Kinozal \
 `PROXY_ADDR="http://192.168.3.100:9090"` \
-`PROXY_USER="LOGIN"`\
+`PROXY_USER="LOGIN"` \
 `PROXY_PASS="PASSWORD"`
 
 3. Install torrent client **qBittorrent**, enable **Web interface** in the settings.
 
 `QB_ADDR="http://192.168.3.100:8888"` - specify the final URL, which specifies the IP address of the machine running qBittorrent and port (set in the settings) \
-`QB_USER="LOGIN"` - is specified in the **Authentication** field in the **Web Interface** settings.
+`QB_USER="LOGIN"` - is specified in the **Authentication** field in the **Web Interface** settings \
 `QB_PASS="PASSWORD"`
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/qbittorrent-settings.jpg)
@@ -70,5 +70,4 @@ On startup, the path to the log will be given. There are 2 main threads (process
 `````bash
 bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh stop
 bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh status
-
-Translated with www.DeepL.com/Translator (free version)
+```
