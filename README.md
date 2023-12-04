@@ -1,4 +1,4 @@
-# Kinozal-Bot
+# 🍿 Kinozal-Bot
 
 **[Описание на русском](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/README_RU.md)**
 
@@ -7,9 +7,7 @@ Project purpose:
 - Generation of new posts with sending to Telegram channel based on new publications in tracker **[Kinozal](https://kinozal.tv)** with filtering by rating and year of release.
 - Automation of the process of delivering content to the TV using only the phone. Selection (proposed from the post of the channel or manual search in the bot) and downloading of a suitable torrent-file (using the proposed recommended links to each publication), setting to download in qBittorrent with the ability to manage and track the status, as well as changing the priority of downloading files, and synchronization of content with Plex Media Server.
 
-Russian version: 
-
-### Stack
+### 📚 Stack
 
 - **Kinozal**: read RSS feed, retrieve data from html (no api), search and filter content, download torrent files;
 - **Optional**: any VPN client application and/or proxy server for access to Kinozal;
@@ -19,7 +17,7 @@ Russian version:
 
 > It is planned to add additional information using third-party api (e.g. tmdb or videocdn) and disk size (e.g. Open Hardware Monitor via web api).
 
-### Example
+### 📢 Example
 
 Selecting and searching for a distribution, downloading a torrent file and setting it to download in qBittorrent:
 
@@ -29,9 +27,9 @@ Content management and synchronization with Plex:
 
 
 
-### Install
+### 🚀 Install
 
-All settings are set in the configuration file: **kinozal-bot.conf**.
+All settings are set in the configuration file: **kinozal-bot.conf** 📑.
 
 1. Register an account in **Kinozal** and fill in the parameters in the configuration:
 
@@ -61,7 +59,7 @@ All settings are set in the configuration file: **kinozal-bot.conf**.
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex-token.jpg)
 
-5. To run the bot, place the **kinozal-bot.conf** configuration file next to the script (log, cookie and torrent file storage paths are set in the configuration) and use the interpreter to run it (root privileges are not required):
+5. To run the bot, place the **kinozal-bot.conf** configuration file next to the script (log, cookie and torrent file storage paths are set in the configuration) and use the interpreter 🐧 to run it (root privileges are not required):
 
 ```bash
 bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh
