@@ -17,7 +17,7 @@ Project purpose:
 
 > It is planned to add additional information using third-party api (e.g. tmdb or videocdn) and disk size (e.g. Open Hardware Monitor via web api).
 
-### 📢 Example
+### 🎉 Example
 
 Selecting and searching for a distribution, downloading a torrent file and setting it to download in qBittorrent:
 
