@@ -1,0 +1,87 @@
+[
+  {
+    "availability": 0,
+    "index": 0,
+    "is_seed": false,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E05.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      0,
+      81
+    ],
+    "priority": 0,
+    "progress": 0.9877518335014399,
+    "size": 342443418
+  },
+  {
+    "availability": 0,
+    "index": 1,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E02.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      81,
+      162
+    ],
+    "priority": 6,
+    "progress": 0.6289885396727573,
+    "size": 339151572
+  },
+  {
+    "availability": 0,
+    "index": 2,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E04.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      162,
+      243
+    ],
+    "priority": 7,
+    "progress": 0.764341064365097,
+    "size": 338165730
+  },
+  {
+    "availability": 0,
+    "index": 3,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E07.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      243,
+      323
+    ],
+    "priority": 1,
+    "progress": 1,
+    "size": 337882486
+  },
+  {
+    "availability": 0,
+    "index": 4,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E01.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      323,
+      403
+    ],
+    "priority": 1,
+    "progress": 0.812169318361436,
+    "size": 334953584
+  },
+  {
+    "availability": 0,
+    "index": 5,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E06.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      403,
+      483
+    ],
+    "priority": 1,
+    "progress": 0.4475195339402127,
+    "size": 334037830
+  },
+  {
+    "availability": 0,
+    "index": 6,
+    "name": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer/Rick.and.Morty.S07.E03.2023.WEBDLRip.MegaPeer.avi",
+    "piece_range": [
+      483,
+      562
+    ],
+    "priority": 0,
+    "progress": 0.7761910863389628,
+    "size": 334017054
+  }
+]

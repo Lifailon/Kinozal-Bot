@@ -1,0 +1,174 @@
+{
+    "MediaContainer": {
+      "size": 28,
+      "allowSync": true,
+      "art": "/:/resources/movie-fanart.jpg",
+      "identifier": "com.plexapp.plugins.library",
+      "librarySectionID": 2,
+      "librarySectionTitle": "plex-content",
+      "librarySectionUUID": "0642a324-19bc-41ea-8cfd-543ce056bd63",
+      "mediaTagPrefix": "/system/bundle/media/flags/",
+      "mediaTagVersion": 1673331692,
+      "thumb": "/:/resources/video.png",
+      "title1": "plex-content",
+      "title2": "By Folder",
+      "viewGroup": "movie",
+      "viewMode": 65592,
+      "Metadata": [
+        {
+          "key": "/library/sections/2/folder?parent=204",
+          "title": "Asterix & Obelix"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=34",
+          "title": "Back To The Future"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=35",
+          "title": "Batman"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=206",
+          "title": "Black Sails"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=36",
+          "title": "Die Hard"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=134",
+          "title": "Fisher-S01"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=193",
+          "title": "Ghibli"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=37",
+          "title": "Harry Potter"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=38",
+          "title": "Iron Man"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=186",
+          "title": "Japan"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=208",
+          "title": "Loki.S02.DSNP.WEB-DL.2160p.SDR.by.AKTEP"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=211",
+          "title": "Only.Murders.in.the.Building.HEVC"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=209",
+          "title": "Only.Murders.in.the.Building.s01.1080p.WEB-DL.Rus.Eng"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=44",
+          "title": "Pirates of the Caribbean"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=219",
+          "title": "Rick.and.Morty.S07.2023.WEBDLRip.MegaPeer"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=138",
+          "title": "Robin Hood"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=45",
+          "title": "Rocky"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=104",
+          "title": "Rush Hour"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=46",
+          "title": "Star Wars"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=47",
+          "title": "Taxi"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=105",
+          "title": "Terminator"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=103",
+          "title": "The Expendables"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=48",
+          "title": "The Hobbit"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=49",
+          "title": "The Lord of the Rings"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=142",
+          "title": "The Witcher 2002"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=50",
+          "title": "Tri Bogatyrja"
+        },
+        {
+          "key": "/library/sections/2/folder?parent=194",
+          "title": "МДЖ-03"
+        },
+        {
+          "ratingKey": "2335",
+          "key": "/library/metadata/2335",
+          "guid": "com.plexapp.agents.none://2016a3d68bffeb31b01ceab0c383da7445f5267f?lang=xn",
+          "type": "movie",
+          "title": "Великий уравнитель 3",
+          "subtype": "clip",
+          "summary": "",
+          "year": 2023,
+          "thumb": "/library/metadata/2335/thumb/1700434992",
+          "art": "/library/metadata/2335/art/1700434992",
+          "duration": 6537531,
+          "originallyAvailableAt": "2023-11-13",
+          "addedAt": 1699991324,
+          "updatedAt": 1700434992,
+          "createdAtAccuracy": "epoch,local",
+          "createdAtTZOffset": "0",
+          "Media": [
+            {
+              "id": 2567,
+              "duration": 6537531,
+              "bitrate": 15462,
+              "width": 3840,
+              "height": 1600,
+              "aspectRatio": 2.35,
+              "audioChannels": 6,
+              "audioCodec": "ac3",
+              "videoCodec": "hevc",
+              "videoResolution": "4k",
+              "container": "mkv",
+              "videoFrameRate": "24p",
+              "videoProfile": "main 10",
+              "Part": [
+                {
+                  "id": 2819,
+                  "key": "/library/parts/2819/1699989625/file.mkv",
+                  "duration": 6537531,
+                  "file": "D:\\plex-content\\Великий уравнитель 3.mkv",
+                  "size": 12637502980,
+                  "container": "mkv",
+                  "videoProfile": "main 10"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
