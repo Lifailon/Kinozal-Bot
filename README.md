@@ -1,8 +1,8 @@
-# 🍿 Kinozal-Bot
+# Kinozal-Bot
 
-**[Описание на русском](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/README_RU.md)**
+📢 **[Описание на русском](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/README_RU.md)**
 
-Project purpose:
+🍿 Project purpose:
 
 - Generation of new posts with sending to Telegram channel based on new publications in tracker **[Kinozal](https://kinozal.tv)** with filtering by rating and year of release.
 - Automation of the process of delivering content to the TV using only the phone. Selection (proposed from the post of the channel or manual search in the bot) and downloading of a suitable torrent-file (using the proposed recommended links to each publication), setting to download in qBittorrent with the ability to manage and track the status, as well as changing the priority of downloading files, and synchronization of content with Plex Media Server.
