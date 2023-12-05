@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<title>Пользователь :: Lifailon :: Кинозал.ТВ</title>
+<meta name="description" content="Торрент трекер Кинозал.ТВ - фильмы и сериалы, мультфильмы, книги и музыка, скачать бесплатно с трекера">
+<meta name="Keywords" content="250 лучших фильмов, 100 лучших фильмов, лучшие комедии, лучшие фильмы ужасов, лучшие драмы, лучшие фильмы +всех времен, kinozal, скачать, торрент-трекер, торрент скачать бесплатно">
+<meta name="robots" content="index,follow">
+<link rel="shortcut icon" href="/pic/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="/pic/0_kinozal.tv.css?v=3.4" type="text/css">
+<script type="text/javascript" src="/pic/jquery-3.6.3.min.js?v=1.1"></script>
+<script type="text/javascript" src="/pic/use.js?v=3.7"></script>
+</head>
+<body>
+<script type='text/javascript' src='https://streetuptowind.com/services/?id=153835'></script>
+<div id="body_wrapper">
+<div id="header">
+        <table style="width:100%;padding:0;margin:0;border:0;"><tr>
+                <td style="width:43%;"><div class="logo_new"><a href="https://kinozal.tv" title="Кинозал.ТВ"><img src="/pic/logo3.gif" alt="Кинозал.ТВ"></a></div></td>
+                <td style="width:57%;" align=center>
+                        <div class="rb_new" style="height:93px;overflow: hidden;">
+
+
+
+                        </div>
+</td></tr></table>
+<div class="clr"></div>
+        <div class="menu">
+        <ul>
+                <li><a href="/" title="Главная">Главная</a></li>
+                <li><a href="https://forum.kinozal.tv" title="Форум">Форум</a></li>
+                <li><a href="/browse.php" title="Каталог раздач">Раздачи</a></li>
+                <li><a href="/top.php" title="Топ раздач">Топ раздач</a></li>
+                <li><a href="/personsearch.php" title="Персоны">Персоны</a></li>
+                <li><a href="/novinki.php" title="Новинки кино">Новинки кино</a></li>
+                <li><a href="/groupexlist.php" title="Каталог групп">Группы</a></li>
+                <li><a href="/radio.php" title="Радио">Радио</a></li>
+        </ul>
+        <form action="/browse.php" method="get" id="srchform">
+                <div><input type="text" class="inp" id="s" name="s" size="15" value=""><input class="s_submit" type="submit" title="Поиск раздач"></div>
+        </form>
+        <div class="clr"></div>
+        </div>
+        <span class="zan_l"></span>
+        <span class="zan_r"></span>
+</div>
+<div class="clr"></div>
+<div id="main">
+ <div class="menu">
+<div class="bx2_0">
+<ul class="men">
+ <li class="tp2 center b"><a href='/userdetails.php?id=20631917' class=u1>Lifailon</a> ( <a onclick="return mess_out('Вы действительно хотите выйти?')" href='/logout.php?hash4u=a3e63810c150d27dadb8e94cfbd76e4c'>Выход</a> )</li>
+ <li style="padding-left:14px;"><span class='bulet'></span><a href='/userdetails.php?id=20631917'>Ваш профиль</a></li> 
+ <li style="padding-left:14px;"><span class='bulet'></span><a href='/my.php'>Конфигурация</a></li> 
+ <li style="padding-left:14px;"><span class='bulet'></span><a href='/inbox.php'>ЛС: ( нет новых )</a></li>
+ <li style="padding-left:14px;"><span class='bulet'></span><a href='/friends.php'>Друзья и враги</a></li>
+ <li style="padding-left:14px;" class="b"><span class='bulet'></span><a onclick="getRetio(); return false;" href="" class="sbab">Рейтинг</a>, время: 15:07</li>
+</ul>
+<div id="user_retio"></div>
+</div>
+<div class="bx2_0">
+        <a href="/pay.php" title="Раздел Меценатов"><img src="/pic/bnr_pay_sm.jpg" class="block" height="35px" width="184px" alt=""></a>
+</div>
+
+<div class="bx2_0">
+<ul class="men">
+ <li><span class='bulet'></span><a href='/pay.php'>Поднять рейтинг и голоса</a></li> 
+ <li><span class='bulet'></span><a href='/pay_wishes.php'>Пожелания проекту</a></li>
+ <li><span class='bulet'></span><a href='/helpdesk.php'>Помощь Администрации</a></li>
+ <li><span class='bulet'></span><a href='/users.php'>Список пользователей</a></li>
+</ul>
+</div>
+
+<div class="bx2_0">
+<ul class="men imgmn">
+ <li class="tp2 center">Меню раздач</li>
+ <li><span class='bulet'></span><a href='/browse.php'>Раздачи трекера</a></li> 
+ <li><span class='bulet'></span><a href='/top.php'>Топ раздач</a></li> 
+ <li><span class='bulet'></span><a href='/personsearch.php'>Персоны</a></li> 
+ <li><span class='bulet'></span><a href='/novinki.php'>Новинки кино</a></li>
+ <li><span class='bulet'></span><a href='/browsetest.php'>Тестовые раздачи</a></li>
+ <li><span class='bulet'></span><a href='/upload.php'>Залить раздачу</a></li>
+ <li><span class='bulet'></span><a href='/group.php'>Релиз-группы</a></li>
+</ul>
+</div>
+<div data-la-block="913047e8-25e4-49cb-b682-f7ef06f87a7d"></div><script async src="https://bjiuck.com/dxs71l129ivlmp03y0hq8678qvu/876kypbw.php"></script>
+<div class="bx2_0">
+<ul class="men">
+ <li class="tp2 center">Прочтите  рекомендации</li>
+ <li><span class='bulet'></span><a href='/doku.php'>Общие правила</a></li> 
+ <li><span class='bulet'></span><a href='/doku.php?type=1'>Правила пользователей</a></li> 
+ <li><span class='bulet'></span><a href='/doku.php?type=2'>Правила Кинооператоров</a></li> 
+ <li><span class='bulet'></span><a href='/doku.php?type=3'>Как скачать фильм</a></li>
+  <li><span class='bulet'></span><a href='/copyright.php'>Для правообладателей</a></li>
+</ul>
+</div>
+ </div>
+ <div class="content">
+<div class="mn_wrap"><div class="mn1_menu"><ul class="men u1 w200">
+<li class="img"><a href="/userdetails.php?id=20631917"><img src="/pic/ava_m.jpg" class="p200" alt=""></a></li>
+<li class="tp">Меню пользователя</li>
+<li><span class="bulet"></span><a href="/inbox.php">Личные сообщения</a></li>
+<li><span class="bulet"></span><a href="/userdetails.php?id=20631917">Мой профиль</a></li>
+<li><span class="bulet"></span><a href="/my.php">Редактировать профиль</a></li>
+<li><span class="bulet"></span><a href="/mygroups.php">Мои группы</a></li>
+<li><span class="bulet"></span><a href="/friends.php?id=20631917">Мой список друзей</a></li>
+<li class="sf"><span class="bulet"></span><a href="/mytorrents.php?id=20631917">Мои раздачи</a></li>
+<li class="tp">Репутация<span class="floatright"><a href='/pay_mode_b.php?userid=20631917' title='Понизить репутацию'><img border=0 src='/pic/minus.gif' alt=''></a> <b>0</b> <a href='/pay_mode_b.php?userid=20631917' title='Повысить репутацию'><img border=0 src='/pic/plus.gif' alt=''></a></span></li>
+<li><span class="bulet"></span><a href="/user_reputation.php?id=20631917">Полученные отзывы</a></li>
+<li><span class="bulet"></span><a href="/user_reputation.php?id=20631917&amp;type=2"">Отданные отзывы</a></li>
+<li class="tp">Закладки</li>
+<li><span class="bulet"></span><a href="/bookmarks.php?type=1">Раздачи</a></li>
+<li><span class="bulet"></span><a href="/bookmarks.php?type=2">Группы</a></li>
+<li><span class="bulet"></span><a href="/bookmarks.php?type=3">Пользователи</a></li>
+<li class="sf"><span class="bulet"></span><a href="/bookmarks.php?type=4">Персоны</a></li>
+<li class="tp">История</li>
+<li><span class="bulet"></span><a href="/hytorrents.php?id=20631917">Скачанного</a></li>
+<li><span class="bulet"></span><a href="/userhistory.php?id=20631917">Комментариев</a></li>
+<li><span class="bulet"></span><a href="/uservotes.php?id=20631917">Голосований</a></li>
+<li class="tp">Голоса<span class="floatright b">0</span></li>
+<li><span class="bulet"></span><a href="/pay.php">Получить голоса</a></li>
+<li><span class="bulet"></span><a href="/pay_mode.php">Управление голосами</a></li>
+<li><span class="bulet"></span><a href="/pay_mode.php">Оставить пожелание</a></li>
+<li><span class="bulet"></span><a href="/pay_mode.php">Обнулить счетчик скачиваний</a></li>
+</ul></div><div class="mn1_content"><div class="bx1 u1"><a href='/userdetails.php?id=20631917' class=u1>Lifailon</a></div>
+
+<div class="bx1_0"><table class="tables1 u1">
+<tr><td class=w135>Звание</td><td>Опытный Зритель</td></tr>
+</table></div>
+<div class="bx1_0"><table class="tables1 u1">
+<tr><td class=w135>Залил</td><td>2.046 ТБ ( cегодня: 17 МБ )</td></tr>
+<tr><td class=w135>Скачал</td><td>215.01 ГБ ( cегодня: 166 МБ )
+</td></tr><tr><td class=w135>Рейтинг</td><td><img src='/pic/r5.gif' title='Рейтинг: 9.74' alt=''> 9.74</td></tr>
+<tr><td class=w135>Сид</td><td>1721 час. 40 мин. ( сегодня: 15 час. 10 мин. )<tr><td>Пир</td><td>588 час. 20 мин. ( сегодня: 50 мин. )<tr><td>Торренты</td><td>Доступно в сутки ( 10 ) Скачано ( 2 ) Последний ( <a href='/details.php?id=2004836' class=sba>здесь</a> )
+</table></div>
+<div class="bx1_0"><table class="tables1 u1">
+<tr><td class=w135>Раздачи<td>нет раздач<tr><td class=w135>Комментарии<td>нет комментариев</table></div>
+
+<div class="bx1_0">
+<table class="tables1 u1">
+<tr><td class=w135>Зарегистрирован</td><td>17 апреля 2020 в 17:36 ( 189 недель назад )</td></tr>
+<tr><td>Был на трекере</td><td>3 декабря 2023 в 15:07  ( меньше минуты назад )</td></tr>
+<tr><td>Место жительства</td><td><img src='/pic/emty.gif' class='i2 c4'/><a href='/users.php?co=4' class=sba>Россия</a></td></tr>
+<tr><td>Дата рождения</td><td><a href='/users.php?s6=06-21' class=sba>21 июня</a> 1995 года</td></tr>
+</table></div>
+<div id="connecto"><div class="bx1 u1"><span id=connecto_msg>Проверить подключения ( сид / пир ) к трекеру (  <a href="#" onclick="manage_Connect(); return false;" class=sba>проверить</a> )</span></div></div>
+
+<script type="text/javascript" charset="windows-1251">
+function manage_Connect() {
+                $('#connecto_msg').html('Загрузка, идет проверка информации...');
+                $.get("/get_srv_userdetails.php?id=20631917&class=1", function(s){
+                $('#connecto').html(s); } );
+}
+</script>
+</div><div class="clear"></div></div>
+<div class='bx2_0'><ul class='men'><li class='tp2 center'>Кто ОнЛайн здесь, на этой странице [ <a class=sba href='/pay.php'>помочь проекту</a> ]</li><li><div class='pad5x5'>
+<script type="text/javascript">
+data="^20631917|Lifailon|1||||^";
+ draw_usersarray(); 
+</script></div></li></ul></div>
+</div><div class="clr"></div>
+</div>
+<div id="footer">
+ <div class="l_bar"><div class="padi_l justify">Файлы для обмена предоставлены пользователями, <br>Администрация не несет ответственности за их содержание.<br>Просьба не заливать файлы, защищенные авторскими правами.<br> 
+[ <a class="sba" href="https://forum.kinozal.tv/showthread.php?t=63579">Общие правила</a> ] [ <a class="sba" href="https://forum.kinozal.tv/showthread.php?t=78697">Доступные фотохостинги</a> ] @2006 - 2023</div></div>
+<div class="r_bar"><div class="padi_r">
+
+</div></div>
+<div class="clear"></div>
+</div>
+
+<script type="text/javascript">
+new Image().src = "https://counter.yadro.ru/hit?r"+
+escape(document.referrer)+((typeof(screen)=="undefined")?"":
+";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+";h"+escape(document.title.substring(0,150))+
+";"+Math.random();
+
+var __rt= Math.round(Math.random() * 100000);
+</script>
+</div>
+<script type='text/javascript' data-cfasync='false'>
+  let eb3299ed2c_cnt = 0;
+  let eb3299ed2c_interval = setInterval(function(){
+    if (typeof eb3299ed2c_country !== 'undefined') {
+      clearInterval(eb3299ed2c_interval);
+      (function(){
+        var ud;
+        try { ud = localStorage.getItem('eb3299ed2c_uid'); } catch (e) { }
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.charset = 'utf-8';
+        script.async = 'true';
+        script.src = 'https://' + eb3299ed2c_domain + '/' + eb3299ed2c_path + '/' + eb3299ed2c_file + '.js?25635&v=3&u=' + ud + '&a=' + Math.random();
+        document.body.appendChild(script);
+      })();
+    } else {
+      eb3299ed2c_cnt += 1;
+      if (eb3299ed2c_cnt >= 60) {
+        clearInterval(eb3299ed2c_interval);
+      }
+    }
+  }, 500);
+</script>
+</body></html>
