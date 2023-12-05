@@ -20,8 +20,8 @@
 ### 🎉 Example
 
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg" width="400"/></a>
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/telegram-example.gif)
