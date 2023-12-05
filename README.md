@@ -5,19 +5,19 @@
 🍿 Project purpose:
 
 - Generation of new posts with sending to Telegram channel based on new publications in tracker **[Kinozal](https://kinozal.tv)** with filtering by rating and year of release.
-- Automation of the process of delivering content to the TV using only the phone. Selection (proposed from the post of the channel or manual search in the bot) and downloading of a suitable torrent-file (using the proposed recommended links to each publication), setting to download in qBittorrent with the ability to manage and track the status, as well as changing the priority of downloading files, and synchronization of content with Plex Media Server.
+- Automation of the process of delivering content to the TV using only the phone. Selection (proposed from the post of the channel or manual search in the bot) and downloading of a suitable torrent-file (using the proposed recommended links to each publication), setting to download in qBittorrent with the ability to manage and track the status, as well as changing the priority of downloading files, and synchronization of content with Plex Media Server, as well as viewing the contents of sections and directories.
 
-### 📚 Stack
+## 📚 Stack
 
 - **Kinozal**: read RSS feed, retrieve data from html (no api), search and filter content, download torrent files;
 - **Optional**: any VPN client application and/or proxy server for access to Kinozal;
 - **Telegram api**: sending messages to the channel, reading (commands only) and sending reply messages in menu format (keyboard);
-- **qBittorrent api**: download data and torrent files and manage data (pause, delete, change priority);
+- **qBittorrent api**: download data from torrent files and manage data (pause, delete, change priority);
 - **Plex Media Server api**: synchronize data and get information about content of sections and child files.
 
 > It is planned to add additional information using third-party api (e.g. tmdb or videocdn) and disk size (e.g. Open Hardware Monitor via web api).
 
-### 🎉 Example
+## 🎉 Example
 
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg" width="400"/></a>
@@ -26,7 +26,7 @@
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/telegram-example.gif)
 
-### 🚀 Install
+## 🚀 Install
 
 All settings are set in the configuration file: **kinozal-bot.conf** 📑.
 
@@ -36,14 +36,14 @@ All settings are set in the configuration file: **kinozal-bot.conf** 📑.
 `KZ_USER="LOGIN"` - used at the stage of torrent file downloading and obtaining information in the profile \
 `KZ_PASS="PASSWORD"`
 
-2. If you do not have direct access to Kinozal, you can use a VPN or proxy server (I use **Handy Cache** in conjunction with **VPN Hotspot Shield** in Split Tunneling mode on Windows) through which the bot can proxy its requests.
+2. If you do not have direct access to Kinozal, you can use a VPN or proxy server (I use **Handy Cache** in conjunction with **VPN Hotspot Shield** in Split Tunneling mode based on the Windows operating system) through which the bot can proxy its requests.
 
 `PROXY="True"` - enable the use of a proxy server in curl-requests when accessing Kinozal \
 `PROXY_ADDR="http://192.168.3.100:9090"` \
 `PROXY_USER="LOGIN"` \
 `PROXY_PASS="PASSWORD"`
 
-3. Install torrent client **qBittorrent**, enable **Web interface** in the settings.
+3. Install torrent client **qBittorrent** and enable **Web interface** in the settings.
 
 `QB_ADDR="http://192.168.3.100:8888"` - specify the final URL, which specifies the IP address of the machine running qBittorrent and port (set in the settings) \
 `QB_USER="LOGIN"` - is specified in the **Authentication** field in the **Web Interface** settings \
@@ -58,7 +58,9 @@ All settings are set in the configuration file: **kinozal-bot.conf** 📑.
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex-token.jpg)
 
-5. To run the bot, place the **kinozal-bot.conf** configuration file next to the script (log, cookie and torrent file storage paths are set in the configuration) and use the interpreter 🐧 to run it (root privileges are not required):
+## 🐧 Start
+
+To run the bot on a remote machine (I use Ubuntu Server 22.04) place the configuration file **kinozal-bot.conf** next to the script (the paths for storing the log file, cookies and torrent files are set in the configuration) and use the 🐧 interpreter to run it (root privileges are not required):
 
 ```bash
 bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh
