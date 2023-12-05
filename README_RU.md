@@ -1,4 +1,4 @@
-# Kinozal-Bot
+# <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/kinozal-bot-ico-256px.png" width="25" /> Kinozal-Bot
 
 🍿 Цель проекта:
 
