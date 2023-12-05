@@ -19,13 +19,7 @@
 
 ### 🎉 Example
 
-Selecting and searching for a distribution, downloading a torrent file and setting it to download in qBittorrent:
-
-
-
-Content management and synchronization with Plex:
-
-
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/telegram-example.gif)
 
 ### 🚀 Install
 
