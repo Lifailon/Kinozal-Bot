@@ -24,7 +24,7 @@
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg" width="400"/></a>
 
-![](image/telegram-example.mp4)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/telegram-example.gif)
 
 ### 🚀 Install
 
