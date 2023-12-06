@@ -10,7 +10,7 @@
 ## 📚 Stack
 
 - **Kinozal**: read RSS feed, retrieve data from html (no api), search and filter content, download torrent files;
-- **Optional**: any VPN client application and/or proxy server for access to Kinozal;
+- *Optional*: any VPN client application and/or proxy server for access to Kinozal;
 - **Telegram api**: sending messages to the channel, reading (commands only) and sending reply messages in menu format (keyboard);
 - **qBittorrent api**: download data from torrent files and manage data (pause, delete, change priority);
 - **Plex Media Server api**: synchronize data and get information about content of sections and child files.
@@ -19,7 +19,7 @@
 
 ## 🎉 Example
 
-An active channel with publications: **[Kinozal-News](https://t.me/kinozal_news)**
+An active channel with publications: **[Kinozal-News](https://t.me/kinozal_news)** 📎
 
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg" width="400"/></a>
