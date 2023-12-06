@@ -19,6 +19,8 @@
 
 ## 🎉 Example
 
+An active channel with publications: **[Kinozal-News](https://t.me/kinozal_news)**
+
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg" width="400"/></a>
 <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg" width="400"/></a>
@@ -28,7 +30,7 @@
 
 ## 🚀 Install
 
-All settings are set in the configuration file: **kinozal-bot.conf** 📑.
+For the bot to work, you need to prepare your own environment. All settings of connection and filtering of new publications are set in the configuration file: **kinozal-bot.conf** 📑.
 
 1. Register an account in **Kinozal** and fill in the parameters in the configuration:
 
@@ -43,7 +45,14 @@ All settings are set in the configuration file: **kinozal-bot.conf** 📑.
 `PROXY_USER="LOGIN"` \
 `PROXY_PASS="PASSWORD"`
 
-3. Install torrent client **qBittorrent** and enable **Web interface** in the settings.
+3. Create a bot in **[@botfather](https://t.me/BotFather)** using an intuitive interface and get its API token. Also create your channel for new publications in Kinozal and separately start your chat with the previously created bot to interact with the services. Get the id of the channel (starts with "-") and chat using the bot: **[Get My ID](https://t.me/getmyid_arel_bot)** and fill in the parameters:
+
+`TG_TOKEN="6873341222:AAFnVgfavenjwbKutRwROQQBya_XXXXXXXX"` - used to read and send messages to Telegram chatbot \
+`TG_CHANNEL="-1002064864175"` - used to send messages to the channel \
+`TG_CHAT="8888888888,999999999"` - id of all chat rooms for access to the bot (to be filled in with commas), further id can be obtained in the log output from requests of new clients requests \
+`TG_BOT_NAME="lifailon_ps_bot"` - used to link to the bot from the channel
+
+4. Install torrent client **qBittorrent** and enable **Web interface** in the settings.
 
 `QB_ADDR="http://192.168.3.100:8888"` - specify the final URL, which specifies the IP address of the machine running qBittorrent and port (set in the settings) \
 `QB_USER="LOGIN"` - is specified in the **Authentication** field in the **Web Interface** settings \
@@ -51,7 +60,7 @@ All settings are set in the configuration file: **kinozal-bot.conf** 📑.
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/qbittorrent-settings.jpg)
 
-4. Install **Plex Media Server** (in my case installed where the qBittorrent client is on my Windows machine) and **get the key/token** to access the REST API. I couldn't find a way to get the key in the web interface, so I captured the token in the network log url request (X-Plex-Token=) during authorization using **Development Tools** (no time limit).
+5. Install **Plex Media Server** (in my case installed where the qBittorrent client is on my Windows machine) and **get the key/token** to access the REST API. I couldn't find a way to get the key in the web interface, so I captured the token in the network log url request (X-Plex-Token=) during authorization using **Development Tools** (no time limit).
 
 `PLEX_ADDR="http://192.168.3.100:32400"` \
 `PLEX_TOKEN="TOKEN"`
@@ -74,3 +83,30 @@ On startup, the path to the log will be given. There are 2 main threads (process
 bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh stop
 bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh status
 ```
+
+## 📌 Commands
+
+A list of all available commands (except `/search`) are automated through the bot menu.
+
+`/search` - Search in Kinozal by name \
+`/profile ` - Profile Kinozal (the number of available for download torrent files, download and upload statistics, time sid and peer) \
+`/torrent_files` - List of downloaded torrent files (with the ability to delete files) \
+`/status` - qBittorrent manager (list and status of all current torrents added to the torrent client) \
+`/plex_info` - Plex content (list of available sections for selection) \
+`/download_torrent` - Download torrent file (pass two parameters: id and file name without spaces) \
+`/delete_torrent_file_id` - Delete torrent file by id \
+`/find_kinozal_id` - Search in Kinozal by id \
+`/download_video_id` - Add to qBittorrent to download from torrent file \
+`/info` - Download status of the specified torrent (pass parameter: torrent hash) \
+`/torrent_content` - Contents (files) of the torrent (pass parameter: torrent hash) \
+`/file_torrent` - Status of selected torrent file (pass parameter: file index) \
+`/torrent_priority` - Change the priority of the selected file in /file_torrent (pass parameter: priority number) \
+`/pause` - Set to pause (pass parameter: torrent hash) \
+`/resume` - Restore download (pass parameter: torrent hash) \
+`/delete_torrent` - Remove torrent from download (pass parameter: torrent hash) \
+`/delete_video` - Delete with video data (pass parameter: hash of torrent) \
+`/plex_status_key` - Information about the selected section in Plex (pass parameter: section key) \
+`/plex_sync_key` - Synchronize the specified section in Plex (pass parameter: section key) \
+`/plex_folder_key` - Get the list of directories and files in the selected section \
+`/find` - Search for content in Plex by path (pass parameter: endpoint)
+
