@@ -114,6 +114,6 @@ A list of all available commands (except `/search`) are automated through the bo
 `/plex_status_key` - Information about the selected section in Plex (pass parameter: section key) \
 `/plex_sync_key` - Synchronize the specified section in Plex (pass parameter: section key) \
 `/plex_folder_key` - Get the list of directories and files in the selected section \
-`/find` - Search for content in Plex by path (pass parameter: endpoint)
+`/find` - Search for content in Plex by path (pass parameter: endpoint) \
 `/plex_last_views` - Last views \
 `/plex_last_added` - Last added files
