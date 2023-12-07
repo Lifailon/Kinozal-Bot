@@ -15,8 +15,6 @@
 - **qBittorrent api**: download data from torrent files and manage data (pause, delete, change priority);
 - **Plex Media Server api**: synchronize data and get information about content of sections and child files.
 
-> It is planned to add additional information using third-party api (e.g. tmdb or videocdn) and disk size (e.g. Open Hardware Monitor via web api).
-
 ## 🎉 Example
 
 An active channel with publications: 📢 **[Kinozal-News](https://t.me/kinozal_news)** 
@@ -69,6 +67,14 @@ For the bot to work, you need to prepare your own environment. All settings of c
 
 ## 🐧 Start
 
+Check that you have **[jq](https://github.com/jqlang/jq)** installed:
+
+```bash
+apt install jq
+jq --version
+jq-1.6
+```
+
 To run the bot on a remote machine (I use Ubuntu Server 22.04) place the configuration file **kinozal-bot.conf** next to the script (the paths for storing the log file, cookies and torrent files are set in the configuration) and use the 🐧 interpreter to run it (root privileges are not required):
 
 ```bash
@@ -109,4 +115,5 @@ A list of all available commands (except `/search`) are automated through the bo
 `/plex_sync_key` - Synchronize the specified section in Plex (pass parameter: section key) \
 `/plex_folder_key` - Get the list of directories and files in the selected section \
 `/find` - Search for content in Plex by path (pass parameter: endpoint)
-
+`/plex_last_views` - Last views \
+`/plex_last_added` - Last added files
