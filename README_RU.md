@@ -1,7 +1,7 @@
 # <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/kinozal-bot-ico-256px.png" width="25" /> Kinozal-Bot
 
 ![GitHub top language](https://img.shields.io/github/languages/top/lifailon/kinozal-bot)
-![GitHub release (with filter)](https://img.shields.io/github/v/release/lifailon/kinozal-bot)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/lifailon/kinozal-bot?color=<green>)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/lifailon/kinozal-bot)
 ![GitHub License](https://img.shields.io/github/license/lifailon/kinozal-bot)
 
