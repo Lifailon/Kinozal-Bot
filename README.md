@@ -139,5 +139,15 @@ A list of all available commands (except `/search`) are automated through the bo
 `/plex_sync_key` - Synchronize the specified section in Plex (pass parameter: section key) \
 `/plex_folder_key` - Get the list of directories and files in the selected section \
 `/find` - Search for content in Plex by path (pass parameter: endpoint) \
-`/plex_last_views` - Last views \
-`/plex_last_added` - Last added files
+
+### Added in version 0.4.1:
+
+`/plex_last_views` - List of last views (date of viewing and stop time) \
+`/plex_last_added` - List of last added files \
+`/kinozal_description` - Movie description from Kinozal (pass parameter: id kinozal)
+
+### Added in version 0.4.2:
+
+`/kinozal_actors` - List of actors from Kinozal (pass parameter: id kinozal) \
+`/actor` - Description and search for the actor and his filmography from Kinozal and link to Kinopoisk (pass parameter: actor's name) \
+`/kinopoisk_movie` - Movie information from Kinopoisk by kinopoisk id (pass parameter: kinozal id)
