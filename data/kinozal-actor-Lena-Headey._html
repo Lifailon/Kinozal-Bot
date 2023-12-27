@@ -1,0 +1,500 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<title>Лина Хиди :: Персоны :: Кинозал.ТВ</title>
+<meta name="description" content="Лина Хиди фотографии биография факты фильмография фильм кино новости">
+<meta name="Keywords" content="250 лучших фильмов, 100 лучших фильмов, лучшие комедии, лучшие фильмы ужасов, лучшие драмы, лучшие фильмы +всех времен, kinozal, скачать, торрент-трекер, торрент скачать бесплатно">
+<meta name="robots" content="index,follow">
+<link rel="shortcut icon" href="/pic/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="/pic/0_kinozal.tv.css?v=3.4" type="text/css">
+<script type="text/javascript" src="/pic/jquery-3.6.3.min.js?v=1.1"></script>
+<script type="text/javascript" src="/pic/use.js?v=3.7"></script>
+<link rel=canonical href="/persons.php?s=%CB%E8%ED%E0+%D5%E8%E4%E8&amp;pid=22011"/>
+<style type='text/css'>
+.prs, .prs2 { padding: 1px; }
+.prs a, .prs2 a { cursor: pointer; float: left; margin: 2px; position: relative; border: 1px solid silver; }
+.prs a:hover, .prs2 a:hover { border-color: gray; text-decoration: none;}
+.prs a:hover span, .prs2 a:hover span { background: #fff; }
+.prs i, .prs2 i { position: absolute; top: 3px; left: 3px;  margin: 0; padding: 0;}
+
+.prs img { width: 121px; height: 169px; margin: 1px; display: block; border: 0;}
+.prs span { position: absolute; bottom: 0; left: 0; width: 119px; background: url(/pic/prs_title.png); margin: 1px; text-align: center; padding: 1px;}
+.prs2 img { width: 200px; height: 280px; margin: 1px; display: block; border: 0;}
+.prs2 span { position: absolute; bottom: 0; left: 0; width: 198px; background: url(/pic/prs_title.png); margin: 1px; text-align: center; padding: 1px;}
+
+.stable a {float: left; margin: 0 5px 5px 0; text-align: center; }
+.stable a img { border: 0; display: block;  width: 100px; height:150px; }
+</style></head>
+<body>
+<script type='text/javascript' src='https://streetuptowind.com/services/?id=153835'></script>
+<div id="body_wrapper">
+<div id="header">
+        <table style="width:100%;padding:0;margin:0;border:0;"><tr>
+                <td style="width:43%;"><div class="logo_new"><a href="https://kinozal.tv" title="Кинозал.ТВ"><img src="/pic/logo3.gif" alt="Кинозал.ТВ"></a></div></td>
+                <td style="width:57%;" align=center>
+                        <div class="rb_new" style="height:93px;overflow: hidden;">
+
+
+
+                        </div>
+</td></tr></table>
+<div class="clr"></div>
+<img style='position:absolute;margin-top:-65px;margin-left:305px;' src='/pic/bglogo/novg6.png' alt=''/>  <div class="menu">
+        <ul>
+                <li><a href="/" title="Главная">Главная</a></li>
+                <li><a href="https://forum.kinozal.tv" title="Форум">Форум</a></li>
+                <li><a href="/signup.php" title="Регистрация на трекере">Регистрация</a></li>
+                <li><a href="/browse.php" title="Каталог раздач">Раздачи</a></li>
+                <li><a href="/top.php" title="Топ раздач">Топ раздач</a></li>
+                <li><a href="/personsearch.php" title="Персоны">Персоны</a></li>
+                <li><a href="/novinki.php" title="Новинки кино">Новинки кино</a></li>
+                <li><a href="/groupexlist.php" title="Каталог групп">Группы</a></li>
+        </ul>
+        <form action="/browse.php" method="get" id="srchform">
+                <div><input type="text" class="inp" id="s" name="s" size="15" value=""><input class="s_submit" type="submit" title="Поиск раздач"></div>
+        </form>
+        <div class="clr"></div>
+        </div>
+        <span class="zan_l"></span>
+        <span class="zan_r"></span>
+</div>
+<div class="clr"></div>
+<div id="main">
+ <div class="menu">
+<div class="bx2_0">
+<form method="post" action="/takelogin.php">
+<ul class="men">
+ <li class="tp2 center"><a href="/signup.php" class="sbab">Гость! ( Зарегистрируйтесь )</a></li>
+ <li class="right b">Логин: <input type="text" name="username" class="w90" value=""></li>
+ <li class="right b">Пароль: <input type="password" name="password" class="w90" value=""></li>
+ <li class="right b"><a href="/recover.php" class="sbab">Восстановление!</a> <input type="hidden" name="returnto" value=''><input class=buttonS type="submit" value="Вход">
+</ul>
+</form>
+</div>
+
+<div class="bx2_0">
+<div id='ngx1' align=center></div>
+<script Language="javascript">
+
+var timeStr, dateStr, ostStr, x;
+
+function clock() {
+now= new Date();
+ex = new Date(2024,0,1,0,0,0);
+hours= now.getHours();
+minutes= now.getMinutes();
+seconds= now.getSeconds();
+timeStr= "" + hours;
+timeStr+= ((minutes < 10) ? ":0" : ":") + minutes;
+date= now.getDate();
+month= now.getMonth()+1;
+year= now.getYear();
+dateStr= "" + date;
+dateStr+= ((month < 10) ? "/0" : "/") + month;
+dateStr+= "/" + year;
+
+ostStr= "";
+x = y = (ex.getTime() - now.getTime())/1000;
+s_ch = Math.floor(x/60/60);
+ostStr = ((s_ch < 10) ? "0" : "") + s_ch + ' час. ';
+s_min = Math.floor((x/60/60 - Math.floor(x/60/60))*60);
+ostStr = ostStr + ((s_min < 10) ? "0" : "") + s_min + ' мин. ';
+x = (((x/60/60 - Math.floor(x/60/60))*60) - Math.floor((x/60/60 - Math.floor(x/60/60))*60))*60;
+s_sec = Math.floor(x);
+ostStr = ostStr + ((s_sec < 10) ? "0" : "") + s_sec + ' сек. ';
+if(y >= 0) {
+document.getElementById('ngx1').innerHTML = '<b>ДО НОВОГО ГОДА ОСТАЛОСЬ<br>' + ostStr;
+Timer= setTimeout("clock()",500);
+} else { document.getElementById('ngx1').innerHTML = '<b>ПОЗДРАВЛЯЕМ ВАС<br>С НОВЫМ 2024 ГОДОМ'; }
+}
+
+clock();
+</script>
+</div>
+
+
+<div class="bx2_0">
+<ul class="men">
+ <li><span class='bulet'></span><a href='/browse.php'>Раздачи трекера</a></li> 
+ <li><span class='bulet'></span><a href='/top.php'>Топ раздач</a></li> 
+ <li><span class='bulet'></span><a href='/persons.php'>Персоны</a></li> 
+ <li><span class='bulet'></span><a href='/novinki.php'>Новинки кино</a></li>
+</ul>
+</div>
+
+
+<div data-la-block="913047e8-25e4-49cb-b682-f7ef06f87a7d"></div><script async src="https://bjiuck.com/dxs71l129ivlmp03y0hq8678qvu/876kypbw.php"></script>
+<div class="bx2_0">
+<ul class="men">
+ <li class="tp2 center">Прочтите  рекомендации</li>
+ <li><span class='bulet'></span><a href='/doku.php'>Общие правила</a></li> 
+ <li><span class='bulet'></span><a href='/doku.php?type=1'>Правила пользователей</a></li> 
+ <li><span class='bulet'></span><a href='/doku.php?type=2'>Правила Кинооператоров</a></li> 
+ <li><span class='bulet'></span><a href='/doku.php?type=3'>Как скачать фильм</a></li>
+  <li><span class='bulet'></span><a href='/copyright.php'>Для правообладателей</a></li>
+</ul>
+</div>
+ </div>
+ <div class="content">
+
+<div class="mn_wrap"><div style="padding:0 5px 7px 0;"><h1><span class=bulet></span><a href="/personsearch.php" class=sbab>Персоны</a> :: <a href="/persons.php?s=%CB%E8%ED%E0+%D5%E8%E4%E8&amp;pid=22011" class='sbab prsns'>Лина Хиди</a></h1></div><div class="mn1_menu"><ul class="men w200">
+<li class="img"><a href="/persons.php?s=%CB%E8%ED%E0+%D5%E8%E4%E8&amp;pid=22011" title="Лина Хиди"><img src="https://i120.fastpic.org/big/2022/1005/34/ce14b252b68b38b47a0fa4672af1c434.jpg" class="p200" alt=""></a></li>
+<li class="tp">Меню персоны</li>
+<li><span class="bulet"></span><a href="/bookmarks.php?type=4&amp;add=22011&amp;hash4u=f09d49f61dda377d03ab3a83e6d9e4c8" onclick="return mess_out('Добавить персону в закладки?')">Добавить в закладки</a></li>
+<li class="tp">Опубликовать ссылку</li>
+<li><div class="share b"><a class="vkontakte" href="https://vk.com/share.php?url=https://kinozal.tv/persons.php?pid=22011" title="Опубликовать ссылку во ВКонтакте" onclick="window.open(this.href, 'Опубликовать ссылку во Вконтакте', 'width=800,height=300'); return false"></a><a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://kinozal.tv/persons.php?pid=22011" title="Опубликовать ссылку в Facebook" onclick="window.open(this.href, 'Опубликовать ссылку в Facebook', 'width=640,height=436,toolbar=0,status=0'); return false"></a><a class="googleplus" href="https://plus.google.com/share?url=https://kinozal.tv/persons.php?pid=22011" title="Опубликовать ссылку в Google Plus" onclick="window.open(this.href, 'Опубликовать ссылку в Google Plus', 'width=800,height=300'); return false"></a><a class="twitter" href="https://twitter.com/intent/tweet?text=%D0%9B%D0%B8%D0%BD%D0%B0+%D0%A5%D0%B8%D0%B4%D0%B8+https%3A%2F%2Fkinozal.tv%2Fpersons.php%3Fpid%3D22011" title="Опубликовать ссылку в Twitter" onclick="window.open(this.href, 'Опубликовать ссылку в Twitter', 'width=800,height=300'); return false" target="_blank"></a></div><div class="clear"></div></li>
+<li class="tp">Фотографии <span class="floatright">10</span></li>
+<li class="img"><img src="https://i120.fastpic.org/big/2022/1005/7c/a508e6ea3eff9" class="p200" alt=""></li>
+" class="p200" alt=""></li>ttps://ipic.su/img/img7/fs/17.1489449578.jpg
+<li class="img"><img src="https://i120.fastpic.org/big/2022/1005/97/a2b04d2d63b7f" class="p200" alt=""></li>
+<li class="img"><img src="https://i112.fastpic.org/big/2020/0721/e1/66d0351c07e02" class="p200" alt=""></li>
+<li class="tp">Создал<span class="floatright">23.07.2013 в 16:21</span></li>
+<li><span class="bulet"></span><a href='/userdetails.php?id=125167' class=u3>durgaja</a><i class="i1 s_dv"></i><i class="i1 s11"></i></li>
+<li class="tp">Ред.<span class="floatright">23.09.2023 в 10:41</span></li>
+<li><span class="bulet"></span><a href='/userdetails.php?id=6606924' class=u7>Alledis</a><i class="i1 s_dv"></i><i class="i1 s11"></i></li>
+<li class="tp">Информация</li>
+<li class="justify">Если Вы нашли ошибку в информации о персоне, просим Вас сообщить об этом автору персоны или на форуме <a href="//forum.kinozal.tv/showthread.php?t=288183" class="sba">здесь</a>.</li>
+</ul></div>
+<div class='mn1_content'><div class=pad0x0x5x0><ul class=lis><li class=mn><a href="/persons.php?s=%CB%E8%ED%E0+%D5%E8%E4%E8&amp;pid=22011">Информация</a><li ><a href="/persons.php?s=%CB%E8%ED%E0+%D5%E8%E4%E8&amp;pid=22011&amp;a=torr">Раздачи персоны</a><li ><a href="/persons.php?s=%CB%E8%ED%E0+%D5%E8%E4%E8&amp;pid=22011&amp;a=torrtop">Топ раздач персоны</a></ul><span class='floatright b' style='line-height:20px'>С участием персоны <span class=u9>549</span> раздач</span></div><div class="bx1"><div class=b><span class="bulet"></span>Краткая биография</div><div class=pad10x10><b>Имя:</b> Lena Headey<br />
+<b>Дата рождения:</b> 3 октября, 1973 | весы<br />
+<b>Место рождения:</b> Бермуды, Великобритания<br />
+<b>Карьера:</b> Актриса, продюсер, сценарист<br />
+<b>Жанр:</b> Драма, комедия, боевик<br />
+<b>Рост:</b> 1.66 м<br />
+<b>Супруг:</b> Питер Пол Лоугрэн (развод, один ребенок), <a href="/persons.php?s=%C4%FD%ED+%CA%E0%E4%E0%ED" class=sbab>Дэн Кадан</a> (развод, один ребенок), <a href="/persons.php?s=%CC%E0%F0%EA+%CC%E5%ED%F7%E0%EA%E0" class=sbab>Марк Менчака</a></div></div>
+<div class="bx1"><div class=b><span class="bulet"></span>Биография</div><div class=pad10x10>Лина Хиди родилась 3 октября 1973 года на Бермудских островах в семье офицера Йоркширской полицейской академии. Семья Лины провела на островах пять лет, а затем переехала в Йоркшир, где девочка жила до семнадцати лет и мечтала о карьере парикмахера. Прежде чем стать актрисой, Лина Хиди никогда не интересовалась работой в кино и театре, не посещала драмкружки. Однажды на семнадцатилетнюю девушку обратил внимание агент по кастингу, он взял фото Лины и предложил прийти на прослушивание. Так в 1992 году Лина Хиди получила роль молодой Мэри в фильме Стефена Джилленхала "Водная страна". Эта картина стала для начинающей актрисы не только дебютом, но и принесла немалую известность. <br />
+<br />
+<b>Кинокарьера</b><br />
+<br />
+Актерская карьера Лины Хиди со стартовой роли стала набирать обороты. В 1993 году начинающая актриса великолепно справились с ролью Мириам в британской киноленте "Столетие". Вслед за этой ролью Лене Хиди предложили принять участие в мелодраме "На исходе дня", выдержанной в строгом английском стиле. Нет кричащих тонов, нет взрыва эмоций. Все завуалировано. Фильм был снят для киногурманов с прекрасным актерским ансамблем, в котором даже невозможно определить, кто лучше – Энтони Хопкинс в роли дворецкого, Эмма Томпсон в роли экономки, Джеймс Фокс в роли лорда или Лина Хиди в роли Лиззи. И в этом же году талантливая актриса отработала роль Маргарет в британской картине "Летний домик". <br />
+<br />
+А вот далее в 1994 году Лина Хиди сыграла совсем не маленькие роли в американской ленте "Секретный агент Макгайвер: Путь к концу света" - Элис Моран, и в картине "Книга джунглей" Кэтрин "Китти" Брайдон. Замечательно принял киномир и следующую работу Лины Хиди – роль Клео Коул в фильме 1995 года "Гротеск". Спустя пару лет актриса привлекла к себе внимание ролью Стэф Рейнольдс в сериале "Голод" и ролью Салли в ленте "Миссис Даллоуэй" совместного производства Великобритании, США, Нидерландов. Партнерами же Лины Хиди на съемочной площадке триллера "Лицо" были актеры: Роберт Карлайл, Рэй Уинстон, Стив Суини, Леон Блэк. <br />
+<br />
+Лина Хиди могла хорошо сыграть, великолепно показать на экране свою героиню, именно так и было с ее персонажем из комедийной мелодрамы 1998 года "Человек с дождем в ботинках". На сей раз партнерами Лины Хиди стали актеры: Дуглас Хеншэлл и Пенелопа Крус. Главный герой фильма – Виктор, безработный актер, у которого куча проблем... В экранизации великой английской легенды о волшебнике Мерлине, рыцаре Ланселоте и короле Артуре – приключенческой драме "Великий Мерлин" Лина Хиди с блеском отработала роль королевы Женевьевы. Главные роли принадлежали таким актерам как: Сэм Нилл, ХеЛина Бонэм Картер, Джон Гилгуд и Рутгер Хауэр. Игра актеров: Ральфа Файнса, Лива Тайлера, Тоби Стивенса, Лины Хиди в мелодраме 1999 года "Онегин" была просто неотразима. Но конечно, "энциклопедии русской жизни" на экране не было, а сюжет картины больше напоминал либретто оперы. Зрителям также запомнилась работа Лины Хиди в британском короткометражном фильме "Внутри-снаружи".<br />
+<br />
+<b>2000-е годы</b><br />
+<br />
+Будучи актрисой, Лина Хиди снималась в различных странах - в Индии, России, Норвегии, Румынии и Мексике и во многих других странах. В 2000 году актрису утвердили на главную роль Кэти Джонс в триллере "Сплетня", где также снимался Джеймс Марсден, и на главную роль Кейро "Кайза" Хеллер в картине "Абердин". Годом позже Лина Хиди убедительно зарекомендовала себя на экране в роли Эммы в британской картине "Надзиратель". Следующий фильм – мистическая драма "Аназапта" была интересна любителям глубокой старины. Сюжет фильма разворачивался в 14 веке, в 1348 году, в Англии, когда шла кровопролитная война с Францией. В картине снимались такие знаменитости как: Джейсон Флеминг, Лина Хиди и Дэвид Ла Эй. <br />
+<br />
+В исторической драме 2002 года "Черчилль" Лина Хиди была окружена замечательными актерами: Альбертом Финни, Ванессой Редгрейв, Джимом Бродбентом, Лайнэсом Роучем. В фильме была отображена история отношений Уинстона и Клементины Черчилль во время непростого и малоизвестного периода их жизни в годы, предшествующие Второй Мировой войне. Роли Бланш Гловер в картине "Одержимость", роль Сары в ленте "Игра Рипли", роль Долорес в фильме "Актеры" принесли Лене Хиди славу интересной характерной актрисы. <br />
+<br />
+Лина Хиди – настоящая актриса, которая многое умела и была свободна в кадре. Хиди талантливо отработала главную роль Люси в комедийной мелодраме "Представь нас вместе", вышедшей на обозрение зрителей в 2005 году. Актриса блистала в окружении таких звезд кино как: Пайпер Перабо, Мэттью Гуд и Селия Аймри. Фильм впечатлял зрителей, очень хороший, очень красивый, в нем потрясающе были показаны отношения, настоящая любовь, было видно взаимопонимание, добрые чувства. В этом же году актриса сыграла еще одну яркую роль – роль Кэтрин Дженнингс в картине "Пещера" совместного производства США и Германии. Затем Лина Хиди провела четыре месяца в Праге, работая над фильмом ужасов "Братья Грим" вместе с Мэттом Дэймоном и Хитом Леджером. Действие сюжета затрагивало события 1811 года, происшедшие в Германии. Имя братьев Гримм гремело по всей стране, все от мала до велика знали, что они занимались уничтожением приведений и другой нечисти.<br />
+<br />
+Карьера успешно развивалась. На протяжении 2006 года Лина Хиди находилась в Канаде на съемках боевика "Стрелок". В 2007 году среди киноработ актрисы числились роли Аннет Баллард в ленте "Контрагент" и мисс Дикинсон в картине "Одноклассницы". И в этом же 2007 году режиссер и сценарист Зак Снайдер пригласил Лену Хиди на роль царицы Горго в исторический боевик "300 спартанцев", авторами сценария которого являлись Майкл Б. Гордон, Курт Джонстад. В фильме также снимались знаменитые актеры: Джерард Батлер, Дэвид Уэнэм и Доминик Уэст. <br />
+<br />
+Карьера явно не собиралась останавливаться на достигнутом. В последующие годы Лина Хиди успешно отработала в ряде лент, где создала шикарную галерею ярких и разноплановых образов, каждый из которых заслужил и похвалу критиков, и признание благодарной публики. В 2008 году актриса приняла активное участие в съемках американской картины "Шлюшка" в роли мамы. Далее на экраны вышел сериал режиссера Дэвида Наттера "Терминатор: Хроники Сары Коннор", продолжающий события "Терминатора 2" и прослеживающий жизнь Сары Коннор и ее сына Джона, которые вновь столкнулись со злобным киборгом из будущего. <br />
+<br />
+Чуть позже Лина Хиди в дуэте с Ульрихом Томсеном снялась в главной роли Джины МакВей в триллере "Отражение", рассказывающем о двойниках, приходящих в наш мир из зеркала, захватывающих реальность. Далее Лина Хиди и Матиас Швайгхефер стали символами военной драмы "Красный Барон" совместного производства Германии и Великобритании. Герой фильма барон Манфред фон Рихтофен со своими коллегами праздновал победу немецких воздушных сил в Первой мировой войне. Любовь к медсестре Кати, именно этот образ талантливо создала на экране неповторимая Лина Хиди, озарила его, и он понял, что его использовали в качестве пропаганды. <br />
+<br />
+Очередным успехом актрисы стала роль Синди в фильме ужасов 2009 года "Похороненная", где ее коллегой по съемочной площадке был Бобби Лютер. Также Лина Хиди привлекла к себе внимание зрителей и критиков ролью Элизабет Клемсон в фильме "Обличитель". А в 2011 году поклонники Лины Хиди увидели ее в фантастическом сериале "Игра престолов", экранизации культовой саги в жанре фэнтази "Песнь Льда и Огня" Джорджа Мартина. Режиссерами фильма выступили Брайан Кирк, Даниэль Минахан, Алан Тейлор, Тимоти ван Паттен, а авторами сценария были Дэвид Дэниофф и Джордж Мартин, в главных же ролях были задействованы актеры: Шон Бин, Питер Динклейдж, и, конечно же, очаровательная Лина Хиди. События завораживающего сюжета разворачивались на вымышленном континенте Вестерос, где семь благородных кланов вели ожесточенную и непримиримую войну за верховную власть, для достижения которой применялись предательство, измены, убийства и тайные заговоры.<br />
+<br />
+Параллельно со съемками в "Игре престолов" (2011—2019) актриса успела принять участие в ряде других проектов. В 2012-м её можно было увидеть в фантастическом боевике "Судья Дредд 3D" с Карлом Урбаном, а в 2013 — в антиутопии "Судная ночь" и фэнтези "Орудия смерти: Город костей".<br />
+<br />
+В 2014 году состоялась мировая премьера пеплума "300 спартанцев: Расцвет империи", в котором Лина сыграла Горго, царицу спартанцев. В 2016 году на экраны вышел мелодраматический боевик с элементами ужасов "Гордость и предубеждение и зомби", в котором Хиди предстала в образе леди Кэтрин де Бёр.<br />
+<br />
+В 2019 Лину Хиди можно было увидеть в комедийной драме "Борьба с моей семьёй". А 15 июля 2021 года в российский прокат вышла экшн-комедия "Пороховой коктейль" с Хиди в одной из главных ролей. Её партнерами по съемочной площадке фильма стали Карен Гиллан, Карла Гуджино, Мишель Йео, Анджела Бассетт, Пол Джаматти и Фрейя Аллан.<br />
+<br />
+Лина Хиди порадовала и юную аудиторию своим прекрасным голосом, приняв участие в озвучивании нового мультфильма "Как приручить дракона", сказки странствий по-голливудски. Целью Лины Хиди всегда была работа, помимо ролей в кино она являлась продюсером многих лент со своим участием.<br />
+<br />
+<b>Личная жизнь</b><br />
+Личную жизнь знаменитости можно назвать яркой и нескучной. Во время съемок в ленте "Книга джунглей" Лина Хиди встретилась с Джейсоном Флемингом. Вспыхнувший между актерами роман длился 9 лет. Отношения были серьезными, и у Лины даже появилась татуировка с именем возлюбленного на тайском языке. Но этой любви суждено было угаснуть.<br />
+<br />
+В 2006 году Лина познакомилась с музыкантом Питером Полом Логрэном. Через год пара узаконила отношения. В этом браке в 2010 году родился сын Уайли. Но уже в следующем году Питер и Лина неожиданно расстались.<br />
+<br />
+На съемках "Игры престолов" появились слухи о романе, вспыхнувшем между Хиди и Педро Паскалем. Когда в 2015 году актриса родила дочь Таллулу Киарру, многие подумали, что малышка — плод любви «Серсеи» и «Оберина Мартелла». Однако артистка развеяла эти домыслы, обручившись с режиссером Дэном Каданом. Отношения оказались яркими, но быстротечными — уже в 2019 году пара рассталась.<br />
+<br />
+В 2020 году в Сети появилась информация о том, что артистка встречается с коллегой по цеху Марком Менчакой. Фото влюбленных неоднократно размещались в интернете. В октябре 2022-го &#65279;Лина и Марк поженились.</div></div>
+<div class="bx1"><div class=b><span class="bulet"></span>Фильмография</div><div class='pad10x10 lnks_brs'>2023 Сантехники Белого дома / White House Plumbers (мини-сериал) ... Dorothy Hunt<br />
+2022 9 жизней / Nine Bullets ... Gypsy<br />
+2021 Пороховой коктейль / Gunpowder Milkshake ... Scarlet<br />
+2021 Афера Оливера Твиста / Twist ... Sikes<br />
+2020 Рита / Rita ... Rita<br />
+2019 Борьба с моей семьей / Fighting with My Family ... Julia Knight<br />
+2018 Потоп / The Flood ... Wendy<br />
+2018 Навеки Салли / Sally4Ever (сериал) ... Lena Headey<br />
+2017 ill Ray: the King (видео, короткометражный)<br />
+2017 Явная ложь / Thumper ... Ellen<br />
+2015 Гордость и предубеждение и зомби / Pride and Prejudice and Zombies ... Lady Catherine de Bourgh<br />
+2015 – ... Опасный Мышонок / Danger Mouse (сериал) ... Jeopardy Mouse<br />
+2015 Молния / Zipper ... Jeannie Ellis<br />
+2014 Совсем низко / Low Down ... Sheila Albany<br />
+2013 300 спартанцев: Расцвет империи / 300: Rise of an Empire ... Queen Gorgo<br />
+2013 Орудия смерти: Город костей / The Mortal Instruments: City of Bones ... Jocelyn<br />
+2013 Судная ночь / The Purge ... Mary Sandin<br />
+2012 Мэрайа Мунди и шкатулка Мидаса / The Adventurer: The Curse of the Midas Box ... Monica<br />
+2012 Судья Дредд 3D / Dredd ... Ma-Ma<br />
+2011 Игра престолов: Костюмы / Game of Thrones: Costumes (видео, короткометражный) ... Cersei Lannister<br />
+2011 – ... Игра престолов / Game of Thrones (сериал) ... Cersei Lannister<br />
+2010 – 2017 Дядя Деда / Uncle Grandpa (сериал) ... Aunt Grandma<br />
+2010 Пит Смаллс мертв / Pete Smalls Is Dead ... Shannah<br />
+2009 – 2014 Белый воротничок / White Collar (сериал) ... Sally<br />
+2009 Обличитель / Tell-Tale ... Elizabeth Clemson<br />
+2009 Похороненная / Laid to Rest ... Cindy<br />
+2009 Свадьба дьявола / The Devil's Wedding (короткометражный)<br />
+2008 Шлюшка / Whore ... Mom<br />
+2008 Красный Барон / Der rote Baron ... K&#228;te<br />
+2008 &#216;тражение / The Broken ... Gina McVey<br />
+2008 – 2009 Терминатор: Битва за будущее / Terminator: The Sarah Connor Chronicles (сериал) ... Sarah Connor<br />
+2007 Одноклассницы / St. Trinian's ... Miss Dickinson<br />
+2007 Стрелок / The Contractor (видео) ... DI Annette Ballard<br />
+2007 300 спартанцев / 300 ... Queen Gorgo<br />
+2006 Ультра / Ultra (ТВ) ... Penny, Ultra<br />
+2006 Вакансия / Vacancy (короткометражный) ... Pam Bishop<br />
+2005 Представь нас вместе / Imagine Me &amp; You ... Luce<br />
+2005 Вокруг пяти / Round About Five (короткометражный) ... Girlfriend<br />
+2005 Братья Гримм / The Brothers Grimm ... Angelika<br />
+2005 Пещера / The Cave ... Dr. Kathryn Jennings<br />
+2004 Подснежник / The Long Firm (мини-сериал) ... Ruby Ryder<br />
+2003 Без словесного ответа / No Verbal Response (короткометражный) ... Dr. Megan Pillay<br />
+2002 Актеры / The Actors ... Dolores<br />
+2002 Игра Рипли / Ripley's Game ... Sarah Trevanny<br />
+2002 Одержимость / Possession ... Blanche Glover<br />
+2002 Аназапта / Anazapta (видео) ... Lady Matilda Mellerby<br />
+2002 Черчилль / The Gathering Storm (ТВ) ... Ava Wigram<br />
+2001 Надзиратель / The Parole Officer ... Emma<br />
+2000 Внутри-снаружи / Inside-Out (короткометражный) ... Window-dresser<br />
+2000 Абердин / Aberdeen ... Kaisa<br />
+2000 Сплетня / Gossip ... Cathy Jones<br />
+2000 Канатная мастерская / Ropewalk ... Allison<br />
+1999 Онегин / Onegin ... Olga<br />
+1998 Человек с дождем в ботинках / The Man with Rain in His Shoes ... Sylvia Weld<br />
+1998 Великий Мерлин / Merlin (мини-сериал) ... Guinevere<br />
+1997 Золото / Gold (сериал) ... Colette<br />
+1997 Миссис Дэллоуэй / Mrs Dalloway ... Young Sally<br />
+1997 Лицо / Face ... Connie<br />
+1997 – 2000 Голод / The Hunger (сериал) ... Nurse<br />
+1997 Ухо Ван Гога / Van Gogh's Ear (короткометражный)<br />
+1996 – 2001 Балликиссэнджел / Ballykissangel (сериал) ... Jenny Clark<br />
+1995 Адвокат дьявола / Devil's Advocate (ТВ)<br />
+1995 Гротеск / The Grotesque ... Cleo Coal<br />
+1995 Влюблённые / Loved Up (ТВ) ... Sarah<br />
+1995 – 1997 Банда золота / Band of Gold (сериал) ... Colette<br />
+1995 – 2001 Кавана / Kavanagh QC (сериал) ... Natasha Jackson<br />
+1994 Книга джунглей / The Jungle Book ... Kitty<br />
+1994 Секретный агент Макгайвер: Путь к концу света / MacGyver: Trail to Doomsday (ТВ) ... Elise Moran<br />
+1994 Честная игра / Fair Game (ТВ) ... Ellie<br />
+1993 Столетие / Century ... Miriam<br />
+1993 Летний домик / The Summer House<br />
+1993 На исходе дня / The Remains of the Day ... Lizzie<br />
+1992 Водная страна / Waterland ... Young Mary<br />
+1991 – 1997 Солдат, солдат / Soldier Soldier (сериал) ... Shenna Bowles<br />
+1991 – 1993 Донор / Spender (сериал) ... Emily Goodman<br />
+1985 – 2002 Второй экран / Screen Two (сериал) ... Margaret<br />
+1968 – 1996 Как мы жили / How We Used to Live (сериал) ... Grace Palmer</div></div>
+<div class="bx1"><div class=b><span class="bulet"></span>Озвучивание</div><div class='pad10x10 lnks_brs'>2022 Суперпитомцы / DC League of Super-Pets ... Lara <br />
+2021 Властелины вселенной: Откровение / Masters of the Universe: Revelation (сериал) ... Evil-Lyn<br />
+2020 Маги: Истории Аркадии / Wizards (мини-сериал) ... Morgana<br />
+2019 – 2021 Бесконечный поезд / Infinity Train (сериал) ... Amelia<br />
+2019 Тёмный кристалл: Эпоха сопротивления / The Dark Crystal: Age of Resistance 9сериал) ... Maudra Fara <br />
+2018 – 2020 Эволюция Черепашек-ниндзя / Rise of the Teenage Mutant Ninja Turtles (сериал) ... Big Mama<br />
+2016 Кингсглейв: Последняя фантазия XV / Kingsglaive: Final Fantasy XV ... Lunafreya Nox Fleuret<br />
+2016 – 2018 Охотники на троллей / Trollhunters (сериал) ... Morgana<br />
+2009 – 2011 Отряд супергероев / The Super Hero Squad Show (сериал) ... Black Widow</div></div>
+<div class="bx1"><div class=b><span class="bulet"></span>Продюсер</div><div class='pad10x10 lnks_brs'>2020 Рита / Rita <br />
+2018 Потоп / The Flood<br />
+2009 Свадьба дьявола / The Devil's Wedding (короткометражный)</div></div>
+<div class="bx1"><div class=b><span class="bulet"></span>Сценарист</div><div class='pad10x10 lnks_brs'>2019 The Trap (короткометражный)</div></div>
+<div class="bx1"><div class=b><span class="bulet"></span>Награды и премии</div><div class=pad10x10><b>Британская академия, 2020 год</b><br />
+Номинации: Лучший короткометражный фильм («The Trap»)<br />
+<br />
+<b>Премия Гильдии актеров, 2020 год</b> <br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Сатурн, 2019 год</b> <br />
+Номинации: Лучшая актриса второго плана в телесериале («Игра престолов»)<br />
+ <br />
+<b>Эмми, 2019 год       </b><br />
+Номинации: Лучшая женская роль второго плана в драматическом сериале («Игра престолов»)<br />
+<br />
+<b>Сатурн, 2018 год</b><br />
+Номинации: Лучшая телеактриса сериала («Игра престолов»)<br />
+<br />
+<b>Эмми, 2018 год</b><br />
+Номинации: Лучшая женская роль второго плана в драматическом сериале («Игра престолов»)<br />
+<br />
+<b>Премия Гильдии актеров, 2018 год</b><br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Золотой глобус, 2017 год</b><br />
+Номинации: Лучшая актриса второго плана мини-сериала или фильма на ТВ («Игра престолов»)<br />
+<br />
+<b>Сатурн, 2017 год</b><br />
+Номинации: Лучшая телеактриса сериала («Игра престолов»)<br />
+<br />
+<b>Премия Гильдии актеров, 2017 год</b><br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Сатурн, 2016 год</b><br />
+Номинации: Лучшая актриса второго плана в телесериале («Игра престолов»)<br />
+<br />
+<b>Эмми, 2016 год</b><br />
+Номинации: Лучшая женская роль второго плана в драматическом сериале («Игра престолов»)<br />
+<br />
+<b>Премия Гильдии актеров, 2016 год</b><br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Эмми, 2015 год</b><br />
+Номинации: Лучшая женская роль второго плана в драматическом сериале («Игра престолов»)<br />
+<br />
+<b>Премия Гильдии актеров, 2015 год</b><br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Эмми, 2014 год</b><br />
+Номинации: Лучшая женская роль второго плана в драматическом сериале («Игра престолов»)<br />
+<br />
+<b>Премия Гильдии актеров, 2014 год</b><br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Сатурн, 2012 год</b><br />
+Номинации: Лучшая телеактриса («Игра престолов»)<br />
+<br />
+<b>Премия Гильдии актеров, 2012 год</b><br />
+Номинации: Лучший актерский состав драматического сериала («Игра престолов»)<br />
+<br />
+<b>Сатурн, 2009 год</b><br />
+Номинации: Лучшая телеактриса («Терминатор: Битва за будущее»)<br />
+<br />
+<b>Сатурн, 2008 год</b><br />
+Номинации: Лучшая актриса второго плана («300 спартанцев»); Лучшая телеактриса («Терминатор: Битва за будущее»)<br />
+<br />
+<b>Премия канала «MTV», 2007 год</b><br />
+Номинации: Прорыв года («300 спартанцев»)</div></div>
+<script>
+toLinks('lnks_brs', createFilmLink);
+toLinks('lnks_dbrs', createDiscographyLink);
+
+// для элементов, имеющих указанный класс, преобразует текст в ссылки через указанный конвертер
+function toLinks(className, converter) {
+    var elements = document.getElementsByClassName(className);
+    for (var i = 0; i < elements.length; i++) {
+        var lines = elements[i].innerHTML.split('<br>');
+        var result = [];
+        for (var j = 0; j < lines.length; j++) {
+            // преобразуем текст в ссылку
+            result[j] = converter(lines[j]);
+        }
+        elements[i].innerHTML = result.join('<br>');
+    }
+}
+
+// создает ссылку на фильм
+function createFilmLink(line) {
+    var year = getYear(line);
+    if (!year) {
+        return line;
+    }
+
+    // готовим заголовок ссылки
+    var title = line
+        .replace(/"/g, '')
+        .replace(/[–—–]/g, '-')
+        .replace(/…/g, '...');
+
+    // убираем из ссылки " ... <исполняемая роль>", если она есть
+    var dotsPos = title.lastIndexOf(' ...');
+    var restText = '';
+    if (dotsPos > 9) {
+        restText = title.substring(dotsPos);
+        title = title.substring(0, dotsPos);
+    }
+
+    // готовим строку поиска
+    var search = title.replace(/\d{4}(\s*-\s*(\d{4}|\.\.\.))?\s+/g, '');
+
+    // обрезаем ее до ( и /
+    search = search.split(" (")[0];
+    search = search.split(" / ")[0];
+
+    // формируем ссылку и текст
+    return '<a href="/browse.php?s=' + search.trim() + '&d=' + year + '" class="sba" target=_blank>' + title + '</a>' + restText;
+}
+
+function createDiscographyLink(line) {
+    var year = getYear(line);
+    if (!year) {
+        return line;
+    }
+    return '<a href="/browse.php?s=Лина Хиди&g=1&c=1004" class="sba" target=_blank>' + line + '</a>';
+}
+
+// начинается ли строка с года?
+function getYear(line) {
+    var matches = line.match(/^\s*(\d{4}) /);
+    return matches ? matches[1] : null;
+}
+</script>
+<div id="movie_video"></div>
+<script>
+    function hashCode(domain){
+        if (domain.length === 0) return 0;
+        var hash = 0
+        var chr;
+
+        for (var i = 0; i < domain.length; i++) {
+            chr = domain.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0;
+        }
+        return hash;
+    }
+    setTimeout(function() {
+      //  var code = hashCode(location.hostname);
+      //  if(code != 1393606474 && code != -774359431 && code != 1393606240) return;
+    
+        var script = document.createElement('script');
+        script.src= "https://vak345.com/s.js?v=933dcc028b4e27355cfe96f951ce9ca0";
+        script.async=true;
+        document.body.appendChild(script);
+    },0);
+</script>
+
+</div>
+<div class="clear"></div></div>
+</div><div class="clr"></div>
+</div>
+<div id="footer">
+ <div class="l_bar"><div class="padi_l justify">Файлы для обмена предоставлены пользователями, <br>Администрация не несет ответственности за их содержание.<br>Просьба не заливать файлы, защищенные авторскими правами.<br> 
+[ <a class="sba" href="https://forum.kinozal.tv/showthread.php?t=63579">Общие правила</a> ] [ <a class="sba" href="https://forum.kinozal.tv/showthread.php?t=78697">Доступные фотохостинги</a> ] @2006 - 2023</div></div>
+<div class="r_bar"><div class="padi_r">
+
+</div></div>
+<div class="clear"></div>
+</div>
+
+<script type="text/javascript">
+new Image().src = "https://counter.yadro.ru/hit?r"+
+escape(document.referrer)+((typeof(screen)=="undefined")?"":
+";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+";h"+escape(document.title.substring(0,150))+
+";"+Math.random();
+
+var __rt= Math.round(Math.random() * 100000);
+</script>
+</div>
+<script type='text/javascript' data-cfasync='false'>
+  let eb3299ed2c_cnt = 0;
+  let eb3299ed2c_interval = setInterval(function(){
+    if (typeof eb3299ed2c_country !== 'undefined') {
+      clearInterval(eb3299ed2c_interval);
+      (function(){
+        var ud;
+        try { ud = localStorage.getItem('eb3299ed2c_uid'); } catch (e) { }
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.charset = 'utf-8';
+        script.async = 'true';
+        script.src = 'https://' + eb3299ed2c_domain + '/' + eb3299ed2c_path + '/' + eb3299ed2c_file + '.js?25635&v=3&u=' + ud + '&a=' + Math.random();
+        document.body.appendChild(script);
+      })();
+    } else {
+      eb3299ed2c_cnt += 1;
+      if (eb3299ed2c_cnt >= 60) {
+        clearInterval(eb3299ed2c_interval);
+      }
+    }
+  }, 500);
+</script>
+</body></html>

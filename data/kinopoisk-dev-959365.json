@@ -1,0 +1,791 @@
+{
+  "fees": {
+    "world": {
+      "value": 31191910,
+      "currency": "$"
+    },
+    "russia": {
+      "value": 283197,
+      "currency": "$"
+    }
+  },
+  "status": null,
+  "externalId": {
+    "tmdb": 411088,
+    "imdb": "tt4857264"
+  },
+  "rating": {
+    "kp": 7.839,
+    "imdb": 8,
+    "filmCritics": 7,
+    "russianFilmCritics": 100,
+    "await": null
+  },
+  "votes": {
+    "kp": 286512,
+    "imdb": 188871,
+    "filmCritics": 10,
+    "russianFilmCritics": 3,
+    "await": 71
+  },
+  "backdrop": {
+    "url": "https://imagetmdb.com/t/p/original/1ZSWFzAP4AZuFCigZZoib2RdcUO.jpg",
+    "previewUrl": "https://imagetmdb.com/t/p/w500/1ZSWFzAP4AZuFCigZZoib2RdcUO.jpg"
+  },
+  "movieLength": 106,
+  "images": {
+    "postersCount": 26,
+    "backdropsCount": 13,
+    "framesCount": 65
+  },
+  "productionCompanies": [
+    {
+      "name": "Think Studio",
+      "url": "https://www.themoviedb.org/t/p/original/apcQLKRuLLqhi9fD1gaSL3argeo.png",
+      "previewUrl": "https://www.themoviedb.org/t/p/w500/apcQLKRuLLqhi9fD1gaSL3argeo.png"
+    },
+    {
+      "name": "Nostromo Pictures",
+      "url": "https://www.themoviedb.org/t/p/original/jOdUllzDZRFy0tPIFDEwpP4Mpv4.png",
+      "previewUrl": "https://www.themoviedb.org/t/p/w500/jOdUllzDZRFy0tPIFDEwpP4Mpv4.png"
+    },
+    {
+      "name": "Colosé Producciones",
+      "url": "https://www.themoviedb.org/t/p/original/camFxiEQydhhZF5in1SGzMkLKuU.png",
+      "previewUrl": "https://www.themoviedb.org/t/p/w500/camFxiEQydhhZF5in1SGzMkLKuU.png"
+    },
+    {
+      "name": "Habitación Cerrada, La",
+      "url": null,
+      "previewUrl": null
+    },
+    {
+      "name": "ICEC",
+      "url": null,
+      "previewUrl": null
+    },
+    {
+      "name": "ICAA",
+      "url": null,
+      "previewUrl": null
+    },
+    {
+      "name": "Movistar+",
+      "url": "https://www.themoviedb.org/t/p/original/vgVqq5hunVs8GN5Je9d9rG7Q2NU.png",
+      "previewUrl": "https://www.themoviedb.org/t/p/w500/vgVqq5hunVs8GN5Je9d9rG7Q2NU.png"
+    },
+    {
+      "name": "TV3",
+      "url": "https://www.themoviedb.org/t/p/original/mPuVc7m1Ki7OQQvAYwYfIlEI3vu.png",
+      "previewUrl": "https://www.themoviedb.org/t/p/w500/mPuVc7m1Ki7OQQvAYwYfIlEI3vu.png"
+    },
+    {
+      "name": "Atresmedia",
+      "url": "https://www.themoviedb.org/t/p/original/wHbtRtUnXGNzX0riQIpq1fcgueq.png",
+      "previewUrl": "https://www.themoviedb.org/t/p/w500/wHbtRtUnXGNzX0riQIpq1fcgueq.png"
+    }
+  ],
+  "spokenLanguages": [
+    {
+      "name": "Español",
+      "nameEn": "Spanish"
+    }
+  ],
+  "id": 959365,
+  "type": "movie",
+  "name": "Невидимый гость",
+  "description": "Молодого бизнесмена Адриана Дориа обвиняют в убийстве любовницы, и он решает воспользоваться услугами Вирджинии Гудман, лучшего в стране специалиста по выходу из самых сложных ситуаций. Адриан содержится под домашним арестом, а завтра состоится судебное заседание, поэтому вечером к нему приходит Вирджиния, чтобы придумать наилучшую стратегию защиты. Для неё это последнее дело, и она не собирается его проигрывать.",
+  "distributors": {
+    "distributor": "ПРОвзгляд",
+    "distributorRelease": "НД Плэй"
+  },
+  "premiere": {
+    "world": "2016-09-23T00:00:00.000Z",
+    "russia": "2018-05-31T00:00:00.000Z"
+  },
+  "slogan": "У каждой истории две стороны. Правда - только одна",
+  "year": 2016,
+  "budget": {
+    "value": 4000000,
+    "currency": "€"
+  },
+  "poster": {
+    "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/611a2f49-49fb-458e-b98a-fb46672f1a24/orig",
+    "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/611a2f49-49fb-458e-b98a-fb46672f1a24/x1000"
+  },
+  "facts": [
+    {
+      "value": "Оригинальное название фильма можно перевести как &laquo;Непредвиденное затруднение&raquo;.",
+      "type": "FACT",
+      "spoiler": false
+    }
+  ],
+  "genres": [
+    {
+      "name": "триллер"
+    },
+    {
+      "name": "криминал"
+    },
+    {
+      "name": "детектив"
+    }
+  ],
+  "countries": [
+    {
+      "name": "Испания"
+    }
+  ],
+  "videos": {
+    "trailers": [
+      {
+        "url": "https://www.youtube.com/embed/30KSdQgKHbE",
+        "name": "Невидимый гость - Трейлер",
+        "site": "youtube",
+        "type": "TRAILER"
+      },
+      {
+        "url": "https://www.youtube.com/embed/6feQgsFnQa4",
+        "name": "Невидимый гость. Трейлер. В кино с 31 мая",
+        "site": "youtube",
+        "type": "TRAILER"
+      },
+      {
+        "url": "https://www.youtube.com/embed/30KSdQgKHbE",
+        "name": "Невидимый гость - Трейлер",
+        "site": "youtube",
+        "type": "TRAILER"
+      },
+      {
+        "url": "https://www.youtube.com/embed/6feQgsFnQa4",
+        "name": "Невидимый гость. Трейлер. В кино с 31 мая",
+        "site": "youtube",
+        "type": "TRAILER"
+      },
+      {
+        "url": "https://www.youtube.com/embed/epCg2RbyF80",
+        "name": "Teaser",
+        "site": "youtube",
+        "type": "TRAILER"
+      }
+    ]
+  },
+  "seasonsInfo": [],
+  "persons": [
+    {
+      "id": 1012129,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1012129.jpg",
+      "name": "Марио Касас",
+      "enName": "Mario Casas",
+      "description": "Adrián Doria",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 384544,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_384544.jpg",
+      "name": "Ана Вахенер",
+      "enName": "Ana Wagener",
+      "description": "Virginia Goodman",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 60320,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_60320.jpg",
+      "name": "Хосе Коронадо",
+      "enName": "Jose Coronado",
+      "description": "Tomás Garrido",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 439752,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_439752.jpg",
+      "name": "Барбара Ленни",
+      "enName": "Bárbara Lennie",
+      "description": "Laura Vidal",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 97044,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_97044.jpg",
+      "name": "Франсеск Орелья",
+      "enName": "Francesc Orella",
+      "description": "Félix Leiva",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 439951,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_439951.jpg",
+      "name": "Пако Тоус",
+      "enName": "Paco Tous",
+      "description": "Conductor",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 224752,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_224752.jpg",
+      "name": "Давид Сельвас",
+      "enName": "David Selvas",
+      "description": "Bruno",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 2777031,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_2777031.jpg",
+      "name": "Иньиго Гастези",
+      "enName": "Iñigo Gastesi",
+      "description": "Daniel Garrido",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 1508544,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1508544.jpg",
+      "name": "Сан Еламос",
+      "enName": "San Yélamos",
+      "description": null,
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 276219,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_276219.jpg",
+      "name": "Манель Дуэсо",
+      "enName": "Manel Dueso",
+      "description": "Inspector Milán",
+      "profession": "актеры",
+      "enProfession": "actor"
+    },
+    {
+      "id": 646218,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_646218.jpg",
+      "name": "Фернандо Веласкес",
+      "enName": "Fernando Velázquez",
+      "description": null,
+      "profession": "композиторы",
+      "enProfession": "composer"
+    },
+    {
+      "id": 3091053,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_3091053.jpg",
+      "name": "Эва Торрес",
+      "enName": "Eva Torres",
+      "description": null,
+      "profession": "художники",
+      "enProfession": "designer"
+    },
+    {
+      "id": 4312863,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_4312863.jpg",
+      "name": "Мигель Сервера",
+      "enName": "Miguel Cervera",
+      "description": null,
+      "profession": "художники",
+      "enProfession": "designer"
+    },
+    {
+      "id": 2053146,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_2053146.jpg",
+      "name": "Марта Басако",
+      "enName": "Marta Bazaco",
+      "description": null,
+      "profession": "художники",
+      "enProfession": "designer"
+    },
+    {
+      "id": 2144376,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_2144376.jpg",
+      "name": "Идойя Эстебан",
+      "enName": "Idoia Esteban",
+      "description": null,
+      "profession": "художники",
+      "enProfession": "designer"
+    },
+    {
+      "id": 1042126,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1042126.jpg",
+      "name": "Ориол Паоло",
+      "enName": "Oriol Paulo",
+      "description": null,
+      "profession": "режиссеры",
+      "enProfession": "director"
+    },
+    {
+      "id": 1988598,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1988598.jpg",
+      "name": "Хауме Марти",
+      "enName": "Jaume Martí",
+      "description": null,
+      "profession": "монтажеры",
+      "enProfession": "editor"
+    },
+    {
+      "id": 615365,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_615365.jpg",
+      "name": "Чави Хименес",
+      "enName": "Xavi Giménez",
+      "description": null,
+      "profession": "операторы",
+      "enProfession": "operator"
+    },
+    {
+      "id": 446232,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_446232.jpg",
+      "name": "Мерседес Гамеро",
+      "enName": "Mercedes Gamero",
+      "description": null,
+      "profession": "продюсеры",
+      "enProfession": "producer"
+    },
+    {
+      "id": 1702077,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1702077.jpg",
+      "name": "Адриан Герра",
+      "enName": "Adrián Guerra",
+      "description": null,
+      "profession": "продюсеры",
+      "enProfession": "producer"
+    },
+    {
+      "id": 658626,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_658626.jpg",
+      "name": "Микель Лехарса",
+      "enName": "Mikel Lejarza",
+      "description": null,
+      "profession": "продюсеры",
+      "enProfession": "producer"
+    },
+    {
+      "id": 568400,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_568400.jpg",
+      "name": "Энеко Лисаррага",
+      "enName": "Eneko Lizarraga",
+      "description": null,
+      "profession": "продюсеры",
+      "enProfession": "producer"
+    },
+    {
+      "id": 64256,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_64256.jpg",
+      "name": "Вадим Прохоров",
+      "enName": null,
+      "description": null,
+      "profession": "актеры дубляжа",
+      "enProfession": "voice_actor"
+    },
+    {
+      "id": 1649324,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1649324.jpg",
+      "name": "Регина Щукина",
+      "enName": null,
+      "description": null,
+      "profession": "актеры дубляжа",
+      "enProfession": "voice_actor"
+    },
+    {
+      "id": 2339605,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_2339605.jpg",
+      "name": "Дмитрий Стрелков",
+      "enName": null,
+      "description": null,
+      "profession": "актеры дубляжа",
+      "enProfession": "voice_actor"
+    },
+    {
+      "id": 1660732,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1660732.jpg",
+      "name": "Мария Цветкова-Овсянникова",
+      "enName": null,
+      "description": null,
+      "profession": "актеры дубляжа",
+      "enProfession": "voice_actor"
+    },
+    {
+      "id": 3784602,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_3784602.jpg",
+      "name": "Юрий Красиков",
+      "enName": null,
+      "description": null,
+      "profession": "актеры дубляжа",
+      "enProfession": "voice_actor"
+    },
+    {
+      "id": 1042126,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1042126.jpg",
+      "name": "Ориол Паоло",
+      "enName": "Oriol Paulo",
+      "description": null,
+      "profession": "редакторы",
+      "enProfession": "writer"
+    },
+    {
+      "id": 1520574,
+      "photo": "https://st.kp.yandex.net/images/actor_iphone/iphone360_1520574.jpg",
+      "name": "Лара Сендим",
+      "enName": "Lara Sendim",
+      "description": null,
+      "profession": "редакторы",
+      "enProfession": "writer"
+    }
+  ],
+  "lists": [
+    "popular-films",
+    "top500",
+    "hd"
+  ],
+  "typeNumber": 1,
+  "alternativeName": "Contratiempo",
+  "enName": null,
+  "names": [
+    {
+      "name": "Невидимый гость"
+    },
+    {
+      "name": "Contratiempo"
+    },
+    {
+      "name": "El invitado invisible",
+      "language": "ES",
+      "type": "working title"
+    },
+    {
+      "name": "インビジブル・ゲスト 悪魔の証明",
+      "language": "JP",
+      "type": null
+    },
+    {
+      "name": "2016 - Contratiempo",
+      "language": "CU",
+      "type": null
+    },
+    {
+      "name": "Der unsichtbare Gast",
+      "language": "DE",
+      "type": null
+    },
+    {
+      "name": "佈局",
+      "language": "TW",
+      "type": null
+    },
+    {
+      "name": "L'accusé",
+      "language": "FR",
+      "type": "Correctly spelled title"
+    }
+  ],
+  "updatedAt": "2023-12-24T01:00:20.165Z",
+  "ratingMpaa": "r",
+  "shortDescription": "Адвокат Вирджиния пытается понять, виновен ли ее подзащитный. Разговорный детективный триллер из Испании",
+  "technology": {
+    "hasImax": false,
+    "has3D": false
+  },
+  "ticketsOnSale": false,
+  "sequelsAndPrequels": [
+    {
+      "id": 1122985,
+      "name": "Невидимый свидетель",
+      "enName": "Il testimone invisibile",
+      "alternativeName": "Il testimone invisibile",
+      "type": "remake",
+      "poster": {
+        "url": "https://st.kp.yandex.net/images/film_big/1122985.jpg",
+        "previewUrl": "https://st.kp.yandex.net/images/film_iphone/iphone360_1122985.jpg"
+      }
+    },
+    {
+      "id": 1142268,
+      "name": "Месть",
+      "enName": "Badla",
+      "alternativeName": "Badla",
+      "type": "remake",
+      "poster": {
+        "url": "https://st.kp.yandex.net/images/film_big/1142268.jpg",
+        "previewUrl": "https://st.kp.yandex.net/images/film_iphone/iphone360_1142268.jpg"
+      }
+    },
+    {
+      "id": 1049712,
+      "name": "Признание",
+      "enName": "Jabaek",
+      "alternativeName": "Jabaek",
+      "type": "remake",
+      "poster": {
+        "url": "https://st.kp.yandex.net/images/film_big/1049712.jpg",
+        "previewUrl": "https://st.kp.yandex.net/images/film_iphone/iphone360_1049712.jpg"
+      }
+    }
+  ],
+  "imagesInfo": {
+    "framesCount": 65
+  },
+  "similarMovies": [
+    {
+      "id": 692861,
+      "name": "Исчезнувшая",
+      "enName": null,
+      "alternativeName": "Gone Girl",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1629390/cdd30c22-0ff5-4a70-9e9c-6e2ed1820d84/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1629390/cdd30c22-0ff5-4a70-9e9c-6e2ed1820d84/x1000"
+      },
+      "year": 2014,
+      "rating": {
+        "kp": 7.96,
+        "imdb": 8.1,
+        "filmCritics": 8,
+        "russianFilmCritics": 96.2963,
+        "await": null
+      }
+    },
+    {
+      "id": 609349,
+      "name": "Тело",
+      "enName": null,
+      "alternativeName": "El cuerpo",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1777765/5413f8ee-4cf8-4fee-a9de-43ac7c0d630f/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1777765/5413f8ee-4cf8-4fee-a9de-43ac7c0d630f/x1000"
+      },
+      "year": 2012,
+      "rating": {
+        "kp": 7.345,
+        "imdb": 7.6,
+        "filmCritics": 0,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    },
+    {
+      "id": 1047956,
+      "name": "Девушка в тумане",
+      "enName": null,
+      "alternativeName": "La ragazza nella nebbia",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1946459/4db1b542-c6da-4cf9-a30f-33ca7057b537/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1946459/4db1b542-c6da-4cf9-a30f-33ca7057b537/x1000"
+      },
+      "year": 2017,
+      "rating": {
+        "kp": 6.946,
+        "imdb": 6.8,
+        "filmCritics": 5.8,
+        "russianFilmCritics": 100,
+        "await": null
+      }
+    },
+    {
+      "id": 928391,
+      "name": "Девушка в поезде",
+      "enName": null,
+      "alternativeName": "The Girl on the Train",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/4e1d87ce-d715-49a2-b9a7-6e1181e397c6/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/4e1d87ce-d715-49a2-b9a7-6e1181e397c6/x1000"
+      },
+      "year": 2016,
+      "rating": {
+        "kp": 6.632,
+        "imdb": 6.5,
+        "filmCritics": 5.3,
+        "russianFilmCritics": 57.1429,
+        "await": null
+      }
+    },
+    {
+      "id": 581952,
+      "name": "Лофт",
+      "enName": null,
+      "alternativeName": "The Loft",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1777765/940c512b-89e7-47e1-8312-75fc8012df58/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1777765/940c512b-89e7-47e1-8312-75fc8012df58/x1000"
+      },
+      "year": 2013,
+      "rating": {
+        "kp": 6.822,
+        "imdb": 6.3,
+        "filmCritics": 3.7,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    },
+    {
+      "id": 2962,
+      "name": "Первобытный страх",
+      "enName": null,
+      "alternativeName": "Primal Fear",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/4774061/897bb941-6d5d-4e9a-88ba-78264f982558/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/4774061/897bb941-6d5d-4e9a-88ba-78264f982558/x1000"
+      },
+      "year": 1996,
+      "rating": {
+        "kp": 7.791,
+        "imdb": 7.7,
+        "filmCritics": 6.8,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    },
+    {
+      "id": 340,
+      "name": "Подозрительные лица",
+      "enName": null,
+      "alternativeName": "The Usual Suspects",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1704946/194aa7f0-13ab-401e-8ae7-913191a6e785/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1704946/194aa7f0-13ab-401e-8ae7-913191a6e785/x1000"
+      },
+      "year": 1995,
+      "rating": {
+        "kp": 7.843,
+        "imdb": 8.5,
+        "filmCritics": 7.8,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    },
+    {
+      "id": 220617,
+      "name": "Перелом",
+      "enName": null,
+      "alternativeName": "Fracture",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1898899/c8e3a649-48c1-4610-8ed3-ee32797d5b3c/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1898899/c8e3a649-48c1-4610-8ed3-ee32797d5b3c/x1000"
+      },
+      "year": 2007,
+      "rating": {
+        "kp": 7.665,
+        "imdb": 7.2,
+        "filmCritics": 6.5,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    },
+    {
+      "id": 461939,
+      "name": "Линкольн для адвоката",
+      "enName": null,
+      "alternativeName": "The Lincoln Lawyer",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/f0857226-5047-4b35-9ded-0e587f303dd5/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/f0857226-5047-4b35-9ded-0e587f303dd5/x1000"
+      },
+      "year": 2011,
+      "rating": {
+        "kp": 7.862,
+        "imdb": 7.3,
+        "filmCritics": 6.7,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    },
+    {
+      "id": 1142268,
+      "name": "Месть",
+      "enName": null,
+      "alternativeName": "Badla",
+      "type": "movie",
+      "poster": {
+        "url": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/044f75b0-a05b-41e4-94f1-47c592457678/orig",
+        "previewUrl": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/044f75b0-a05b-41e4-94f1-47c592457678/x1000"
+      },
+      "year": 2019,
+      "rating": {
+        "kp": 7.153,
+        "imdb": 7.8,
+        "filmCritics": 6,
+        "russianFilmCritics": 0,
+        "await": null
+      }
+    }
+  ],
+  "ageRating": 18,
+  "logo": {
+    "url": "https://avatars.mds.yandex.net/get-ott/1672343/2a0000016e043c9f5cae22bebd8ec2b4e883/orig"
+  },
+  "watchability": {
+    "items": [
+      {
+        "name": "Kinopoisk HD",
+        "logo": {
+          "url": "https://yastatic.net/s3/kinopoisk-frontend/hd-www/release/apple-touch-icon-180x180.png"
+        },
+        "url": "https://hd.kinopoisk.ru/?rt=4a545c51c54a3d84a8686549901d031c"
+      },
+      {
+        "name": "Okko",
+        "logo": {
+          "url": "https://avatars.mds.yandex.net/get-ott/239697/7713e586-17d1-42d1-ac62-53e9ef1e70c3/orig"
+        },
+        "url": "https://okko.tv/movie/contratiempo?utm_medium=referral&utm_source=yandex_search&utm_campaign=new_search_feed"
+      },
+      {
+        "name": "Иви",
+        "logo": {
+          "url": "https://avatars.mds.yandex.net/get-ott/2419418/0dfd1724-848f-4725-9160-abc571f41c11/orig"
+        },
+        "url": "https://www.ivi.ru/watch/214307?utm_source=yandex&utm_medium=wizard"
+      },
+      {
+        "name": "KION",
+        "logo": {
+          "url": "https://avatars.mds.yandex.net/get-ott/239697/daeb142e-3ecc-4bb2-9bff-4827996643ab/orig"
+        },
+        "url": "https://kion.ru/video/movie/218266399?utm_source=yandex&utm_medium=organic&utm_campaign=wizard"
+      },
+      {
+        "name": "Кино1ТВ",
+        "logo": {
+          "url": "https://avatars.mds.yandex.net/get-ott/1672343/4e5f7a8e-d5ac-4904-9fc0-208753ccf520/orig"
+        },
+        "url": "https://kino.1tv.ru/serials/nevidimyy-gost?utm_source=yandex&utm_medium=wizard"
+      },
+      {
+        "name": "Wink",
+        "logo": {
+          "url": "https://avatars.mds.yandex.net/get-ott/1672343/54096cbe-cc3b-41c9-8e44-990ebbca8d61/orig"
+        },
+        "url": "https://wink.ru/media_items/70020011?utm_source=yandex&utm_medium=koldunschick&utm_content=name"
+      },
+      {
+        "name": "Смотрёшка",
+        "logo": {
+          "url": "https://avatars.mds.yandex.net/get-ott/236744/c88e652e-2eb1-472d-b636-a266364dbf58/orig"
+        },
+        "url": "https://smotreshka.tv/archive/5d3fc6fee9acb961f1c1eaad?utm_source=yandex_search&utm_campaign=yandex_feed&utm_term=archive&utm_content=Dec_15122023"
+      }
+    ]
+  },
+  "top10": null,
+  "top250": null,
+  "audience": [
+    {
+      "count": 555476,
+      "country": "Испания"
+    }
+  ],
+  "deletedAt": null,
+  "isSeries": false,
+  "seriesLength": null,
+  "totalSeriesLength": null,
+  "networks": null
+}
