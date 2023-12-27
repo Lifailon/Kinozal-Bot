@@ -157,6 +157,6 @@ A list of all available commands (except `/search`) are automated through the bo
 
 ### Example commands:
 
-`/search Рокки 2` - Search all movies (up to 50 movie buttons with movie link) \
-`/search 1979 Рокки` - Search for a movie filtered by year of release \
-`/actor Сильвестр Сталлоне` - Search by actor
+`/search Rocky 2` - Search all movies (up to 50 movie buttons with movie link) \
+`/search 1979 Rocky` - Search for a movie filtered by year of release \
+`/actor Sylvester Stallone` - Search by actor
