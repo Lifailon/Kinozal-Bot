@@ -7,8 +7,9 @@
 ![GitHub License](https://img.shields.io/github/license/lifailon/kinozal-bot?color=<green>) \
 [![Kinozal-News](https://img.shields.io/github/v/release/lifailon/kinozal-bot?label=Telegram+Kinozal-News&logo=Telegram&style=social)](https://t.me/kinozal_news)
 
-
 🔈 **[Описание на русском](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/README_RU.md)**
+
+📝 **[Публикация на Habr](https://habr.com/ru/articles/782028/)**
 
 🍿 Project purpose:
 
@@ -27,12 +28,12 @@
 
 An active channel with publications: 📢 **[Kinozal-News](https://t.me/kinozal_news)** 
 
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/status_torrent_and_search_kinozal.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/info_torrent.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/find_kinozal.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/plex_folder.jpg" width="400"/></a>
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/telegram-example.gif)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/telegram-example.gif)
 
 ## 🚀 Install
 
