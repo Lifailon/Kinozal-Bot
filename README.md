@@ -26,7 +26,7 @@
 **Optional:**
 
 - Any **VPN client application and/or proxy server** for access to Kinozal;
-- **[Kinopoisk API](https://kinopoisk.dev/)**: get information about the movie and trailers in youtube (**Description Kinopoisk** button), actor links in Kinopoisk and filmography from Kinozal (added in version 0.4.2);
+- **[Kinopoisk API](https://github.com/mdwitr0/kinopoiskdev)**: get information about the movie and trailers in youtube (**Description Kinopoisk** button), actor links in Kinopoisk and filmography from Kinozal (added in version 0.4.2);
 - **[WinAPI](https://github.com/Lifailon/WinAPI)**: stop and start Plex and qBittorrent applications, manage directories and files, get system health metrics (to be added in the next version).
 
 ## 🎉 Example
@@ -87,7 +87,7 @@ For the bot to work, you need to prepare your own environment. All settings of c
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-add-directory.jpg)
 
-6. Get your API token to access the Kinopoisk database (unofficial, from IMDb) at **[Telegram](https://t.me/kinopoiskdev_bot)** (200 requests per day in the free version).
+6. **Get your API token to access the Kinopoisk database** (unofficial, from IMDb), using a Telegram bot **[@kinopoiskdev_bot](https://t.me/kinopoiskdev_bot)** (200 requests per day in the free version).
 
 ## 🐧 Start
 
