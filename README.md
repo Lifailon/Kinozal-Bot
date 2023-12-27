@@ -19,10 +19,15 @@
 ## 📚 Stack
 
 - **Kinozal**: read RSS feed, retrieve data from html (no api), search and filter content, download torrent files;
-- *Optional*: any VPN client application and/or proxy server for access to Kinozal;
 - **Telegram api**: sending messages to the channel, reading (commands only) and sending reply messages in menu format (keyboard);
 - **qBittorrent api**: download data from torrent files and manage data (pause, delete, change priority);
 - **Plex Media Server api**: synchronize data and get information about content of sections and child files.
+
+**Optional:**
+
+- Any **VPN client application and/or proxy server** for access to Kinozal;
+- **[Kinopoisk API](https://kinopoisk.dev/)**: get information about the movie and trailers in youtube (**Description Kinopoisk** button), actor links in Kinopoisk and filmography from Kinozal (added in version 0.4.2);
+- **[WinAPI](https://github.com/Lifailon/WinAPI)**: stop and start Plex and qBittorrent applications, manage directories and files, get system health metrics (to be added in the next version).
 
 ## 🎉 Example
 
@@ -45,7 +50,7 @@ For the bot to work, you need to prepare your own environment. All settings of c
 `KZ_USER="LOGIN"` - used at the stage of torrent file downloading and obtaining information in the profile \
 `KZ_PASS="PASSWORD"`
 
-2. If you do not have direct access to Kinozal, you can use a VPN or proxy server (I use **Handy Cache** in conjunction with **VPN Hotspot Shield** in Split Tunneling mode based on the Windows operating system) through which the bot can proxy its requests.
+2. If you do not have direct access to Kinozal, you can use a VPN or proxy server (I use **Handy Cache** in conjunction with **VPN Hotspot Shield in Split Tunneling mode** based on the Windows operating system) through which the bot can proxy its requests.
 
 `PROXY="True"` - enable the use of a proxy server in curl-requests when accessing Kinozal \
 `PROXY_ADDR="http://192.168.3.100:9090"` \
@@ -65,14 +70,24 @@ For the bot to work, you need to prepare your own environment. All settings of c
 `QB_USER="LOGIN"` - is specified in the **Authentication** field in the **Web Interface** settings \
 `QB_PASS="PASSWORD"`
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/qbittorrent-settings.jpg)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-settings.jpg)
+
+> Add a directory with the contents of the Plex contact to be downloaded by default in qBittorrent
+
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-default-directory.jpg)
 
 5. Install **Plex Media Server** (in my case installed where the qBittorrent client is on my Windows machine) and **get the key/token** to access the REST API. I couldn't find a way to get the key in the web interface, so I captured the token in the network log url request (X-Plex-Token=) during authorization using **Development Tools** (no time limit).
 
 `PLEX_ADDR="http://192.168.3.100:32400"` \
 `PLEX_TOKEN="TOKEN"`
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex-token.jpg)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-token.jpg)
+
+> Add the content directory to the Plex server to which the qBittorrent client is configured by default
+
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-add-directory.jpg)
+
+6. Get your API token to access the Kinopoisk database (unofficial, from IMDb) at **[Telegram](https://t.me/kinopoiskdev_bot)** (200 requests per day in the free version).
 
 ## 🐧 Start
 
