@@ -1,4 +1,4 @@
-# <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/kinozal-bot-ico-256px.png" width="25" /> Kinozal-Bot
+# <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/ico/kinozal-bot-256px.png" width="25" /> Kinozal-Bot
 
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/lifailon/kinozal-bot?color=<green>)
 ![GitHub top language](https://img.shields.io/github/languages/top/lifailon/kinozal-bot)
@@ -9,6 +9,8 @@
 
 🔈 **[Description in English (using DeepL Translate)](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/README.md)**
 
+📝 **[Публикация на Habr](https://habr.com/ru/articles/782028/)**
+
 🍿 Цель проекта:
 
 - Генерация новых постов с отправкой в Telegram канал на основе новых публикаций в трекере **[Кинозал](https://kinozal.tv)** с фильтрацией по рейтингу и году выхода.
@@ -17,21 +19,26 @@
 ## 📚 Stack
 
 - **Kinozal**: чтение RSS ленты, получение данных из html (api отсутствует), поиск и фильтрация контента, загрузка торрент файлов;
-- *Опционально*: любое клиентское приложение VPN и/или прокси сервер для доступа в Кинозал;
 - **Telegram api**: отправка сообщений в канал, чтение (только команд) и отправка ответных сообщений в формате меню (keyboard);
 - **qBittorrent api**: загрузка данных из торрент файлов и управление данными (пауза, удаление, изменение приоритета);
 - **Plex Media Server api**: синхронизация данных и получение информации о содержимом секций и дочерних файлах.
+
+**Опционально:**
+
+- Любое **клиентское приложение VPN и/или прокси сервер** для доступа (клиента curl) в Кинозал;
+- **[Kinopoisk API](https://kinopoisk.dev/)**: получение дополнительной информации о фильме и трейлеры в youtube (кнопка **Описание Кинопоиск**), ссылки на актера в Кинопоиск и фильмография из Кинозал (добавлено в версии 0.4.2);
+- **[WinAPI](https://github.com/Lifailon/WinAPI)**: остановка и запуска приложений Plex и qBittorrent, управление директориями и файлами, получение метрик работоспособности системы (будет добавлено в следующей версии).
 
 ## 🎉 Example
 
 Действующий канал с публикациями: 📢 **[Kinozal-News](https://t.me/kinozal_news)**
 
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg" width="400"/></a>
-<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/status_torrent_and_search_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/status_torrent_and_search_kinozal.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/info_torrent.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/info_torrent.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/find_kinozal.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/find_kinozal.jpg" width="400"/></a>
+<a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex_folder.jpg"><img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/plex_folder.jpg" width="400"/></a>
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/telegram-example.gif)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/telegram-example.gif)
 
 ## 🚀 Install
 
@@ -43,7 +50,7 @@
 `KZ_USER="LOGIN"` - используется на этапе загрузки торрент-файла и получения информации в профиле \
 `KZ_PASS="PASSWORD"`
 
-2. Если у вас нет прямого доступа в Кинозал, можете воспользоваться VPN или прокси сервером (я использую **Handy Cache** в связке с **VPN Hotspot Shield** в режиме Split Tunneling на базе операционной системы Windows) через который бот может проксировать свои запросы.
+2. Если у вас нет прямого доступа в Кинозал, можете воспользоваться VPN или прокси сервером (я использую **Handy Cache** в связке с **VPN Hotspot Shield в режиме раздельного туннелирования (Split Tunneling)** на базе операционной системы Windows) через который бот может проксировать свои запросы.
 
 `PROXY="True"` - включить использование прокси сервера в curl-запросах при обращении к Кинозал \
 `PROXY_ADDR="http://192.168.3.100:9090"` \
@@ -63,14 +70,24 @@
 `QB_USER="LOGIN"` - указывается в поле **Аутентификация** в настройках **Веб-интерфейс** \
 `QB_PASS="PASSWORD"`
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/qbittorrent-settings.jpg)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-settings.jpg)
+
+> Добавьте директорию с содержимым контанта Plex для загрузки по умолчанию в qBittorrent
+
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-folder-default.jpg)
 
 5. Установить **Plex Media Server** (в моем случае установлен там же, где клиент qBittorrent на Windows машине) и **получить ключ/токен** для доступа к REST API. Я не нашел способа получить ключ в веб-интерфейсе, по этому при авторизации перехватил токен в url-запросе сетевого журнала (X-Plex-Token=), используя **Development Tools** (нет ограничения по времени).
 
 `PLEX_ADDR="http://192.168.3.100:32400"` \
 `PLEX_TOKEN="TOKEN"`
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/plex-token.jpg)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-token.jpg)
+
+> Добавьте директорию контента на сервер Plex, на которую настроен клиент qBittorrent по умолчанию
+
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-add-folder.jpg)
+
+6. Получите свой API токен для доступа к базе Кинопоиска (неофициальной, из IMDb) в **[Telegram](https://t.me/kinopoiskdev_bot)** (в бесплатной версии 200 запросов в сутки).
 
 ## 🐧 Start
 
