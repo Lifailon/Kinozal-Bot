@@ -118,7 +118,7 @@ bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh status
 
 A list of all available commands (except `/search`) are automated through the bot menu.
 
-`/search` - Search in Kinozal by name \
+`/search` - Search in Kinozal by title (takes the year of release for filtering at the beginning of the query) \
 `/profile ` - Profile Kinozal (the number of available for download torrent files, download and upload statistics, time sid and peer) \
 `/torrent_files` - List of downloaded torrent files (with the ability to delete files) \
 `/status` - qBittorrent manager (list and status of all current torrents added to the torrent client) \
@@ -138,7 +138,7 @@ A list of all available commands (except `/search`) are automated through the bo
 `/plex_status_key` - Information about the selected section in Plex (pass parameter: section key) \
 `/plex_sync_key` - Synchronize the specified section in Plex (pass parameter: section key) \
 `/plex_folder_key` - Get the list of directories and files in the selected section \
-`/find` - Search for content in Plex by path (pass parameter: endpoint) \
+`/find` - Search for content in Plex by path (pass parameter: endpoint)
 
 ### Added in version 0.4.1:
 
