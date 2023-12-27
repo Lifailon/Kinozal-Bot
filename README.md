@@ -89,6 +89,9 @@ For the bot to work, you need to prepare your own environment. All settings of c
 
 6. **Get your API token to access the Kinopoisk database** (unofficial, from IMDb), using a Telegram bot **[@kinopoiskdev_bot](https://t.me/kinopoiskdev_bot)** (200 requests per day in the free version).
 
+`KINOPOISK_API="True"` - information about the actor will be retrieved from the Kinopoisk database (if **False**, the link to Kinozal will be retrieved). \
+`KINOPOISK_TOKEN="XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"`
+
 ## 🐧 Start
 
 Check that you have **[jq](https://github.com/jqlang/jq)** installed:
@@ -149,5 +152,11 @@ A list of all available commands (except `/search`) are automated through the bo
 ### Added in version 0.4.2:
 
 `/kinozal_actors` - List of actors from Kinozal (pass parameter: id kinozal) \
-`/actor` - Description and search for the actor and his filmography from Kinozal and link to Kinopoisk (pass parameter: actor's name) \
+`/actor` - Description and search for the actor and his filmography from Kinozal and link to Kinopoisk (pass parameter: actor name) \
 `/kinopoisk_movie` - Movie information from Kinopoisk by kinopoisk id (pass parameter: kinozal id)
+
+### Example commands:
+
+`/search Рокки 2` - Search all movies (up to 50 movie buttons with movie link) \
+`/search 1979 Рокки` - Search for a movie filtered by year of release \
+`/actor Сильвестр Сталлоне` - Search by actor
