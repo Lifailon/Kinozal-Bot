@@ -1,4 +1,4 @@
-# <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/kinozal-bot-ico-256px.png" width="25" /> Kinozal-Bot
+# <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/kinozal-bot-256px.png" width="25" /> Kinozal-Bot
 
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/lifailon/kinozal-bot?color=<green>)
 ![GitHub top language](https://img.shields.io/github/languages/top/lifailon/kinozal-bot)
