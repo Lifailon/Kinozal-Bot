@@ -42,7 +42,7 @@ An active channel with publications: 📢 **[Kinozal-News](https://t.me/kinozal_
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/5-torrent-status.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/6-torrent-files.jpg" width="400"/></a>
 
-[![Watch the video](https://www.youtube.com/watch?v=AsOOgV1zjYs/maxresdefault.jpg)](https://www.youtube.com/watch?v=AsOOgV1zjYs)
+[![Telegram bot delivers content from your phone to your TV](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/youtube-example-0.4.2.jpg)](https://www.youtube.com/watch?v=AsOOgV1zjYs)
 
 ## 🚀 Install
 
