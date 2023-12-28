@@ -42,7 +42,7 @@ An active channel with publications: 📢 **[Kinozal-News](https://t.me/kinozal_
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/5-torrent-status.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/6-torrent-files.jpg" width="400"/></a>
 
-> [![image and video](https://youtu.be/AsOOgV1zjYs)](https://youtu.be/AsOOgV1zjYs)
+<video src='https://youtu.be/AsOOgV1zjYs' width=180/>
 
 ## 🚀 Install
 
