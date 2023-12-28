@@ -42,10 +42,6 @@ An active channel with publications: 📢 **[Kinozal-News](https://t.me/kinozal_
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/5-torrent-status.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/6-torrent-files.jpg" width="400"/></a>
 
-### Video with an example of Telegram bot work from youtube (speed 1:1)
-
-[![Telegram bot delivers content from your phone to your TV](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/youtube-example-0.4.2.jpg)](https://www.youtube.com/watch?v=AsOOgV1zjYs)
-
 ## 🚀 Install
 
 For the bot to work, you need to prepare your own environment. All settings of connection and filtering of new publications are set in the configuration file: **kinozal-bot.conf** 📑.
