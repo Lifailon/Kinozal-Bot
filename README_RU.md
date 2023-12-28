@@ -76,7 +76,7 @@
 
 > Добавьте директорию с содержимым контанта Plex для загрузки по умолчанию в qBittorrent
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-folder-default.jpg)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-default-directory.jpg)
 
 5. Установить **Plex Media Server** (в моем случае установлен там же, где клиент qBittorrent на Windows машине) и **получить ключ/токен** для доступа к REST API. Я не нашел способа получить ключ в веб-интерфейсе, по этому при авторизации перехватил токен в url-запросе сетевого журнала (X-Plex-Token=), используя **Development Tools** (нет ограничения по времени).
 
@@ -87,7 +87,7 @@
 
 > Добавьте директорию контента на сервер Plex, на которую настроен клиент qBittorrent по умолчанию
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-add-folder.jpg)
+![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-add-directory.jpg)
 
 6. Получите свой API токен для доступа к базе Кинопоиска (неофициальной, из IMDb), используя бота Telegram **[@kinopoiskdev_bot](https://t.me/kinopoiskdev_bot)** (в бесплатной версии 200 запросов в сутки).
 
