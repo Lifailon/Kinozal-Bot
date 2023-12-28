@@ -42,7 +42,9 @@
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/5-torrent-status.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/6-torrent-files.jpg" width="400"/></a>
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/telegram-example.gif)
+### Видео с примером работы Telegram-бота с youtube (скорость 1 к 1)
+
+[![Telegram bot delivers content from your phone to your TV](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/youtube-example-0.4.2.jpg)](https://www.youtube.com/watch?v=AsOOgV1zjYs)
 
 ## 🚀 Install
 
