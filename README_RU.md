@@ -34,13 +34,13 @@
 Действующий канал с публикациями: 📢 **[Kinozal-News](https://t.me/kinozal_news)**
 
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/1-kinozal-info.jpg" width="400"/></a>
+<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/8-plex-content.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/2-kinopoisk-description.jpg" width="400"/></a>
+<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/7-kinozal-profile-and-torrent-files.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/3-actor-list.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/4-actor-info.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/5-torrent-status.jpg" width="400"/></a>
 <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/6-torrent-files.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/7-kinozal-profile-and-torrent-files.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/8-plex-content.jpg" width="400"/></a>
 
 ![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.0/telegram-example.gif)
 
