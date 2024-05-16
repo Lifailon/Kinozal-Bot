@@ -6,13 +6,6 @@
 # Active Telegram Channel: @kinozal_news
 # Active Telegram Bot: @lifailon_ps_bot (Kinozal-Bot)
 
-### Management (parameters):
-# bash kinozal-bot-0.4.3-2.sh # Start server
-# bash kinozal-bot-0.4.3-2.sh status
-# bash kinozal-bot-0.4.3-2.sh log
-# bash kinozal-bot-0.4.3-2.sh log 20
-# bash kinozal-bot-0.4.3-2.sh stop
-
 # Stack:
 # Kinozal: read RSS, receiving data from html (no api), filtering by rating and year, download torrent files
 # Telegram api: send news to channel, message reading (only commands) and answers in menu format (keyboard)
@@ -24,18 +17,19 @@
 # WinAPI (https://github.com/Lifailon/WinAPI): rest api server based on .NET HttpListener and PowerShell Core
 
 # Change log:
-# 16.11.2023 (0.1) - Creat kinozal news channel and Telegram bot for download torrent files and qBittorrent managment.
-# 27.11.2023 (0.2) - Added Telegram keyboard menu, delete torrent files and get count downloaded to profile kinozal.
-# 30.11.2023 (0.3) - Added Plex functions and commands for view and sync content.
-# 04.12.2023 (0.4.0) - Added search in kinozal by name, alternative links list, get file list from torrent and set priority.
-# 07.12.2023 (0.4.1) - Added description command from kinozal and debug for finding in plex
-# 27.12.2023 (0.4.2) - Добавлен список актеров для каждого фильма, просмотр их фильмографии и ссылка на Кинопоиск.
+### 16.11.2023 (0.1) - Creat kinozal news channel and Telegram bot for download torrent files and qBittorrent managment.
+### 27.11.2023 (0.2) - Added Telegram keyboard menu, delete torrent files and get count downloaded to profile kinozal.
+### 30.11.2023 (0.3) - Added Plex functions and commands for view and sync content.
+### 04.12.2023 (0.4.0) - Added search in kinozal by name, alternative links list, get file list from torrent and set priority.
+### 07.12.2023 (0.4.1) - Added description command from kinozal and debug for finding in plex
+### 27.12.2023 (0.4.2) - Добавлен список актеров для каждого фильма, просмотр их фильмографии и ссылка на Кинопоиск.
 # Получение дополнительной информации и список трейлеров из kinopoisk api. Фильтрация для поиска фильмов по году выхода.
-# 20.01.2024 (0.4.3-1) - Добавлен функционал для управления Windows через WinAPI. Запуск и остановка приложений qBittorrent и Plex. 
+### 20.01.2024 (0.4.3-1) - Добавлен функционал для управления Windows через WinAPI. Запуск и остановка приложений qBittorrent и Plex. 
 # Просмотр списка директорий и файлов (с возможностью их удаления + просмотр состояния системы Windows).
-# 16.05.2023 (0.4.3-2) - Added param log, re-search command and format filter
+### 16.05.2023 (0.4.4) - Добавлен параметр просмотра логов, повторить последний поисовой запрос (доступно из меню и /find_kinozal).
+# Фильтрация по формату (разрешения) для поиска и получение торрент файл с сервера (отправка в телеграм).
 
-# Bot commands:
+# Bot commands (endpoint):
 # /search - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
 # /profile - Профиль Кинозал
 # /torrent_files - Список загруженных торрент файлов
@@ -73,18 +67,28 @@
 # /app_stop <app_name> - Остановка приложения
 # /win_api_get_dir <path> - Получить список директорий и файлов по указанному пути (не реализовано)
 # /win_api_del_dir <path> - Удалить директорию или файл по указанному пути (не реализовано)
-### 0.4.3-2
+### 0.4.4
 # /research
+# /send_torrent_file
 
 ### Telegram menu (Edit Bot - Edit commands):
-# / search - Поиск по названию фильма или сериала
-# / actor - Поиск по имени и фамилии актера
-# / research - Повторить последний поисковой запрос
-# / torrent_files - Список загруженных торрент файлов
+# / search - Поиск фильма или сериала
+# / actor - Поиск по актеру
+# / research - Повторить последний поиск
+# / torrent_files - Загруженные торрент файлы
 # / status - Управление qBittorrent
 # / plex_info - Управление Plex
-# / find - Поиск содержимого по названию на сервере Plex
+# / find - Поиск в Plex
 # / profile - Профиль Кинозал
+
+#######################################################################
+
+### Параметры управления:
+# bash kinozal-bot-0.4.4.sh # запустить сервер
+# bash kinozal-bot-0.4.4.sh status
+# bash kinozal-bot-0.4.4.sh log
+# bash kinozal-bot-0.4.4.sh log 20
+# bash kinozal-bot-0.4.4.sh stop
 
 ### Пример поиска по названию фильма или сериала:
 # /search Рокки 2
@@ -248,6 +252,21 @@ function edit-keyboard {
         echo "[WARN] $(date '+%H:%M:%S'): cURL: $curl_response" >> $path_log
     else
         echo "[OK]   $(date '+%H:%M:%S'): cURL: send edit keyboard to telegram" >> $path_log
+    fi
+}
+
+### ⬆️ Функция для отправки файла в телеграм ⬆️
+function send-file {
+    document=$1
+    endpoint="sendDocument"
+    url="https://api.telegram.org/bot$TG_TOKEN/$endpoint"
+    curl_response=$(curl -s -X POST $url \
+        -F chat_id="$CHAT" \
+        -F document=@"$document")
+    if [[ "$curl_response" =~ "error_code" ]]; then
+        echo "[WARN] $(date '+%H:%M:%S'): cURL: $curl_response" >> $path_log
+    else
+        echo "[OK]   $(date '+%H:%M:%S'): cURL: sent file to telegram" >> $path_log
     fi
 }
 
@@ -795,19 +814,20 @@ function get-links {
             keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal_$kz_id\"}],"
         done
     fi
-    keyboard+="[{\"text\":\"⬇️ Скачать торрент файл\",\"callback_data\":\"\/download_torrent $id_find "GLOBAL_NAME" \"},"
-    keyboard+="{\"text\":\"🗑 Удалить торрент файл\",\"callback_data\":\"\/delete_torrent_file_$id_find\"}],"
-    keyboard+="[{\"text\":\"⬆️ Загрузить контент\",\"callback_data\":\"\/download_video_$id_find\"},"
-    keyboard+="{\"text\":\"👥 Список актеров\",\"callback_data\":\"/kinozal_actors $id_find\"}],"
+    keyboard+="[{\"text\":\"🔎 Последний поиск\",\"callback_data\":\"\/research\"},"
+    keyboard+="{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/kinozal_actors $id_find\"}],"
     if [[ $type == "find" ]]; then
         keyboard+="[{\"text\":\"🟣 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
     elif [[ $type == "description" ]]; then
         keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal_$id_find\"},"
     fi
-    keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"    
-    keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
-    keyboard+="{\"text\":\"🗂 Torrent файлы\",\"callback_data\":\"\/torrent_files\"}],"
-    keyboard+="[{\"text\":\"🔎 Повторить последний поиск\",\"callback_data\":\"\/research\"}]]}"
+    keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"  
+    keyboard+="[{\"text\":\"⬇️ Скачать торрент файл\",\"callback_data\":\"\/download_torrent $id_find "GLOBAL_NAME" \"},"
+    keyboard+="{\"text\":\"🗑 Удалить торрент файл\",\"callback_data\":\"\/delete_torrent_file_$id_find\"}],"
+    keyboard+="[{\"text\":\"⏩ Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$id_find\"},"
+    keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"/status\"}],"
+    keyboard+="[{\"text\":\"⬆️ Получить торрент файл\",\"callback_data\":\"\/send_torrent_file_$id_find\"},"
+    keyboard+="{\"text\":\"🗂 Torrent файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     echo $keyboard
 }
 
@@ -1947,6 +1967,15 @@ while :
             else
                 get-search "$GLOBAL_SEARCH_NAME"
             fi
+        ### Request: /send_torrent_file ⬆️⬆️⬆️
+        elif [[ $command == /send_torrent_file_* ]]; then
+            id_send_file=$(echo $command | sed "s/\/send_torrent_file_//")
+            echo "[OK]   $(date '+%H:%M:%S'): Response on /send_torrent_file for $id_send_file" >> $path_log
+            send_file=$(ls $path | grep *$id_send_file*)
+            send_file_path=$(echo "$path/$send_file")
+            echo "[INFO] $(date '+%H:%M:%S'): File path: $send_file_path" >> $path_log
+            send-file "$send_file_path"
+        ###### 🟡 🟡 🟡 Kinopoisk 🟡 🟡 🟡
         ### Request: /kinopoisk_movie 🟡
         elif [[ $command == /kinopoisk_movie* ]]; then
             id_kz_search=$(echo $command | sed "s/\/kinopoisk_movie //")
@@ -2000,7 +2029,7 @@ while :
             qbittorrent-priority $global_hash $global_file_index $num_priority
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             menu-torrent-file "$global_file_index"
-        ### Request: /download_video_id ⬇️
+        ### Request: /download_video_id ⏩⏩⏩
         elif [[ $command == /download_video_* ]]; then
             id_down=$(echo $command | sed "s/\/download_video_//")
             echo "[OK]   $(date '+%H:%M:%S'): Response on /download_video for $id_down" >> $path_log
