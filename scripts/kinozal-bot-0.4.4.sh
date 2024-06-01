@@ -7,23 +7,15 @@
 # Telegram Bot (access by id): @lifailon_ps_bot (Kinozal-Bot)
 
 ### Stack:
-# Kinozal: read RSS, receiving data from html (no api), filtering by rating and year, download torrent files
-# Telegram api: send news to channel, message reading (only commands) and answers in menu format (keyboard)
-# qBittorrent api: data download from torrent files and data managment
-# Plex Media Server api: view and sync content
-### Optional:
-# Proxy server with VPN (Split Tunneling mode) for access to kinozal (example: HandyCache and Hotspot Shield)
-# Kinopoisk unofficial (https://github.com/mdwitr0/kinopoiskdev)
-### Removed:
-# WinAPI (https://github.com/Lifailon/WinAPI): rest api server based on .NET HttpListener and PowerShell Core
-### Development:
-# ReverseProxyNET (https://github.com/Lifailon/ReverseProxyNET)
-# TorAPI (https://github.com/Lifailon/TorAPI)
-# IMDb api (https://rapidapi.com/Glavier/api/imdb146)
-
-### Dependecies:
+# Kinozal: чтение RSS ленты, получение данных из html (api отсутствует), поиск и фильтрация контента, загрузка торрент файлов
+# Telegram api: отправка сообщений в канал, чтение команд и отправка ответных сообщений в формате меню (keyboard)
+# qBittorrent api: загрузка данных из торрент файлов и управление данными (пауза, удаление и изменение приоритета)
+# Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах.
+### Опционально:
+# VPN через Proxy сервер (например, HandyCache и Hotspot Shield в режиме Split Tunneling) или обратный прокси сервер (например, ReverseProxyNET (https://github.com/Lifailon/ReverseProxyNET)) для доступа в Кинозал
+# Kinopoisk unofficial API (https://github.com/mdwitr0/kinopoiskdev)
+### Зависимости:
 # jqlang 1.6 (https://github.com/jqlang/jq)
-# curl (62), grep (69), sed (153), awk (19)
 
 ### Change log:
 ### 16.11.2023 (0.1) - Создан новостной канал Kinozal_News и Telegram-бот для скачивания торрент-файлов и управления qBittorrent.
@@ -35,12 +27,16 @@
 # Получение дополнительной информации и список трейлеров из kinopoisk api. Фильтрация для поиска фильмов по году выхода.
 ### 20.01.2023 (0.4.3) - Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
 # Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data).
-### 30.05.2023 (0.4.4) - Добавлен инфо хеш торрент-файла любой раздачи, возможность повторить последний поисковой запрос (доступно из меню и /find_kinozal).
-# Фильтрация по формату (разрешению) для поиска по названию и получение загруженного торрент файла с сервера (отправка в телеграм).
-# Добавлен статус приоритета и загрузки в списке файлов выбранного торрента, пропуск и восстановление загрузки всех файлов.
-# Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>).
-# Исправлено обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент.
-# Добавлены хэштеги по жанру и кнопки для перехода по url на канале + Kinobox и условия для проверки на наличие содержимого в описание постов. 
+### 30.05.2023 (0.4.4): 
+# + Добавлен инфо хеш и содержимое раздачи (список файлов);
+# + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
+# + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
+# + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
+# + Добавлен статус приоритета и загрузки в списке файлов выбранного торрента;
+# + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
+# + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
+# ~ Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент;
+# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url + Kinobox, обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов.
 
 ### Bot commands (endpoint):
 # /search - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
@@ -83,6 +79,7 @@
 ### 0.4.4:
 # /search <year*> <format*> <title> - Поиск с фильтрацией по году выхода и формату разрешения
 # /research - Повторить последний поиск (id не требуется)
+# /file_list - Извлечь список файлов (содержимое раздачи) и их размера из раздачи
 # /send_torrent_file_id - Отправка загруженного торрент-файла в телеграм
 # /send_last_torrent_file - Отправить последний загруженный торрент-файл
 # /send_all_torrent_files - Отправить все загруженные торрент-файлы
@@ -135,14 +132,17 @@
 
 ###############################################################################
 
-### Read configuration
+###############################################################################
+############################## Debug to console ###############################
+
+### Получить путь к конфигурации (по умолчанию рядом со скриптом сервера)
 kinozal_bot_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 conf="$kinozal_bot_path/kinozal-bot.conf"
 
-###############################################################################
-############################## DEBUG to console ###############################
-##### conf="/home/lifailon/kinozal-torrent/kinozal-bot.conf"
+### (Debug) Передаем путь к конфигурации вручную
+# conf="/home/lifailon/kinozal-torrent/kinozal-bot.conf"
 
+### Прочитать конфигурацию сервера
 if [ -f "$conf" ]; then
     source "$conf"
     TG_CHAT_ARRAY=($(echo $TG_CHAT | tr ',' ' '))
@@ -151,14 +151,17 @@ else
     exit 1
 fi
 
-########### DEBUG to console ###########
-##### CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
+### (Debug) Забираем первый id из массива для отправки сообщений в консоли
+# CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
 
-### Parameter processing
+### (Debug) Отключить второй поток канала (раскомментировать перед запуском, если не задано в конфигурации)
+# TG_CHANNEL_USE="False"
+
+### Параметры управления
 if [ -n "$1" ]; then
     process_name="kinozal"
     if [[ $1 == "stop" ]]; then
-        ### Skip current stop and search process
+        ### Найти все процессы kinozal, исключил текущий процесс отановки
         proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop" | awk '{print $2}'))
         if [[ ${#proc[@]} != 0 ]]; then
             for p in ${proc[@]}; do
@@ -195,7 +198,7 @@ if [ -n "$1" ]; then
     exit 0
 fi
 
-### Logging
+### Логирование
 function log-rotate {
     byte=$((($log_size_mbyte*1024*1024)))
     if [ ! -e "$file_path" ]; then
@@ -211,7 +214,7 @@ function log-rotate {
 
 log-rotate
 
-###### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵
+############################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ###############################
 ### API documentation: https://core.telegram.org/bots/api
 
 function test-telegram {
@@ -220,7 +223,7 @@ function test-telegram {
     curl -s $url -X "GET"
 }
 
-### Send message to Telegram
+### Функция отправки сообщения в to Telegram
 function send-telegram {
     text=$1
     chat=$2
@@ -238,7 +241,7 @@ function send-telegram {
     fi
 }
 
-### Send keyboard to Telegram
+### Функция отправки keyboard-меню в Telegram
 function send-keyboard {
     text=$1
     chat=$2
@@ -258,7 +261,7 @@ function send-keyboard {
     fi
 }
 
-### Edit last message used keyboard
+### Функция обновления последнего сообщения в Telegram
 function edit-keyboard {
     text=$1
     chat=$2
@@ -280,7 +283,7 @@ function edit-keyboard {
     fi
 }
 
-### ⬆️⬆️⬆️ Send file to Telegram ⬆️⬆️⬆️
+### ⬆️⬆️⬆️ Функция отправка файла в Telegram ⬆️⬆️⬆️
 function send-file {
     document=$1
     endpoint="sendDocument"
@@ -295,7 +298,7 @@ function send-file {
     fi
 }
 
-### Read messages from Telegram
+### Функция чтения сообщений из Telegram
 function read-telegram {
     endpoint="getUpdates"
     url="https://api.telegram.org/bot$TG_TOKEN/$endpoint"
@@ -336,11 +339,11 @@ function read-telegram {
     done
 }
 
-###### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢
+############################### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ###############################
 ### API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
 ### Tested on version 4.6.0
 
-### Authorization to qBittorrent
+### Функция авторизации в qBittorrent
 function qbittorrent-auth {
         echo "[INFO] $(date '+%H:%M:%S'): Authorization to qBittorrent" >> $path_log
         endpoint_auth="api/v2/auth/login"
@@ -351,7 +354,7 @@ function qbittorrent-auth {
             --data "username=$QB_USER&password=$QB_PASS" 1> /dev/null
 }
 
-### Heath check qBittorrent
+### Проверка доступности qBittorrent
 function qbittorrent-test {
     qbittorrent-auth
     cookies_test=$(cat $path_qb_cookies | wc -l)
@@ -375,7 +378,8 @@ function qbittorrent-test {
     echo $qb_test
 }
 
-### Get information from qBittorrent
+### Для функции menu-info (/info)
+### Функция получения информации выбранной торрент раздачи
 function qbittorrent-info {
     qbittorrent-auth
     echo "[INFO] $(date '+%H:%M:%S'): Get info (status) from qBittorrent" >> $path_log
@@ -405,7 +409,8 @@ function qbittorrent-info {
         }"
 }
 
-### Get properties torrent
+### Для функции menu-info (/info)
+### Функция получения свойств выбранной торрент раздачи (дополнительная информация для функции menu-info после информации из функции qbittorrent-info)
 function qbittorrent-properties {
     torrent_hash=$1
     qbittorrent-auth
@@ -426,7 +431,8 @@ function qbittorrent-properties {
         }'
 }
 
-### Get files content from torrent
+### /file_torrent
+### Получить список файлов выбранной раздачи
 function qbittorrent-files {
     torrent_hash=$1
     qbittorrent-auth
@@ -443,7 +449,8 @@ function qbittorrent-files {
 # 6 - high
 # 7 - maximum
 
-### Set torrent child file priority ⏸▶️🔼⏫
+### /torrent_priority
+### Изменить приоритет выбранно файла ⏸▶️🔼⏫
 function qbittorrent-priority {
     torrent_hash=$1
     file_index=$2
@@ -458,7 +465,8 @@ function qbittorrent-priority {
         --data "priority=$priority"
 }
 
-### ⏩ Download selected torrent file
+### /download_video_id
+### ⏩ Добавить на загрузку выбранный торрент файл
 function qbittorrent-download {
     qbittorrent-auth
     filename_id=$1
@@ -485,7 +493,8 @@ function qbittorrent-download {
         --form "file=@$file_path"
 }
 
-### ⏸ Pause selected torrent file
+### /pause
+### ⏸ Пауза выбранного торрент файла
 function qbittorrent-pause {
     torrent_hash=$1
     qbittorrent-auth
@@ -496,7 +505,8 @@ function qbittorrent-pause {
         --data "hashes=$torrent_hash"
 }
 
-### ▶️ Resume selected torrent file
+### /resume
+### ▶️ Восстановить загрузку (из паузы) выбранного торрент файла
 function qbittorrent-resume {
     torrent_hash=$1
     qbittorrent-auth
@@ -507,7 +517,9 @@ function qbittorrent-resume {
         --data "hashes=$torrent_hash"
 }
 
-### 🗑 Delete torrent
+### /delete_torrent
+### /delete_video
+### 🗑 Удалить раздачу из клиента с или без содержимым контента (deleteFiles true/false)
 function qbittorrent-delete {
     torrent_hash=$1
     delete_type=$2
@@ -520,7 +532,9 @@ function qbittorrent-delete {
         --data "deleteFiles=$delete_type"
 }
 
-### Rename torrent
+######################################################################################################
+
+### Переименовать торрент раздачу
 function qbittorrent-rename-torrent {
     torrent_hash=$1
     new_name_torrent=$2
@@ -533,9 +547,10 @@ function qbittorrent-rename-torrent {
         --data "deleteFiles=$delete_type" \
         --data "name=$new_name_torrent"
 }
+
 # qbittorrent-rename-torrent "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick"
 
-### Rename file
+### Переименовать торрент файл
 function qbittorrent-rename-file {
     torrent_hash=$1
     new_name_file=$2
@@ -556,10 +571,11 @@ function qbittorrent-rename-file {
         --data "oldPath=$old_torrent_path" \
         --data "newPath=$new_torrent_path"
 }
+
 # qbittorrent-rename-file "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick" "File"
 # qbittorrent-rename-file "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick" "Folder"
 
-### Get items from RSS
+### Получить список добавленных RSS.xml, которые случает клиент
 function qbittorrent-rss {
     type=$1
     qbittorrent-auth
@@ -569,13 +585,17 @@ function qbittorrent-rss {
         --header "Referer: $QB_ADDR" \
         --data "withData=$type" | jq .
 }
+
 # qbittorrent-rss
 # qbittorrent-rss true
 
-###### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠
+######################################################################################################
+
+############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
 ### No official documentation
 
-### All sections (root derictory) and date last scanned
+### /plex_status_<key>
+### Даты создания, обновления контента и последней синхронизации в выбранной секции Plex
 function plex-sections {
     PLEX_ADDR=$PLEX_ADDR
     PLEX_TOKEN=$PLEX_TOKEN
@@ -594,7 +614,8 @@ function plex-sections {
     }"
 }
 
-### Plex sections list
+### /plex_info
+### Список всех секций на сервере Plex
 function plex-info {
     plex_sections=$(plex-sections | jq -r ".name,.key")
     keyboard='{"inline_keyboard":['
@@ -628,7 +649,8 @@ function plex-info {
     fi
 }
 
-### Synchronization (scanned) content by selected section
+### /plex_sync_key 
+### Синхронизация указанной секции в Plex по ключу
 function plex-sync-section {
     key=$1
     PLEX_ADDR=$PLEX_ADDR
@@ -639,7 +661,8 @@ function plex-sync-section {
         -H "accept: application/json"
 }
 
-### Get folder list by selected section
+### /plex_folder_
+### Получить список директорий и файлов в корне выбранной секции
 # plex-folder-from-section 2
 function plex-folder-from-section {
     key=$1
@@ -656,7 +679,8 @@ function plex-folder-from-section {
     }'
 }
 
-### Get all data by selected folder (use endpoint)
+### /find
+### Получить список всех файлов по указанному пути через endpoint
 # plex-content-from-folder "/library/sections/2/folder?parent=46"
 # plex-content-from-folder $(plex-folder-from-section $(plex-sections | jq -r .key) | jq -r .endpoint)
 function plex-content-from-folder {
@@ -696,10 +720,8 @@ function plex-content-from-folder {
     "
 }
 
-###### 🟣 🟣 🟣 Kinozal 🟣 🟣 🟣
-### Authorization and download selected torrent file
-
-### Get file list and torrent file hash using authorization
+############################### 🟣 🟣 🟣 Kinozal 🟣 🟣 🟣 ###############################
+### Получить хэш и список файлов раздачи используя авторизацию
 function files-and-hash {
     kz_id=$1
     url_hash="https://kinozal.tv/get_srv_details.php?id=$kz_id&action=2"
@@ -725,12 +747,7 @@ function files-and-hash {
     fi
 }
 
-# Извлечение списка файлов и их размера
-# files_and_hash=$(files-and-hash $kz_id)
-# file_list=$(echo "$files_and_hash" | grep -oP '(?<=<li>)[^<]+(?=<i>)')
-# file_sizes=$(echo "$files_and_hash" | grep -oP '(?<=<i>)[^<]+(?=</i>)')
-# paste <(echo "$file_list") <(echo "$file_sizes")
-
+### Функция загрузки торрент-файла с применением авторизации через cookies
 function download-torrent {
     kz_id=$1
     kz_name=$2
@@ -760,7 +777,7 @@ function download-torrent {
     fi
 }
 
-### Daily download and other statistics to Kinozal profile
+### Текущая статистика в профиле Кинозал (загрузок на день, залито и скачено в ГБ, сид и пир в часах)
 function count-torrent {
     url_profile="https://kinozal.tv/userdetails.php?id=$KZ_PROFILE"
     url_login="https://kinozal.tv/takelogin.php"
@@ -811,7 +828,7 @@ function count-torrent {
     fi
 }
 
-### Get data via html (no api)
+### Основная функция обработки данных из Кинозал (принимает полученный html из curl-запроса) + вызов функции files-and-hash
 function read-html {
     html=$1
     a=$2
@@ -849,21 +866,24 @@ function read-html {
     region=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 2 | tail -n 1 | sed -r 's/`|_|\"|&|;|quot//g')
     link_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
     size=$(printf "%s\n" "${html[@]}" | grep "floatright green" -m 1 | sed -r 's/.+n">//;s/\s.+//')
-    length=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -A 1 | tail -n 1 | sed -r 's/.+b> //; s/<.+//')
-    lang=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -A 2 | tail -n 1 | sed -r 's/.+b> //; s/<.+//')
-    video=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -B 2 | tail -n 3 | head -n 1 | sed -r 's/.+b> //; s/<.+//; s/.* ([0-9]+x[0-9]+).*/\1/p' | head -n 1)
-    ### Other info:
+    # (Debug) Обновлен парсинг
+    length=$(printf "%s\n" "${html[@]}" | grep "Продолжительность:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
+    lang=$(printf "%s\n" "${html[@]}" | grep "Перевод:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
+    video=$(printf "%s\n" "${html[@]}" | grep "Качество:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
+    audio=$(printf "%s\n" "${html[@]}" | grep "Аудио:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
+    # length=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -A 1 | tail -n 1 | sed -r 's/.+b> //; s/<.+//')
+    # lang=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -A 2 | tail -n 1 | sed -r 's/.+b> //; s/<.+//')
+    # video=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -B 2 | tail -n 3 | head -n 1 | sed -r 's/.+b> //; s/<.+//; s/.* ([0-9]+x[0-9]+).*/\1/p' | head -n 1)
     # audio=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -B 1 | tail -n 2 | head -n 1 | sed -r 's/.+b> //; s/<.+//')
     rating_kz=$(printf "%s\n" "${html[@]}" | grep "ratingValue" | sed -r "s/.+ratingValue\">//; s/<.+//")
     rating_count_users=$(printf "%s\n" "${html[@]}" | grep "ratingValue" | sed -r "s/.+content=\"//; s/\">.+//")
-    users_downloaded=$(printf "%s\n" "${html[@]}" | grep "Скачали полностью" | sed -r "s/.+Скачали полностью\s+//g; s/,.+//")
     users_download=$(printf "%s\n" "${html[@]}" | grep "Скачивают " | sed -r "s/.+Скачивают //; s/',.+//")
-    # users_distributed=$(printf "%s\n" "${html[@]}" | grep "Раздают " | sed -r "s/.+Раздают //; s/',.+//")
-    # file_count=$(printf "%s\n" "${html[@]}" | grep "Список файлов всего " | sed -r "s/.+Список файлов всего //; s/',.+//")
+    users_downloaded=$(printf "%s\n" "${html[@]}" | grep "Скачали полностью" | sed -r "s/.+Скачали полностью\s+//g; s/,.+//")
+    users_send=$(printf "%s\n" "${html[@]}" | grep "Раздают " | sed -r "s/.+Раздают //; s/',.+//")
     # Получаем hash торрент файла
     files_and_hash=$(files-and-hash "$id_kz")
     info_hash=$(echo "$files_and_hash" | sed -r "s/.+Инфо хеш: //; s/<.+//g")
-    data=$(echo "$name \n")
+    data=$(echo "$name \n\n")
     # Проверяем, что переменная не пустая (не отдавать строки с пустыми данными)
     if [ -n "$year" ]; then
         data+=$(echo "*Год выхода:* $year \n")
@@ -889,16 +909,24 @@ function read-html {
     if [ -n "$lang" ]; then
         data+=$(echo "*Перевод:* $lang \n")
     fi
+    # Отдаем аудио в боте и если переменная не пустая
+    if [[ $type_chat != "Channel" && -n $audio ]]; then
+        data+=$(echo "*Аудио:* $audio \n")
+    fi
     if [ -n "$size" ]; then
         data+=$(echo "*Размер:* $size Гб \n")
     fi
     if [ -n "$length" ]; then
         data+=$(echo "*Продолжительность:* $length \n")
     fi
-    if [ -n "$users_download" ]; then
-        data+=$(echo "*Скачивают/Скачали:* $users_download/$users_downloaded \n")
+    # Если переменная "скачали полностью" пустая, обновляем на 0
+    if [ -z "$users_downloaded" ]; then
+        users_downloaded=0
     fi
-    # data+=$(echo "*Аудио:* $audio \n")
+    # Проверяем оставшиеся два параметра
+    if [[ -n "$users_download" && -n "$users_send" ]]; then
+        data+=$(echo "*Скачивают/Скачали/Раздают:* $users_download/$users_downloaded/$users_send \n")
+    fi
     # Отдавать в описании одну ссылку
     if [ -n "$link_kp" ]; then
         data+=$(echo "*Инфо:* $link_kp \n")
@@ -910,15 +938,16 @@ function read-html {
     data+=$(echo "*Магнит:* \`magnet:?xt=urn:btih:$info_hash\` \n")
     if [[ $type_chat == "Channel" ]]; then
         ### Команда для поиска текущий раздачи в боте
-        # TG_BOT_NAME_ECHO=$(echo $TG_BOT_NAME | sed -r "s/_/\\\_/g")
-        # data+=$(echo "Передать \`/find_kinozal_$id_kz\` в @$TG_BOT_NAME_ECHO")
-        # data+=$(echo "Передать \`/find_kinozal_$id_kz\` в [бот](https://t.me/$TG_BOT_NAME)")
+        TG_BOT_NAME_ECHO=$(echo $TG_BOT_NAME | sed -r "s/_/\\\_/g")
+        # data+=$(echo "Передать \`/find_kinozal_$id_kz\` для поиска  в @$TG_BOT_NAME_ECHO \n")
+        data+=$(echo "Передать \`/find_kinozal_$id_kz\` для поиска в [бот](https://t.me/$TG_BOT_NAME) \n")
         ### Хештеги по жарну
         data+=$(echo "\n$genre_hashtag_join_down")
     fi
     echo $data
 }
 
+# Получить id Кинопоиск по id Кинозал для Kinopoisk API
 function get-kp-id {
     id_kz=$1
     id_url="https://kinozal.tv/details.php?id=$id_kz"
@@ -931,7 +960,7 @@ function get-kp-id {
     printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+film\///; s/".+//'
 }
 
-### Link list of similar torrent distribution
+### Список ссылок из кнопок на похожие (рекомендуемые) торрент-раздачи
 function get-links {
     id_find=$1
     html=$2
@@ -968,8 +997,9 @@ function get-links {
             keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal_$kz_id\"}],"
         done
     fi
-    keyboard+="[{\"text\":\"🔎 Последний поиск\",\"callback_data\":\"\/research\"},"
-    keyboard+="{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/kinozal_actors $id_find\"}],"
+    keyboard+="[{\"text\":\"🔎 Повторить последний поиск\",\"callback_data\":\"\/research\"}],"
+    keyboard+="[{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/kinozal_actors $id_find\"},"
+    keyboard+="{\"text\":\"📄 Содержимое раздачи\",\"callback_data\":\"\/file_list\"}],"
     if [[ $type == "find" ]]; then
         keyboard+="[{\"text\":\"🟣 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
     elif [[ $type == "description" ]]; then
@@ -985,13 +1015,14 @@ function get-links {
     echo $keyboard
 }
 
+### Функция фиксации глобального имени переменной (вызывается в /find_kinozal_id)
 function get-global-name {
     html=$1
     name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
     echo $name | sed -r "s/ /_/g"
 }
 
-### Switch function for encode text to url
+### Switch функция для кодирования кириллицы в url формат
 function url-encode-ru {
     text=$1
     encoded=""
@@ -1072,7 +1103,7 @@ function url-encode-ru {
     echo "$encoded"
 }
 
-### Search in kinozal on name
+### Поиск в кинозал по названию фильма или сериала + обработка доп параметров
 function get-search {
     search_name=$1
     search_year_test=false
@@ -1170,6 +1201,8 @@ function get-search {
     fi
 }
 
+### Получить информацию об актере и список его фильмографии из Кинозал
+### Список актеров обрабатывается в конечной точке /kinozal_actors
 function get-actor {
     actor=$1
     encode_actor=$(url-encode-ru "$actor" | sed "s/\s/+/g")
@@ -1241,10 +1274,13 @@ function get-actor {
 ###### 🟡 🟡 🟡 Kinopoisk API 🟡 🟡 🟡
 ### API documentation: https://api.kinopoisk.dev/documentation
 
+### Функции кодирования и декодирования кириллицы для передачи в параметр функции get-actor-kinopoisk
+
 function percent-encode {
     str=$1
     echo -n "$str" | iconv -t utf8 | od -An -tx1 | tr ' ' % | tr -d '\n'
 }
+
 # percent-encode "Маколей Калкин"
 
 function percent-decode {
@@ -1252,8 +1288,10 @@ function percent-decode {
     url_encoded="${encoded//+/ }"
     printf '%b' "${url_encoded//%/\\x}"
 }
+
 # percent-decode "%d0%9c%d0%b0%d0%ba%d0%be%d0%bb%d0%b5%d0%b9%20%d0%9a%d0%b0%d0%bb%d0%ba%d0%b8%d0%bd"
 
+### Получить информацию о выбранном актере из Кинопоиск API
 function get-actor-kinopoisk {
     actor_name=$1
     actor_encode=$(percent-encode $actor_name)
@@ -1263,7 +1301,8 @@ function get-actor-kinopoisk {
         -H "X-API-KEY: $KINOPOISK_TOKEN" | jq .
 }
 
-### Search movie to Kinopoisk by id 🟡
+### Описание Кинопоиск по id + трейлеры + список названий Сиквелов и Приквелов (свойство movie_similar) для передачи в поиск Кинозал (/search) 🟡
+### Описание Кинозал обрабатывается в конечной точке /kinozal_description
 function get-movie-kinopoisk-id {
     movie_id=$1
     movie_data=$(curl -s -X 'GET' \
@@ -1321,7 +1360,8 @@ function get-movie-kinopoisk-id {
 
 ###### 🔵 Telegram menu 📚📝📄
 
-### List torrent files
+### /torrent_files
+### 🗂 Список скаченных торрент файлов на сервере
 function menu-files {
     TEXT=$1
     CHAT=$2
@@ -1349,7 +1389,8 @@ function menu-files {
     fi
 }
 
-### List torrent
+### /status
+### 🟢 Список торрент раздач загруженных в qBittorrent
 function menu-status {
     TEXT=$1
     CHAT=$2
@@ -1391,7 +1432,7 @@ function menu-status {
     fi
 }
 
-### Actions for selected torrent (response on /info) and update info for /pause, /resume
+### 🟢 Действие для выбранного торрента (ответ на /info в qBittorrent) и обновление информации для конечных точек /pause и /resume
 function menu-info {
     qb_hash=$1
     qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
@@ -1411,7 +1452,7 @@ function menu-info {
     qb_added_date=$(echo $qb_state | jq -r ".added_date")
     qb_completion_date=$(echo $qb_state | jq -r ".completion_date")
     qb_last_activity_date=$(echo $qb_state | jq -r ".last_activity_date")
-    ### Get properties
+    ### Получаем дополнительную информацию из второй функции
     qb_prop=$(qbittorrent-properties $qb_hash)
     qb_prop_comment=$(echo $qb_prop | jq -r ".comment")
     kinozal_id=$(echo $qb_prop_comment | sed -r "s/.+id=//")
@@ -1462,7 +1503,7 @@ function menu-info {
     fi
 }
 
-### Menu for /torrent_content and return from /file_torrent
+### 🟢 Меню для /torrent_content и возврат из /file_torrent
 function menu-torrent-content {
     qb_hash=$1
     # Set global vardiable for /file_torrent
@@ -1510,7 +1551,7 @@ function menu-torrent-content {
     fi
 }
 
-### Menu for /file_torrent and update torrent file in useed /torrent_content
+### 🟢 Меню для /file_torrent и обновление списка файлов используя /torrent_content
 function menu-torrent-file {
     file_index=$1
     file_info=$(qbittorrent-files $global_hash | jq ".[] | select(.index == $file_index)")
@@ -1562,7 +1603,7 @@ function menu-torrent-file {
     fi
 }
 
-### Plex main menu for selecting section
+### 🟠 Меню Plex выбранной секции для /plex_status_key и обновления /plex_sync_key
 function menu-plex-status {
     command=$1
     CHAT=$2
@@ -1599,7 +1640,7 @@ function menu-plex-status {
     fi
 }
 
-### Menu for searching content in Plex
+### 🟠 Меню поиска контента в Plex (/find)
 function menu-plex-find {
     json_data=$1
     data=$2
@@ -1661,6 +1702,7 @@ function menu-plex-find {
 }
 
 ###### ⚙️ ⚙️ ⚙️ WinAPI ⚙️ ⚙️ ⚙️
+### REST API server based on .NET HttpListener and PowerShell Core
 ### Source: https://github.com/Lifailon/WinAPI (© Lifailon)
 
 function win-state {
@@ -1716,7 +1758,7 @@ function win-state {
 # + Обрезать имя и изменить select
 # + Получить описание текущий директории
 
-### 🗂📄 /api/files
+### 📄 /api/files
 function win-files {
     win_path="$1"
     if [[ "$win_path" == [A-Za-z]: ]]; then
@@ -1854,7 +1896,7 @@ function app-start {
         -H "Status: Start"
 }
 
-### ▶️ Start Plex
+### ▶️🟠 Start Plex
 function app-start-plex {
     proc_name=$1
     curl -s -X POST -u $WIN_API_USER:$WIN_API_PASS \
@@ -1898,7 +1940,7 @@ function win-service {
     fi
 }
 
-################################## DEBUG end ##################################
+################################## Debug end ##################################
 ###############################################################################
 
 ###############################################################################
@@ -1987,10 +2029,10 @@ while :
                 encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                 keyboard="{
                     \"inline_keyboard\":[
-                        [{\"text\":\"⬆️ Добавить в торрент на загрузку\",\"callback_data\":\"\/download_video_$down_id\"}],
-                        [{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}],
-                        [{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],
-                        [{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
+                        [{\"text\":\"⏩ Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$down_id\"}],
+                        [{\"text\":\"⬆️ Получить торрент файл\",\"callback_data\":\"\/send_torrent_file_$down_id\"}],
+                        [{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},
+                        {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
                     ]
                 }"
                 if [[ $message_id_temp != "null" ]]; then
@@ -2042,7 +2084,7 @@ while :
                 data=$(read-html "$html" "$id_url" "Chat")
                 encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                 keyboard=$(get-links "$id_find" "$html" "find")
-                # Set global vardiable for /download_torrent via menu (function get-links)
+                # Изменить глобальную переменную для конечной точки /download_torrent через меню (функция get-links)
                 name_down=$(get-global-name "$html")
                 declare -g global_name_down=$name_down
                 echo "[INFO] $(date '+%H:%M:%S'): Set name for download: $global_name_down" >> $path_log
@@ -2069,7 +2111,7 @@ while :
                     send-keyboard "Торрент файл (id: $id_find) не найден в базе Кинозала (возможна проблема соединения)." "$CHAT" "$keyboard"
                 fi
             fi
-        ### Request: /kinozal_description 🟣ℹ️🔗👤👥
+        ### Request: /kinozal_description 🟣🟣🟣
         elif [[ $command == /kinozal_description* ]]; then
             id_find=$(echo $command | sed "s/\/kinozal_description //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinozal_description for $id_find" >> $path_log
@@ -2126,7 +2168,7 @@ while :
             else
                 send-keyboard "$data" "$CHAT" "$keyboard"
             fi
-        ### Request: /search 🔎
+        ### Request: /search 🔎🟣
         elif [[ $command == /search* ]]; then
             search_name=$(echo $command | sed "s/\/search //")
             # Update global variables for research
@@ -2184,6 +2226,26 @@ while :
             id_kp=$(get-kp-id "$id_kz_search")
             echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinopoisk: $id_kp" >> $path_log
             get-movie-kinopoisk-id "$id_kp"
+        ### Request: /file_list 📖📄🟣
+        elif [[ $command == /file_list ]]; then
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /file_list" >> $path_log
+            files_and_hash=$(files-and-hash "$GLOBAL_ID_FIND")
+            file_list=$(echo "$files_and_hash" | grep -oP '(?<=<li>)[^<]+(?=<i>)')
+            file_sizes=$(echo "$files_and_hash" | grep -oP '(?<=<i>)[^<]+(?=</i>)' | sed -r "s/\s\(.+//g; s/^/(/; s/$/)/")
+            ### paste вместо цикла for
+            data=$(paste -d '' <(echo "$file_list") <(echo "$file_sizes"))
+            ### echo "$data"
+            encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
+            keyboard='{"inline_keyboard":['
+            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal_$GLOBAL_ID_FIND\"},"
+            keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+            keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+            keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+            if [[ $message_id_temp != "null" ]]; then
+                edit-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard" "$message_id_temp"
+            else
+                send-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard"
+            fi
         ###### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢
         ### Request: /status 🟢🐸
         elif [[ $command == /status ]]; then
@@ -2503,94 +2565,101 @@ done &
 ###############################################################################
 ################################# Thread 2️⃣ ##################################
 ### Channel News (post news to channel from kinozal)
-link_temp="null"
-while :
-    do
-    if [[ $PROXY == "True" ]]; then
-        URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
-        rss=$(curl -s -x $URL_PROXY "https://kinozal.tv/rss.xml")
-    else
-        rss=$(curl -s https://kinozal.tv/rss.xml)
-    fi
-    if [ -n "$rss" ]; then
-        links=($(printf "%s\n" "${rss[@]}" | grep "<link>https://kinozal.tv/details" | sed -r 's/<link>|<\/link>//g'))
-        link=$(echo ${links[0]})
-        if [ $link != $link_temp ]; then
-            echo "[INFO] $(date '+%H:%M:%S'): RSS data updated"  >> $path_log
-            unset array
-            for l in ${links[@]}; do
-                if [ $l != $link_temp ]; then
-                    array+=($l)
-                else
-                    break
-                fi
-            done
-            if [ $(echo ${#array[@]}) -ge 10 ]; then
-                unset array
-                array+=(${links[@]:0:1})
-            fi
-            count_all=$(echo ${#array[@]})
-            count_post=0
-            count_skip=0
-            count_error=0
-            for a in ${array[@]}; do
-                if [[ $PROXY == "True" ]]; then
-                    html=$(curl -s -x $URL_PROXY $a | iconv -f windows-1251 -t UTF-8)
-                else
-                    html=$(curl -s $a | iconv -f windows-1251 -t UTF-8)
-                fi
-                if [ -n "$html" ]; then
-                    name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
-                    rating_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+floatright">//; s/<.+//' | awk '{print $1}')
-                    rating_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r 's/.+floatright">//; s/<.+//')
-                    year=$(printf "%s\n" "${html[@]}" | grep -E -B 1 "class=lnks_tobrs" | head -n 1 | sed -r 's/.+<\/b> //; s/<.+//')
-                    url_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
-                    ### Фильтрация постов по рейтингу
-                    if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
-                        ((count_skip++))
-                        echo "[INFO] $(date '+%H:%M:%S'): Skip: $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
-                        continue
-                    ### Фильтрация постов по году выхода
-                    elif [[ $year < $FILTER_YEAR ]]; then
-                        ((count_skip++))
-                        echo "[INFO] $(date '+%H:%M:%S'): Skip: $a (year: $year)" >> $path_log
-                        continue
-                    else
-                        ((count_post++))
-                        echo "[OK]   $(date '+%H:%M:%S'): Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
-                        data=$(read-html "$html" "$a" "Channel")
-                        info_hash=$(echo -e ${data[@]} | grep "Инфо хеш" | sed -r "s/\`//g; s/.+\:\*\s//g")
-                        encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
-                        keyboard='{"inline_keyboard":['
-                        if [ -n "$url_kp" ]; then
-                            keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
-                            keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
-                            ### 🔷▶️🔷 Kinomix © Kinobox 🔷▶️🔷
-                            kp_id=$(echo $url_kp | sed -r "s/.+\///g")
-                            url_km="https://kinomix.web.app/#$kp_id"
-                            keyboard+="[{\"text\":\"Кинобокс\",\"url\":\"$url_km\"}]]}"
-                        else
-                            keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"}]]}"
-                        fi
-                        # URL для magnet link
-                        # [{\"text\":\"Скачать\",\"url\":\"magnet:?xt=urn:btih:$info_hash\"}]
-                        send-keyboard "$encoded_data" "$TG_CHANNEL" "$keyboard"
-                    fi
-                else
-                    ((count_error++))
-                    echo "[ERRO] $(date '+%H:%M:%S'): HTML data not avaliable: $a" >> $path_log
-                fi
-            done
-            echo "[INFO] $(date '+%H:%M:%S'): All records: $count_all, post: $count_post, skip: $count_skip, error: $count_error" >> $path_log
-            link_temp=$link
-            echo "[INFO] $(date '+%H:%M:%S'): Update last link: $link_temp" >> $path_log
+if [[ $TG_CHANNEL_USE = "True" ]]; then
+    link_temp="null"
+    while :
+        do
+        if [[ $PROXY == "True" ]]; then
+            URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
+            rss=$(curl -s -x $URL_PROXY "https://kinozal.tv/rss.xml")
         else
-            echo "[INFO] $(date '+%H:%M:%S'): RSS no new data. Last link: $link_temp" >> $path_log
+            rss=$(curl -s https://kinozal.tv/rss.xml)
         fi
-        sleep $TIMEOUT_SEC_POST
-    else
-        echo "[ERRO] $(date '+%H:%M:%S'): RSS data not avaliable" >> $path_log
-        sleep $TIMEOUT_SEC_ERROR
-    fi
-done &
+        if [ -n "$rss" ]; then
+            links=($(printf "%s\n" "${rss[@]}" | grep "<link>https://kinozal.tv/details" | sed -r 's/<link>|<\/link>//g'))
+            link=$(echo ${links[0]})
+            if [ $link != $link_temp ]; then
+                echo "[INFO] $(date '+%H:%M:%S'): RSS data updated"  >> $path_log
+                unset array
+                for l in ${links[@]}; do
+                    if [ $l != $link_temp ]; then
+                        array+=($l)
+                    else
+                        break
+                    fi
+                done
+                if [ $(echo ${#array[@]}) -ge 10 ]; then
+                    unset array
+                    array+=(${links[@]:0:1})
+                fi
+                count_all=$(echo ${#array[@]})
+                count_post=0
+                count_skip=0
+                count_error=0
+                for a in ${array[@]}; do
+                    if [[ $PROXY == "True" ]]; then
+                        html=$(curl -s -x $URL_PROXY $a | iconv -f windows-1251 -t UTF-8)
+                    else
+                        html=$(curl -s $a | iconv -f windows-1251 -t UTF-8)
+                    fi
+                    if [ -n "$html" ]; then
+                        name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
+                        rating_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+floatright">//; s/<.+//' | awk '{print $1}')
+                        rating_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r 's/.+floatright">//; s/<.+//')
+                        year=$(printf "%s\n" "${html[@]}" | grep -E -B 1 "class=lnks_tobrs" | head -n 1 | sed -r 's/.+<\/b> //; s/<.+//')
+                        url_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
+                        ### Фильтрация постов по рейтингу
+                        if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
+                            ((count_skip++))
+                            echo "[INFO] $(date '+%H:%M:%S'): Skip: $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            continue
+                        ### Фильтрация постов по году выхода
+                        elif [[ $year < $FILTER_YEAR ]]; then
+                            ((count_skip++))
+                            echo "[INFO] $(date '+%H:%M:%S'): Skip: $a (year: $year)" >> $path_log
+                            continue
+                        else
+                            ((count_post++))
+                            echo "[OK]   $(date '+%H:%M:%S'): Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            data=$(read-html "$html" "$a" "Channel")
+                            info_hash=$(echo -e ${data[@]} | grep "Инфо хеш" | sed -r "s/\`//g; s/.+\:\*\s//g")
+                            encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
+                            keyboard='{"inline_keyboard":['
+                            if [ -n "$url_kp" ]; then
+                                keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
+                                keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                                ################## 🔷▶️🔷 Kinomix © Kinobox 🔷▶️🔷 ##################
+                                kp_id=$(echo $url_kp | sed -r "s/.+\///g")
+                                url_km="https://kinomix.web.app/#$kp_id"
+                                keyboard+="[{\"text\":\"Кинобокс\",\"url\":\"$url_km\"}]]}"
+                            else
+                                # Формируем поисковой запрос в Кинобокс (/?q= вместо /#)
+                                keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                                name_km=$(echo $name | sed -r "s/\(.+//g")
+                                name_km_encode=$(percent-encode "$name_km")
+                                url_km="https://kinomix.web.app/?q=$name_km_encode"
+                                keyboard+="[{\"text\":\"Кинобокс\",\"url\":\"$url_km\"}]]}"
+                            fi
+                            # URL для magnet link
+                            # [{\"text\":\"Скачать\",\"url\":\"magnet:?xt=urn:btih:$info_hash\"}]
+                            send-keyboard "$encoded_data" "$TG_CHANNEL" "$keyboard"
+                        fi
+                    else
+                        ((count_error++))
+                        echo "[ERRO] $(date '+%H:%M:%S'): HTML data not avaliable: $a" >> $path_log
+                    fi
+                done
+                echo "[INFO] $(date '+%H:%M:%S'): All records: $count_all, post: $count_post, skip: $count_skip, error: $count_error" >> $path_log
+                link_temp=$link
+                echo "[INFO] $(date '+%H:%M:%S'): Update last link: $link_temp" >> $path_log
+            else
+                echo "[INFO] $(date '+%H:%M:%S'): RSS no new data. Last link: $link_temp" >> $path_log
+            fi
+            sleep $TIMEOUT_SEC_POST
+        else
+            echo "[ERRO] $(date '+%H:%M:%S'): RSS data not avaliable" >> $path_log
+            sleep $TIMEOUT_SEC_ERROR
+        fi
+    done &
+fi
 ###############################################################################
