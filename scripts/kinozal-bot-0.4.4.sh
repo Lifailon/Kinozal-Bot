@@ -6,16 +6,27 @@
 # Active Telegram Channel: @kinozal_news
 # Telegram Bot (access by id): @lifailon_ps_bot (Kinozal-Bot)
 
+###############################################################################
+
 ### Stack:
 # Kinozal: чтение RSS ленты, получение данных из html (api отсутствует), поиск и фильтрация контента, загрузка торрент файлов
-# Telegram api: отправка сообщений в канал, чтение команд и отправка ответных сообщений в формате меню (keyboard)
+# Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
 # qBittorrent api: загрузка данных из торрент файлов и управление данными (пауза, удаление и изменение приоритета)
-# Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах.
+# Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
 ### Опционально:
-# VPN через Proxy сервер (например, HandyCache и Hotspot Shield в режиме Split Tunneling) или обратный прокси сервер (например, ReverseProxyNET (https://github.com/Lifailon/ReverseProxyNET)) для доступа в Кинозал
+# VPN через Proxy сервер (например, HandyCache и Hotspot Shield в режиме Split Tunneling) для доступа в Кинозал
 # Kinopoisk unofficial API (https://github.com/mdwitr0/kinopoiskdev)
 ### Зависимости:
 # jqlang 1.6 (https://github.com/jqlang/jq)
+
+### Development:
+# Reverse proxy server: https://github.com/Lifailon/ReverseProxyNET
+# TorAPI: https://github.com/Lifailon/TorAPI
+# TMDB api: https://developer.themoviedb.org/reference/intro/getting-started
+# WebTorrent api: https://webtorrent.io/docs
+# Kinobox api: https://kinobox.tv/api
+
+###############################################################################
 
 ### Change log:
 ### 16.11.2023 (0.1) - Создан новостной канал Kinozal_News и Telegram-бот для скачивания торрент-файлов и управления qBittorrent.
@@ -36,7 +47,9 @@
 # + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
 # + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
 # ~ Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент;
-# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url + Kinobox, обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов.
+# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск и Кинозал + WebTorrent + Kinobox), обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов.
+
+###############################################################################
 
 ### Bot commands (endpoint):
 # /search - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
@@ -86,6 +99,8 @@
 # /skip_all_files <hash> - Пропустить загрузку всех файлов путем изменения приоритета в qBittorrent
 # /normal_all_files <hash> - Восстановить загрузку всех файлов
 
+###############################################################################
+
 ### Telegram menu (Edit Bot - Edit commands):
 # / search - Поиск фильма или сериала
 # / actor - Поиск по актеру
@@ -131,11 +146,9 @@
 # /research
 
 ###############################################################################
-
-###############################################################################
 ############################## Debug to console ###############################
 
-### Получить путь к конфигурации (по умолчанию рядом со скриптом сервера)
+### Получить путь к конфигурации (по умолчанию файл конфигурации находится рядом со скриптом сервера)
 kinozal_bot_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 conf="$kinozal_bot_path/kinozal-bot.conf"
 
@@ -153,6 +166,9 @@ fi
 
 ### (Debug) Забираем первый id из массива для отправки сообщений в консоли
 # CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
+
+### (Debug) Формируем URL Proxy-сервера
+# URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
 
 ### (Debug) Отключить второй поток канала (раскомментировать перед запуском, если не задано в конфигурации)
 # TG_CHANNEL_USE="False"
@@ -340,7 +356,7 @@ function read-telegram {
 }
 
 ############################### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ###############################
-### API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
+### WebUI API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
 ### Tested on version 4.6.0
 
 ### Функция авторизации в qBittorrent
@@ -532,9 +548,47 @@ function qbittorrent-delete {
         --data "deleteFiles=$delete_type"
 }
 
-######################################################################################################
+#-----------------------------------------------------------------------------------------------------
 
-### Переименовать торрент раздачу
+### Формирует магнит-ссылку со списком трекер-серверов
+function magnet-uri {
+    info_hash=$1
+    trackers=(
+      "wss://tracker.btorrent.xyz"
+      "wss://tracker.openwebtorrent.com"
+      "udp://tr1.torrent4me.com"
+      "udp://tr2.torrent4me.com"
+      "udp://tr3.torrent4me.com"
+      "udp://tr4.torrent4me.com"
+      "udp://tr1.tor4me.info"
+      "udp://tr2.tor4me.info"
+      "udp://tr3.tor4me.info"
+      "udp://tr4.tor4me.info"
+    )
+    magnet="magnet:?xt=urn:btih:$info_hash"
+    for tracker in "${trackers[@]}"; do
+      magnet+="&tr=$(echo -n "$tracker" | sed 's/ /%20/g')"
+    done
+    echo $magnet
+}
+
+# magnet-uri "7395a859e8e590418f422e7d0dfe68860de90631"
+
+### Экспортировать торрент файл из раздачи с полученными метаданными на клиенте
+function qbittorrent-export-torrent {
+    hash=$1
+    qbittorrent-auth
+    endpoint="api/v2/torrents/export"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$id" \
+        -o "$hash.torrent"
+}
+
+# qbittorrent-export-torrent "2403aeaba4693ac0f785f29023fdd7d0aa553823"
+
+### Переименовать торрент раздачу (которая отображается в клиенте)
 function qbittorrent-rename-torrent {
     torrent_hash=$1
     new_name_torrent=$2
@@ -555,9 +609,11 @@ function qbittorrent-rename-file {
     torrent_hash=$1
     new_name_file=$2
     type_file=$3
+    # Получаем текущий путь по хэшу и забираем из него старое имя
     old_torrent_path=$(qbittorrent-info | jq -r ". | select(.hash == \"$torrent_hash\").path")
     echo "[INFO] $(date '+%H:%M:%S'): Old torrent path: $old_torrent_path" # >> $path_log
     old_torrent_name=$(echo $old_torrent_path | sed -r 's/.+\\//')
+    # Забираем текущий путь к файлу и формируем путь с новым именем файла
     torrent_path=$(echo $old_torrent_path | sed "s/$old_torrent_name"//)
     new_torrent_path="$torrent_path$new_name_file"
     echo "[INFO] $(date '+%H:%M:%S'): New torrent path: $new_torrent_path" # >> $path_log
@@ -589,10 +645,10 @@ function qbittorrent-rss {
 # qbittorrent-rss
 # qbittorrent-rss true
 
-######################################################################################################
+#-----------------------------------------------------------------------------------------------------
 
 ############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
-### No official documentation
+### No official API documentation
 
 ### /plex_status_<key>
 ### Даты создания, обновления контента и последней синхронизации в выбранной секции Plex
@@ -2622,26 +2678,36 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             ((count_post++))
                             echo "[OK]   $(date '+%H:%M:%S'): Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             data=$(read-html "$html" "$a" "Channel")
-                            info_hash=$(echo -e ${data[@]} | grep "Инфо хеш" | sed -r "s/\`//g; s/.+\:\*\s//g")
-                            encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                             keyboard='{"inline_keyboard":['
                             if [ -n "$url_kp" ]; then
                                 keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
                                 keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
-                                ################## 🔷▶️🔷 Kinomix © Kinobox 🔷▶️🔷 ##################
+                                ################## ❤️❤️❤️ Instant © WebTorrent ❤️❤️❤️ ##################
+                                ### К созданным на базе протокола WebTorrent пиринговым сетям нельзя подключиться с помощью BitTorrent-клиента, взаимодействие возможно только между клиентами, использующими WebRTC.
+                                ### Source: https://github.com/webtorrent/webtorrent
+                                info_hash=$(echo -e ${data[@]} | grep "Хеш:" | sed -r "s/\`//g; s/.+\:\*\s//g")
+                                url_wt="https://instant.io/#$info_hash"
+                                ################# BTorrent (браузерный клиент WebTorrent) #################
+                                ### Source: https://github.com/DiegoRBaquero/BTorrent
+                                # url_wt="https://btorrent.xyz/#$info_hash"
+                                keyboard+="[{\"text\":\"Скачать раздачу\",\"url\":\"$url_wt\"}],"
+                                ################### 🔷▶️🔷 Kinomix © Kinobox 🔷▶️🔷 ####################
+                                ### Source: https://kinobox.tv
                                 kp_id=$(echo $url_kp | sed -r "s/.+\///g")
                                 url_km="https://kinomix.web.app/#$kp_id"
-                                keyboard+="[{\"text\":\"Кинобокс\",\"url\":\"$url_km\"}]]}"
+                                keyboard+="[{\"text\":\"Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             else
-                                # Формируем поисковой запрос в Кинобокс (/?q= вместо /#)
                                 keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                                info_hash=$(echo -e ${data[@]} | grep "Хеш:" | sed -r "s/\`//g; s/.+\:\*\s//g")
+                                url_wt="https://instant.io/#$info_hash"
+                                keyboard+="[{\"text\":\"Скачать раздачу\",\"url\":\"$url_wt\"}],"
+                                # Формируем поисковой запрос в Кинобокс (/?q= вместо /#)
                                 name_km=$(echo $name | sed -r "s/\(.+//g")
                                 name_km_encode=$(percent-encode "$name_km")
                                 url_km="https://kinomix.web.app/?q=$name_km_encode"
-                                keyboard+="[{\"text\":\"Кинобокс\",\"url\":\"$url_km\"}]]}"
+                                keyboard+="[{\"text\":\"Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             fi
-                            # URL для magnet link
-                            # [{\"text\":\"Скачать\",\"url\":\"magnet:?xt=urn:btih:$info_hash\"}]
+                            encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                             send-keyboard "$encoded_data" "$TG_CHANNEL" "$keyboard"
                         fi
                     else
