@@ -17,13 +17,12 @@
 # VPN через Proxy сервер (например, HandyCache и Hotspot Shield в режиме Split Tunneling) для доступа в Кинозал
 # Kinopoisk unofficial API (https://github.com/mdwitr0/kinopoiskdev)
 ### Зависимости:
-# jqlang 1.6 (https://github.com/jqlang/jq)
+# jq 1.6 (https://github.com/jqlang/jq)
 
 ### Development:
 # Reverse proxy server: https://github.com/Lifailon/ReverseProxyNET
 # TorAPI: https://github.com/Lifailon/TorAPI
 # TMDB api: https://developer.themoviedb.org/reference/intro/getting-started
-# WebTorrent api: https://webtorrent.io/docs
 # Kinobox api: https://kinobox.tv/api
 
 ###############################################################################
@@ -47,7 +46,9 @@
 # + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
 # + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
 # ~ Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент;
-# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск и Кинозал + WebTorrent + Kinobox), обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов.
+# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск + IMDb + Кинозал + Magnet + Kinobox);
+# ~ Обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов;
+# + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url.
 
 ###############################################################################
 
@@ -59,7 +60,7 @@
 # /plex_info - Plex content
 # /download_torrent <id> <file_name> - Загрузить торрент файл (передать два параметра: id и имя файла без пробелов)
 # /delete_torrent_file_id - Удалить торрент файл по id
-# /find_kinozal_id - Поиск в Кинозал по id
+# /find_kinozal <id> - Поиск в Кинозал по id
 # /download_video_id - Добавить в qBittorrent на загрузку из торрент файла
 # /info <hash> - Статус загрузки указанного торрента
 # /torrent_content <hash> - Содержимое (файлы) торрента
@@ -102,6 +103,7 @@
 ###############################################################################
 
 ### Telegram menu (Edit Bot - Edit commands):
+# / find_kinozal - Поиск в Кинозал по id
 # / search - Поиск фильма или сериала
 # / actor - Поиск по актеру
 # / research - Повторить последний поиск
@@ -109,7 +111,6 @@
 # / status - Управление qBittorrent
 # / plex_info - Управление Plex
 # / find - Поиск в Plex
-# / profile - Профиль Кинозал
 
 ###############################################################################
 
@@ -119,6 +120,9 @@
 # bash kinozal-bot-0.4.4.sh log
 # bash kinozal-bot-0.4.4.sh log 20
 # bash kinozal-bot-0.4.4.sh stop
+
+### Поиск в Кинозал по id:
+# /find_kinozal 1940284
 
 ### Пример поиска по названию фильма или сериала:
 # /search Рокки 2
@@ -138,7 +142,7 @@
 ### Поиск список фильмов из Кинозал (фильмография актера):
 # /actor Сильвестр Сталлоне
 
-### Так нет (только находит актера в Кинопоиск по api):
+### Неверный поиск (находит только актера в Кинопоиск по api без фильмографии):
 # /actor сильвестр сталлоне
 # /actor Сильвестр Сталоне
 
@@ -357,7 +361,7 @@ function read-telegram {
 
 ############################### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ###############################
 ### WebUI API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
-### Tested on version 4.6.0
+### Tested on version 4.6.0 and 4.6.5
 
 ### Функция авторизации в qBittorrent
 function qbittorrent-auth {
@@ -550,43 +554,19 @@ function qbittorrent-delete {
 
 #-----------------------------------------------------------------------------------------------------
 
-### Формирует магнит-ссылку со списком трекер-серверов
-function magnet-uri {
-    info_hash=$1
-    trackers=(
-      "wss://tracker.btorrent.xyz"
-      "wss://tracker.openwebtorrent.com"
-      "udp://tr1.torrent4me.com"
-      "udp://tr2.torrent4me.com"
-      "udp://tr3.torrent4me.com"
-      "udp://tr4.torrent4me.com"
-      "udp://tr1.tor4me.info"
-      "udp://tr2.tor4me.info"
-      "udp://tr3.tor4me.info"
-      "udp://tr4.tor4me.info"
-    )
-    magnet="magnet:?xt=urn:btih:$info_hash"
-    for tracker in "${trackers[@]}"; do
-      magnet+="&tr=$(echo -n "$tracker" | sed 's/ /%20/g')"
-    done
-    echo $magnet
-}
-
-# magnet-uri "7395a859e8e590418f422e7d0dfe68860de90631"
-
 ### Экспортировать торрент файл из раздачи с полученными метаданными на клиенте
-function qbittorrent-export-torrent {
+function qbittorrent-export-torrent-file {
     hash=$1
     qbittorrent-auth
     endpoint="api/v2/torrents/export"
     curl -s "$QB_ADDR/$endpoint" \
         -b $path_qb_cookies \
         --header "Referer: $QB_ADDR" \
-        --data "hash=$id" \
+        --data "hash=$hash" \
         -o "$hash.torrent"
 }
 
-# qbittorrent-export-torrent "2403aeaba4693ac0f785f29023fdd7d0aa553823"
+# qbittorrent-export-torrent-file "2403aeaba4693ac0f785f29023fdd7d0aa553823"
 
 ### Переименовать торрент раздачу (которая отображается в клиенте)
 function qbittorrent-rename-torrent {
@@ -921,6 +901,7 @@ function read-html {
     genre_hashtag_join_down=$(echo "${genre_hashtag_join,,}")
     region=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 2 | tail -n 1 | sed -r 's/`|_|\"|&|;|quot//g')
     link_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
+    link_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r "s/.+href=\"//g; s/\".+//g")
     size=$(printf "%s\n" "${html[@]}" | grep "floatright green" -m 1 | sed -r 's/.+n">//;s/\s.+//')
     # (Debug) Обновлен парсинг
     length=$(printf "%s\n" "${html[@]}" | grep "Продолжительность:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
@@ -957,7 +938,7 @@ function read-html {
         data+=$(echo "*Рейтинг IMDb:* $rating_imdb \n")
     fi
     if [ -n "$rating_kz" ]; then
-        data+=$(echo "*Рейтинг Кинозал:* $rating_kz из 10 (голосов: $rating_count_users)\n")
+        data+=$(echo "*Рейтинг Кинозал:* $rating_kz (голосов: $rating_count_users)\n")
     fi
     if [ -n "$video" ]; then
         data+=$(echo "*Качество:* $video \n")
@@ -983,21 +964,27 @@ function read-html {
     if [[ -n "$users_download" && -n "$users_send" ]]; then
         data+=$(echo "*Скачивают/Скачали/Раздают:* $users_download/$users_downloaded/$users_send \n")
     fi
-    # Отдавать в описании одну ссылку
-    if [ -n "$link_kp" ]; then
-        data+=$(echo "*Инфо:* $link_kp \n")
-    else
-        data+=$(echo "*Инфо:* $a \n")
-    fi
-    # data+=$(echo "Ссылки на [Кинопоиск]($link_kp) и [Кинозал]($a) \n")
-    data+=$(echo "*Хеш:* \`$info_hash\` \n")
-    data+=$(echo "*Магнит:* \`magnet:?xt=urn:btih:$info_hash\` \n")
+    # Ссылки описания
     if [[ $type_chat == "Channel" ]]; then
-        ### Команда для поиска текущий раздачи в боте
-        TG_BOT_NAME_ECHO=$(echo $TG_BOT_NAME | sed -r "s/_/\\\_/g")
-        # data+=$(echo "Передать \`/find_kinozal_$id_kz\` для поиска  в @$TG_BOT_NAME_ECHO \n")
-        data+=$(echo "Передать \`/find_kinozal_$id_kz\` для поиска в [бот](https://t.me/$TG_BOT_NAME) \n")
-        ### Хештеги по жарну
+        if [ -n "$link_kp" ]; then
+            data+=$(echo "*Описание:* $link_kp \n")
+        else
+            data+=$(echo "*Описание:* $a \n")
+        fi
+    else
+        if [ -n "$link_kp" ]; then
+            data+=$(echo "*Кинопоиск*: $link_kp \n")
+        fi
+        if [ -n "$link_imdb" ]; then
+            data+=$(echo "*IMDb*: $link_imdb \n")
+        fi
+        data+=$(echo "*Кинозал*: $a \n")
+    fi
+    data+=$(echo "*Кинозал id:* \`$id_kz\` \n")
+    data+=$(echo "*Инфо хеш:* \`$info_hash\` \n")
+    # data+=$(echo "*Магнит:* \`magnet:?xt=urn:btih:$info_hash\` \n")
+    ### Хештеги по жарну
+    if [[ $type_chat == "Channel" ]]; then
         data+=$(echo "\n$genre_hashtag_join_down")
     fi
     echo $data
@@ -1032,7 +1019,7 @@ function get-links {
             # Encode name to url
             encoded_kz_name=$(echo -ne "$kz_name" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
             kz_id=$(echo "$line" | grep -Po "(?<=id=)[0-9]+")
-            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal_$kz_id\"}],"
+            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal $kz_id\"}],"
         done
     elif [[ $type == "description" ]]; then
         id_url="https://kinozal.tv/ajax/details_get.php?id=$id_find&sr=101"
@@ -1050,7 +1037,7 @@ function get-links {
             # Encode name to url
             encoded_kz_name=$(echo -ne "$kz_name" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
             kz_id=$(echo "$line" | grep -Po "(?<=id=)[0-9]+")
-            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal_$kz_id\"}],"
+            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal $kz_id\"}],"
         done
     fi
     keyboard+="[{\"text\":\"🔎 Повторить последний поиск\",\"callback_data\":\"\/research\"}],"
@@ -1059,7 +1046,7 @@ function get-links {
     if [[ $type == "find" ]]; then
         keyboard+="[{\"text\":\"🟣 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
     elif [[ $type == "description" ]]; then
-        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal_$id_find\"},"
+        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $id_find\"},"
     fi
     keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"  
     keyboard+="[{\"text\":\"⬇️ Скачать торрент файл\",\"callback_data\":\"\/download_torrent $id_find "GLOBAL_NAME" \"},"
@@ -1071,7 +1058,7 @@ function get-links {
     echo $keyboard
 }
 
-### Функция фиксации глобального имени переменной (вызывается в /find_kinozal_id)
+### Функция фиксации глобального имени переменной (вызывается в /find_kinozal id)
 function get-global-name {
     html=$1
     name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
@@ -1241,7 +1228,7 @@ function get-search {
         name_year_quality=$(echo $name_from_id | awk -F "/" '{print $1,$3,$NF}'| sed -r "s/\s+/ /g")
         # Encode name to url
         encoded_name_year_quality=$(echo -ne "$name_year_quality" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
-        keyboard+="[{\"text\":\"$encoded_name_year_quality\",\"callback_data\":\"/find_kinozal_$id\"}],"
+        keyboard+="[{\"text\":\"$encoded_name_year_quality\",\"callback_data\":\"/find_kinozal $id\"}],"
     done
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
     keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
@@ -1403,7 +1390,7 @@ function get-movie-kinopoisk-id {
         movie_callback=$(echo $movie_sim | cut -c "1-50")
         keyboard+="[{\"text\":\"$movie_sim\",\"callback_data\":\"/search $movie_callback\"}],"
     done
-    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal_$GLOBAL_ID_FIND\"},"
+    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $GLOBAL_ID_FIND\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -1430,7 +1417,7 @@ function menu-files {
         torrent_id=$(echo $l | awk -F "-" '{print $1}')
         torrent_name=$(echo $l | sed -r "s/$torrent_id-//")
         torrent_name=$(echo $torrent_name | sed -r "s/_/ /g")
-        keyboard+="[{\"text\":\"$torrent_name\",\"callback_data\":\"/find_kinozal_$torrent_id\"}],"
+        keyboard+="[{\"text\":\"$torrent_name\",\"callback_data\":\"/find_kinozal $torrent_id\"}],"
     done
     keyboard+="[{\"text\":\"⬆️ Получить последний торрент файл\",\"callback_data\":\"\/send_last_torrent_file\"}],"
     keyboard+="[{\"text\":\"⬆️ Получить все торрент файлы\",\"callback_data\":\"\/send_all_torrent_files\"}],"
@@ -1546,7 +1533,7 @@ function menu-info {
             {\"text\":\"▶️ Возобновить\",\"callback_data\":\"\/resume $qb_hash\"}],
             [{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/delete_torrent $qb_hash\"},
             {\"text\":\"❌ Удалить видео\",\"callback_data\":\"\/delete_video $qb_hash\"}],
-            [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/find_kinozal_$kinozal_id\"},
+            [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/find_kinozal $kinozal_id\"},
             {\"text\":\"🟠 Plex 🔎 \",\"callback_data\":\"\/find $qb_name_replace\"}],
             [{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/status\"},
             {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
@@ -1996,6 +1983,45 @@ function win-service {
     fi
 }
 
+### ❤️❤️❤️ WebTorrent ❤️❤️❤️
+
+# magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&xs=https://webtorrent.io/torrents/sintel.torrent
+
+### Формируем magnet ссылку из хэша с указанием списка серверов торрент трекеров 
+function magnet-uri {
+    info_hash=$1
+    trackers=(
+        "wss://tracker.btorrent.xyz"
+        "wss://tracker.openwebtorrent.com"
+        "udp://tracker.btorrent.xyz:80"
+        "udp://tracker.openwebtorrent.com:80"
+        "udp://tracker.openwebtorrent.com:1337"
+        "udp://retracker.local:80"
+        "udp://tr0.torrent4me.com:80"
+        "udp://tr1.torrent4me.com:80"
+        "udp://tr2.torrent4me.com:80"
+        "udp://tr3.torrent4me.com:80"
+        "udp://tr4.torrent4me.com:80"
+        "udp://tr0.tor4me.info:80"
+        "udp://tr1.tor4me.info:80"
+        "udp://tr2.tor4me.info:80"
+        "udp://tr3.tor4me.info:80"
+        "udp://tr4.tor4me.info:80"
+        "udp://tr0.tor2me.info:80"
+        "udp://tr1.tor2me.info:80"
+        "udp://tr2.tor2me.info:80"
+        "udp://tr3.tor2me.info:80"
+        "udp://tr4.tor2me.info:80"
+    )
+    magnet="magnet:?xt=urn:btih:$info_hash"
+    for tracker in "${trackers[@]}"; do
+      magnet+="&tr=$(echo -n "$tracker")"
+    done
+    echo $magnet | sed -r "s/\s//g"
+}
+
+# magnet-uri "7395a859e8e590418f422e7d0dfe68860de90631"
+
 ################################## Debug end ##################################
 ###############################################################################
 
@@ -2124,9 +2150,9 @@ while :
                 menu-files "🗂 Торрент файл не удален:" $CHAT
                 echo "[ERRO] $(date '+%H:%M:%S'): Error delete torrent file" >> $path_log
             fi
-        ### Request: /find_kinozal_id 🔎🔎🔎
-        elif [[ $command == /find_kinozal_* ]]; then
-            id_find=$(echo $command | sed "s/\/find_kinozal_//")
+        ### Request: /find_kinozal <id> 🔎🔎🔎
+        elif [[ $command == /find_kinozal* ]]; then
+            id_find=$(echo $command | sed "s/\/find_kinozal //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /find_kinozal for $id_find" >> $path_log
             id_url="https://kinozal.tv/details.php?id=$id_find"
             echo "[INFO] $(date '+%H:%M:%S'): Url: $id_url" >> $path_log
@@ -2214,7 +2240,7 @@ while :
             for actor in "${actors_array[@]}"; do
                 keyboard+="[{\"text\":\"$actor\",\"callback_data\":\"\/actor $actor\"}],"
             done
-            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal_$id_find\"},"
+            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $id_find\"},"
             keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
             keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
             keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -2293,7 +2319,7 @@ while :
             ### echo "$data"
             encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
             keyboard='{"inline_keyboard":['
-            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal_$GLOBAL_ID_FIND\"},"
+            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $GLOBAL_ID_FIND\"},"
             keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
             keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
             keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -2664,6 +2690,7 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                         rating_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r 's/.+floatright">//; s/<.+//')
                         year=$(printf "%s\n" "${html[@]}" | grep -E -B 1 "class=lnks_tobrs" | head -n 1 | sed -r 's/.+<\/b> //; s/<.+//')
                         url_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
+                        url_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r "s/.+href=\"//g; s/\".+//g")
                         ### Фильтрация постов по рейтингу
                         if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
                             ((count_skip++))
@@ -2679,34 +2706,41 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             echo "[OK]   $(date '+%H:%M:%S'): Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             data=$(read-html "$html" "$a" "Channel")
                             keyboard='{"inline_keyboard":['
-                            if [ -n "$url_kp" ]; then
+                            ### Отдаем ссылки на 🟠 Кинопоиск, 🟡 IMDb и 🟣 Кинозал, если они были получены
+                            if [[ -n "$url_kp" && -n "$url_imdb" ]]; then
+                                keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
+                                keyboard+="{\"text\":\"IMDb\",\"url\":\"$url_imdb\"},"
+                                keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                            elif [[ -n "$url_kp" && -z "$url_imdb" ]]; then
                                 keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
                                 keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
-                                ################## ❤️❤️❤️ Instant © WebTorrent ❤️❤️❤️ ##################
-                                ### К созданным на базе протокола WebTorrent пиринговым сетям нельзя подключиться с помощью BitTorrent-клиента, взаимодействие возможно только между клиентами, использующими WebRTC.
-                                ### Source: https://github.com/webtorrent/webtorrent
-                                info_hash=$(echo -e ${data[@]} | grep "Хеш:" | sed -r "s/\`//g; s/.+\:\*\s//g")
-                                url_wt="https://instant.io/#$info_hash"
-                                ################# BTorrent (браузерный клиент WebTorrent) #################
-                                ### Source: https://github.com/DiegoRBaquero/BTorrent
-                                # url_wt="https://btorrent.xyz/#$info_hash"
-                                keyboard+="[{\"text\":\"Скачать раздачу\",\"url\":\"$url_wt\"}],"
-                                ################### 🔷▶️🔷 Kinomix © Kinobox 🔷▶️🔷 ####################
-                                ### Source: https://kinobox.tv
-                                kp_id=$(echo $url_kp | sed -r "s/.+\///g")
-                                url_km="https://kinomix.web.app/#$kp_id"
-                                keyboard+="[{\"text\":\"Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
+                            elif [[ -z "$url_kp" && -n "$url_imdb" ]]; then
+                                keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"},"
+                                keyboard+="{\"text\":\"IMDb\",\"url\":\"$url_imdb\"}],"
                             else
                                 keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
-                                info_hash=$(echo -e ${data[@]} | grep "Хеш:" | sed -r "s/\`//g; s/.+\:\*\s//g")
-                                url_wt="https://instant.io/#$info_hash"
-                                keyboard+="[{\"text\":\"Скачать раздачу\",\"url\":\"$url_wt\"}],"
-                                # Формируем поисковой запрос в Кинобокс (/?q= вместо /#)
-                                name_km=$(echo $name | sed -r "s/\(.+//g")
-                                name_km_encode=$(percent-encode "$name_km")
-                                url_km="https://kinomix.web.app/?q=$name_km_encode"
-                                keyboard+="[{\"text\":\"Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             fi
+                            ### Забираем info hash
+                            info_hash=$(echo -e ${data[@]} | grep "Инфо хеш:" | sed -r "s/\`//g; s/.+\:\*\s//g")
+                            ####################### ❤️❤️❤️ Instant © WebTorrent ❤️❤️❤️ ########################
+                            ### Source: https://github.com/webtorrent/webtorrent
+                            ### К созданным на базе протокола WebTorrent пиринговым сетям нельзя подключиться с помощью BitTorrent-клиента, взаимодействие возможно только между клиентами, использующими WebRTC.
+                            # url_magnet="https://instant.io/#$info_hash"
+                            ################## 💙💙💙 BTorrent (Web Client WebTorrent) 💙💙💙 #################
+                            ### Source: https://github.com/DiegoRBaquero/BTorrent
+                            # url_magnet="https://btorrent.xyz/#$info_hash"
+                            ##################################### magnet2url #####################################
+                            ### Source: https://github.com/Lifailon/magnet2url
+                            # magnet=$(magnet-uri "$info_hash")
+                            # url_magnet="https://lifailon.github.io/magnet2url#$magnet"
+                            ### Параметр #tr добавляет список серверов торрент трекеров при переадресации
+                            url_magnet=$(echo "https://lifailon.github.io/magnet2url#$info_hash#tr" | sed -r "s/\s//g")
+                            keyboard+="[{\"text\":\"Скачать раздачу\",\"url\":\"$url_magnet\"},"
+                            ######################### ▶️▶️▶️ Kinomix © Kinobox ▶️▶️▶️ #########################
+                            ### Source: https://kinobox.tv
+                            kp_id=$(echo $url_kp | sed -r "s/.+\///g")
+                            url_km="https://kinomix.web.app/#$kp_id"
+                            keyboard+="{\"text\":\"Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                             send-keyboard "$encoded_data" "$TG_CHANNEL" "$keyboard"
                         fi
