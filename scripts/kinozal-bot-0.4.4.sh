@@ -38,10 +38,13 @@
 ### 20.01.2023 (0.4.3) - Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
 # Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data).
 ### 30.05.2023 (0.4.4): 
-# + Добавлен инфо хеш и содержимое раздачи (список файлов);
+# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (список файлов);
 # + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
 # + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
 # + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
+# + Добавлена возможность загрузить торрент по инфо хэшу (/add_torrent из меню);
+# + Выгрузить торрент файла из клиента qBittorrent (после загрузки метаданных) на сервер с отправкой в телеграм;
+# + Добавлена проверка (сканирование целостности) торрент раздачи в qBittorrent;
 # + Добавлен статус приоритета и загрузки в списке файлов выбранного торрента;
 # + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
 # + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
@@ -99,6 +102,9 @@
 # /send_all_torrent_files - Отправить все загруженные торрент-файлы
 # /skip_all_files <hash> - Пропустить загрузку всех файлов путем изменения приоритета в qBittorrent
 # /normal_all_files <hash> - Восстановить загрузку всех файлов
+# /add_torrent <hash> - Добавить раздачу на загрузку в qBittorrent по инфо хэш
+# /get_torrent <hash> - Выгрузить торрент файл на сервер по инфо хэш и отправить в телеграмм
+# /torrent_recheck <hash> - Проверить торрент файл
 
 ###############################################################################
 
@@ -107,6 +113,7 @@
 # / search - Поиск фильма или сериала
 # / actor - Поиск по актеру
 # / research - Повторить последний поиск
+# / add_torrent - Добавить торрент по инфо хэш
 # / torrent_files - Загруженные торрент файлы
 # / status - Управление qBittorrent
 # / plex_info - Управление Plex
@@ -124,11 +131,13 @@
 ### Поиск в Кинозал по id:
 # /find_kinozal 1940284
 
-### Пример поиска по названию фильма или сериала:
+### Поиск по названию фильма или сериала:
 # /search Рокки 2
+# /search Рокки 4
 
 ### Поиск с фильтрацией по году выхода:
 # /search 1979 Рокки
+# /search 1985 Рокки
 
 ### Поиск с фильтрацией по формату разрешения:
 # /search (720) Рокки
@@ -148,6 +157,9 @@
 
 ### Повторить последний запрос поиска (для фильма/сериала или актера):
 # /research
+
+### Добавить торрент по инфо хэш в qBittorrent клиент на загрузку:
+# /add_torrent A72BD27A0CE265A3C7965392BC06C25EDD759214
 
 ###############################################################################
 ############################## Debug to console ###############################
@@ -333,12 +345,12 @@ function read-telegram {
             selected=$(echo $messages | jq ".result[] | select(.message.chat.id == $TG and .message.entities[0].type == \"$type\")")
             if [[ -n "$selected" ]]; then
                 echo $selected | jq '{
-                timestamp: .message.date,
-                text: .message.text,
-                user: .message.from.username,
-                chat: .message.chat.id,
-                update_id: .update_id,
-                message_id: .callback_query.message.message_id
+                    timestamp: .message.date,
+                    text: .message.text,
+                    user: .message.from.username,
+                    chat: .message.chat.id,
+                    update_id: .update_id,
+                    message_id: .callback_query.message.message_id
                 }' 
                 break
             fi
@@ -346,12 +358,12 @@ function read-telegram {
             selected=$(echo $messages | jq ".result[] | select(.callback_query.message.chat.id == $TG)")
             if [[ -n "$selected" ]]; then
                 echo $selected | jq '{
-                timestamp: .callback_query.message.date,
-                text: .callback_query.data,
-                user: .callback_query.message.from.username,
-                chat: .callback_query.message.chat.id,
-                update_id: .update_id,
-                message_id: .callback_query.message.message_id
+                    timestamp: .callback_query.message.date,
+                    text: .callback_query.data,
+                    user: .callback_query.message.from.username,
+                    chat: .callback_query.message.chat.id,
+                    update_id: .update_id,
+                    message_id: .callback_query.message.message_id
                 }'
                 break
             fi
@@ -398,8 +410,14 @@ function qbittorrent-test {
     echo $qb_test
 }
 
+# qbittorrent-test
+# 0 - ОК
+# 1 - Ошибка авторизации
+# 2 - Служба не запущена (порт недоступен)
+# 3 - Сервер недоступен (нет пинга)
+
 ### Для функции menu-info (/info)
-### Функция получения информации выбранной торрент раздачи
+### Функция получения информации о всех текущих раздачах на клиенте
 function qbittorrent-info {
     qbittorrent-auth
     echo "[INFO] $(date '+%H:%M:%S'): Get info (status) from qBittorrent" >> $path_log
@@ -429,6 +447,8 @@ function qbittorrent-info {
         }"
 }
 
+# qbittorrent-info
+
 ### Для функции menu-info (/info)
 ### Функция получения свойств выбранной торрент раздачи (дополнительная информация для функции menu-info после информации из функции qbittorrent-info)
 function qbittorrent-properties {
@@ -439,17 +459,19 @@ function qbittorrent-properties {
         -b $path_qb_cookies \
         --header "Referer: $QB_ADDR" \
         --data "hash=$torrent_hash" | jq '{
-        name: .name,
-        hash: .hash,
-        comment: .comment,
-        seeds: .seeds,
-        seeds_total: .seeds_total,
-        peers: .peers,
-        peers_total: .peers_total,
-        download_speed: (.dl_speed / 1024 / 1024 | tonumber * 100 | floor / 100 | tostring + " MB/s"),
-        download_speed_avg: (.dl_speed_avg / 1024 / 1024 | tonumber * 100 | floor / 100 | tostring + " MB/s")
+            name: .name,
+            hash: .hash,
+            comment: .comment,
+            seeds: .seeds,
+            seeds_total: .seeds_total,
+            peers: .peers,
+            peers_total: .peers_total,
+            download_speed: (.dl_speed / 1024 / 1024 | tonumber * 100 | floor / 100 | tostring + " MB/s"),
+            download_speed_avg: (.dl_speed_avg / 1024 / 1024 | tonumber * 100 | floor / 100 | tostring + " MB/s")
         }'
 }
+
+# qbittorrent-properties "a72bd27a0ce265a3c7965392bc06c25edd759214"
 
 ### /file_torrent
 ### Получить список файлов выбранной раздачи
@@ -463,6 +485,8 @@ function qbittorrent-files {
         --data "hash=$torrent_hash" | jq .
 }
 
+# qbittorrent-files "a72bd27a0ce265a3c7965392bc06c25edd759214"
+
 # Priority:
 # 0 - skip
 # 1 - normal
@@ -473,8 +497,10 @@ function qbittorrent-files {
 ### Изменить приоритет выбранно файла ⏸▶️🔼⏫
 function qbittorrent-priority {
     torrent_hash=$1
+    # Порядковый номер файла
     file_index=$2
-    priority=$3 # 0/1/6/7
+    # 0/1/6/7
+    priority=$3
     qbittorrent-auth
     endpoint_delete="api/v2/torrents/filePrio"
     curl -s "$QB_ADDR/$endpoint_delete" \
@@ -484,6 +510,11 @@ function qbittorrent-priority {
         --data "id=$file_index" \
         --data "priority=$priority"
 }
+
+# qbittorrent-priority "a72bd27a0ce265a3c7965392bc06c25edd759214" 0 0
+# qbittorrent-priority "a72bd27a0ce265a3c7965392bc06c25edd759214" 1 1
+# qbittorrent-priority "a72bd27a0ce265a3c7965392bc06c25edd759214" 2 6
+# qbittorrent-priority "a72bd27a0ce265a3c7965392bc06c25edd759214" 3 7
 
 ### /download_video_id
 ### ⏩ Добавить на загрузку выбранный торрент файл
@@ -525,6 +556,8 @@ function qbittorrent-pause {
         --data "hashes=$torrent_hash"
 }
 
+# qbittorrent-pause "a72bd27a0ce265a3c7965392bc06c25edd759214"
+
 ### /resume
 ### ▶️ Восстановить загрузку (из паузы) выбранного торрент файла
 function qbittorrent-resume {
@@ -537,9 +570,11 @@ function qbittorrent-resume {
         --data "hashes=$torrent_hash"
 }
 
-### /delete_torrent
-### /delete_video
-### 🗑 Удалить раздачу из клиента с или без содержимым контента (deleteFiles true/false)
+# qbittorrent-resume "a72bd27a0ce265a3c7965392bc06c25edd759214"
+
+### 🗑 /delete_torrent
+### ❌ /delete_video
+### Удалить раздачу из клиента с или без содержимым контента (deleteFiles true/false)
 function qbittorrent-delete {
     torrent_hash=$1
     delete_type=$2
@@ -552,9 +587,38 @@ function qbittorrent-delete {
         --data "deleteFiles=$delete_type"
 }
 
-#-----------------------------------------------------------------------------------------------------
+# qbittorrent-delete "a72bd27a0ce265a3c7965392bc06c25edd759214" "false"
+# qbittorrent-delete "a72bd27a0ce265a3c7965392bc06c25edd759214" "true"
 
-### Экспортировать торрент файл из раздачи с полученными метаданными на клиенте
+### Проверить торрент файл (пересканировать на целостность)
+function qbittorrent-recheck {
+    hash=$1
+     qbittorrent-auth
+    endpoint_delete="api/v2/torrents/recheck"
+    curl -s "$QB_ADDR/$endpoint_delete" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hashes=$hash"
+}
+
+# qbittorrent-recheck "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+################################## 🧲🧲🧲 Info hash 🧲🧲🧲 ##################################
+
+### Добавить торрент файл по хэш сумме
+function qbittorrent-add-torrent-from-hash {
+    hash=$1
+    magnet_link="magnet:?xt=urn:btih:$hash"
+    qbittorrent-auth
+    curl -s "$QB_ADDR/api/v2/torrents/add" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data-urlencode "urls=$magnet_link"
+}
+
+# qbittorrent-add-torrent-from-hash "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+### Экспортировать из раздачи с полученными метаданными на клиенте в торрент файл
 function qbittorrent-export-torrent-file {
     hash=$1
     qbittorrent-auth
@@ -563,10 +627,33 @@ function qbittorrent-export-torrent-file {
         -b $path_qb_cookies \
         --header "Referer: $QB_ADDR" \
         --data "hash=$hash" \
-        -o "$hash.torrent"
+        -o "$path/$hash.torrent"
 }
 
-# qbittorrent-export-torrent-file "2403aeaba4693ac0f785f29023fdd7d0aa553823"
+# qbittorrent-export-torrent-file "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+#-----------------------------------------------------------------------------------------------------
+
+### Функция проверки статуса загрузки метаданных
+function qbittorrent-status-metadata {
+    hash=$1
+    # qbittorrent-auth
+    status=$(curl -s "$QB_ADDR/api/v2/torrents/info?hashes=$hash" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq -r '.[0].state')
+    if [[ $status == "null" ]]; then
+        # Торрент не найден (не добавлен)
+        echo null
+    elif [[ $status != "metaDL" ]]; then
+        # Метаданные получены
+        echo true
+    else
+        # Загрузка метаданных
+        echo false
+    fi
+}
+
+# qbittorrent-status-metadata "A72BD27A0CE265A3C7965392BC06C25EDD759214"
 
 ### Переименовать торрент раздачу (которая отображается в клиенте)
 function qbittorrent-rename-torrent {
@@ -870,8 +957,8 @@ function read-html {
     a=$2
     type_chat=$3
     id_kz=$(echo $a | sed -r 's/.+id=//')
-    ### (Debug) Удаление символа кавычек (&quot;)
-    name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
+    ### Удаление символа кавычек (&quot;) и замена буквы ё на е
+    name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|; |quot//g; s/ё/е/g')
     # name_down=$(echo $name | sed -r "s/ /_/g")
     rating_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+floatright">//; s/<.+//' | awk '{print $1}')
     rating_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r 's/.+floatright">//; s/<.+//')
@@ -880,13 +967,14 @@ function read-html {
         name="🆕 $name"
     fi
     # Хештеги по жарну
-    genre=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 1)
+    genre=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//; s/ё/е/g' | head -n 1)
     genre_hashtag=$(echo $genre | sed -r "s/^/#/; s/,\s/ #/g")
+    # Добавляем нижнее подчеркивание и его экранирование, если хэштег из двух и более слов
     genre_hashtag_join=$(echo "$genre_hashtag" | awk '{
         for (i = 1; i <= NF; i++) {
             if ($i !~ /^#/) {
                 if (i > 1 && $i-1 !~ /^#/) {
-                    printf "_%s", $i
+                    printf "\\_%s", $i
                 } else {
                     printf "%s", $i
                 }
@@ -899,11 +987,11 @@ function read-html {
     }')
     # Опускаем регистр в строке
     genre_hashtag_join_down=$(echo "${genre_hashtag_join,,}")
-    region=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 2 | tail -n 1 | sed -r 's/`|_|\"|&|;|quot//g')
+    region=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 2 | tail -n 1 | sed -r 's/`|_|\"|&|;|quot//g; s/ё/е/g')
     link_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
     link_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r "s/.+href=\"//g; s/\".+//g")
     size=$(printf "%s\n" "${html[@]}" | grep "floatright green" -m 1 | sed -r 's/.+n">//;s/\s.+//')
-    # (Debug) Обновлен парсинг
+    # Обновленный парсинг (в 0.4.4)
     length=$(printf "%s\n" "${html[@]}" | grep "Продолжительность:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
     lang=$(printf "%s\n" "${html[@]}" | grep "Перевод:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
     video=$(printf "%s\n" "${html[@]}" | grep "Качество:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
@@ -938,7 +1026,7 @@ function read-html {
         data+=$(echo "*Рейтинг IMDb:* $rating_imdb \n")
     fi
     if [ -n "$rating_kz" ]; then
-        data+=$(echo "*Рейтинг Кинозал:* $rating_kz (голосов: $rating_count_users)\n")
+        data+=$(echo "*Рейтинг Кинозал:* $rating_kz (*голосов:* $rating_count_users)\n")
     fi
     if [ -n "$video" ]; then
         data+=$(echo "*Качество:* $video \n")
@@ -1432,6 +1520,27 @@ function menu-files {
     fi
 }
 
+### State:
+# 📶 stalledDL           Торрент скачивается, но соединение не установлено
+# 📶 stalledUP           Торрент загружается, но соединение не установлено
+# ⏸ pausedDL            Торрент приостановлен и загрузка НЕ ​​завершена
+# ⏸🆗 pausedUP         Торрент приостановлен и загрузка завершена
+# ⬇️ downloading         Торрент скачивается и данные передаются
+# ⬆️ uploading           Торрент загружается и данные передаются
+# ⏯ queuedUP            Очередь включена, и торрент поставлен в очередь на загрузку
+# ⏯ queuedDL            Очередь включена, и торрент поставлен в очередь на загрузку
+# ⬇️🆙forcedUP          Торрент принудительно загружается и игнорирует ограничение очереди
+# ⬇️🆙forcedDL          Торрент принудительно загружается, чтобы игнорировать ограничение очереди
+# 🧲 metaDL              Торрент только начал загрузку и получает метаданные
+# ♻️ checkingUP          Торрент завершил загрузку и проходит проверку
+# ♻️ checkingDL          То же, что и проверка UP, но загрузка торрента НЕ завершена
+# ♻️ checkingResumeData  Проверка данных возобновления при запуске qBt
+# ⚠️ allocating          Торрент выделяет место на диске для скачивания
+# ⚠️ moving              Торрент переезжает в другое место
+# ⚠️ missingFiles        Файлы данных торрента отсутствуют
+# ⚠️ error               Произошла ошибка, относится к приостановленным торрентам
+# ⚠️ unknown             Неизвестный статус
+
 ### /status
 ### 🟢 Список торрент раздач загруженных в qBittorrent
 function menu-status {
@@ -1450,14 +1559,24 @@ function menu-status {
             qb_name=$(echo $qb_name | sed -r "s/^/🆗 /")
         elif [[ $qb_status =~ "stalled" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/📶 /")
-        elif [[ $qb_status =~ "paused" ]]; then
+        elif [[ $qb_status == "pausedDL" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/⏸ /")
+        elif [[ $qb_status =~ "pausedUP" ]]; then
+            qb_name=$(echo $qb_name | sed -r "s/^/⏸🆗 /")
         elif [[ $qb_status =~ "download" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/⬇️ /")
-        elif [[ $qb_status =~ "seeding" ]]; then
+        elif [[ $qb_status =~ "upload" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/⬆️ /")
+        elif [[ $qb_status =~ "queued" ]]; then
+            qb_name=$(echo $qb_name | sed -r "s/^/⏯ /")
+        elif [[ $qb_status =~ "forced" ]]; then
+            qb_name=$(echo $qb_name | sed -r "s/^/⬇️🆙 /")
+        elif [[ $qb_status =~ "metaDL" ]]; then
+            qb_name=$(echo $qb_name | sed -r "s/^/🧲 /")
+        elif [[ $qb_status =~ "checking" ]]; then
+            qb_name=$(echo $qb_name | sed -r "s/^/♻️ /")
         else
-            qb_name=$(echo $qb_name | sed -r "s/^/ℹ️ /")
+            qb_name=$(echo $qb_name | sed -r "s/^/⚠️ /")
         fi
         keyboard+="[{\"text\":\"$qb_name\",\"callback_data\":\"/info $qb_hash\"}],"
     done
@@ -1483,6 +1602,29 @@ function menu-info {
     echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /info for $qb_name ($qb_hash)" >> $path_log
     qb_status=$(echo $qb_state | jq -r ".state")
     qb_progress=$(echo $qb_state | jq -r ".progress" | sed -r "s/\..+ %/ %/")
+    if [[ $qb_status == "completed" || $qb_progress == "100 %" ]]; then
+        qb_status_emoji="🆗"
+    elif [[ $qb_status =~ "stalled" ]]; then
+        qb_status_emoji="📶"
+    elif [[ $qb_status == "pausedDL" ]]; then
+        qb_status_emoji="⏸"
+    elif [[ $qb_status =~ "pausedUP" ]]; then
+        qb_status_emoji="⏸🆗"
+    elif [[ $qb_status =~ "download" ]]; then
+        qb_status_emoji="⬇️"
+    elif [[ $qb_status =~ "upload" ]]; then
+        qb_status_emoji="⬆️"
+    elif [[ $qb_status =~ "queued" ]]; then
+        qb_status_emoji="⏯"
+    elif [[ $qb_status =~ "forced" ]]; then
+        qb_status_emoji="⬇️🆙"
+    elif [[ $qb_status =~ "metaDL" ]]; then
+        qb_status_emoji="🧲"
+    elif [[ $qb_status =~ "checking" ]]; then
+        qb_status_emoji="♻️"
+    else
+        qb_status_emoji="⚠️"
+    fi
     qb_size=$(echo $qb_state | jq -r ".size")
     qb_size_total=$(echo $qb_state | jq -r ".size_total")
     qb_completed_size=$(echo $qb_state | jq -r ".completed_size")
@@ -1506,7 +1648,7 @@ function menu-info {
     qb_prop_download_speed_avg=$(echo $qb_prop | jq -r ".download_speed_avg")
     qb_name=$(echo $qb_name | sed -r "s/_/ /g")
     data=$(echo "*Название:* $qb_name \n")
-    data+=$(echo "*Статус загрузки:* $qb_status \n")
+    data+=$(echo "*Статус загрузки:* $qb_status_emoji ($qb_status) \n")
     data+=$(echo "*Прогресс:* $qb_progress \n")
     data+=$(echo "*Размер:* $qb_size ($qb_size_total)\n")
     data+=$(echo "*Загружено:* $qb_completed_size\n")
@@ -1531,6 +1673,8 @@ function menu-info {
             {\"text\":\"📖 Список файлов\",\"callback_data\":\"/torrent_content $qb_hash\"}],
             [{\"text\":\"⏸ Пауза\",\"callback_data\":\"\/pause $qb_hash\"},
             {\"text\":\"▶️ Возобновить\",\"callback_data\":\"\/resume $qb_hash\"}],
+            [{\"text\":\"⬆️ Получить торрент\",\"callback_data\":\"\/get_torrent $qb_hash\"},
+            {\"text\":\"♻️ Проверить\",\"callback_data\":\"\/torrent_recheck $qb_hash\"}],
             [{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/delete_torrent $qb_hash\"},
             {\"text\":\"❌ Удалить видео\",\"callback_data\":\"\/delete_video $qb_hash\"}],
             [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/find_kinozal $kinozal_id\"},
@@ -1560,7 +1704,14 @@ function menu-torrent-content {
     keyboard='{"inline_keyboard":['
     for qb_file_name in $qb_files_array; do
         qb_file_index=$(echo $qb_files | jq ".[] | select(.name == \"$qb_file_name\").index")
-        # Добавляем статус приоритета
+        # Получаем статус прогресса
+        qb_file_progress=$(echo $qb_files | jq ".[] | select(.name == \"$qb_file_name\").progress")
+        if [[ $qb_file_progress == 1 ]]; then
+            qb_file_progress_stats="✅"
+        else
+            qb_file_progress_stats="❎"
+        fi
+        # Получаем статус приоритета
         qb_file_priority=$(echo $qb_files | jq ".[] | select(.name == \"$qb_file_name\").priority")
         if [[ $qb_file_priority == 0 ]]; then
             qb_file_priority_stats="⏸"
@@ -1571,15 +1722,8 @@ function menu-torrent-content {
         elif [[ $qb_file_priority == 7 ]]; then
             qb_file_priority_stats="⏫"
         fi
-        # Добавляем статус прогресса
-        qb_file_progress=$(echo $qb_files | jq ".[] | select(.name == \"$qb_file_name\").progress")
-        if [[ $qb_file_progress == 1 ]]; then
-            qb_file_progress_stats="✅"
-        else
-            qb_file_progress_stats="❎"
-        fi
         qb_file_name_replace=$(echo $qb_file_name | sed -r "s/.+\///")
-        keyboard+="[{\"text\":\"$qb_file_priority_stats $qb_file_progress_stats $qb_file_name_replace\",\"callback_data\":\"/file_torrent $qb_file_index\"}],"
+        keyboard+="[{\"text\":\"$qb_file_progress_stats $qb_file_priority_stats $qb_file_name_replace\",\"callback_data\":\"/file_torrent $qb_file_index\"}],"
     done
     keyboard+="[{\"text\":\"⏸ Пропустить все\",\"callback_data\":\"\/skip_all_files\"},"
     keyboard+="{\"text\":\"▶️ Возобновить все\",\"callback_data\":\"\/normal_all_files\"}],"
@@ -1987,31 +2131,37 @@ function win-service {
 
 # magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&xs=https://webtorrent.io/torrents/sintel.torrent
 
+# magnet:?xt=urn:btih:33c66636a3350b653462f9b210287eeb0d627ba0&dn=Eric.2024.S01.1080p.WEB-DL.NewComersX&tr=http%3A%2F%2Ftr0.torrent4me.com%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr0.tor4me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr0.tor2me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Fretracker.local%2Fannounce&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com
+# https://instant.io/#33c66636a3350b653462f9b210287eeb0d627ba0
+
+# magnet:?xt=urn:btih:799b790d5ea6e0772b60624928df9e412175119e&tr=http%3A%2F%2Ftr1.tor4me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr1.tor2me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr1.torrent4me.com%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Fretracker.local%2Fannounce
+# 799b790d5ea6e0772b60624928df9e412175119e3
+
 ### Формируем magnet ссылку из хэша с указанием списка серверов торрент трекеров 
 function magnet-uri {
     info_hash=$1
     trackers=(
-        "wss://tracker.btorrent.xyz"
+        "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr2.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr3.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr4.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr5.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr0.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr1.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr2.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr3.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr4.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr5.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr0.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr1.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr2.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr3.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr4.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr5.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://retracker.local/announce"
         "wss://tracker.openwebtorrent.com"
-        "udp://tracker.btorrent.xyz:80"
-        "udp://tracker.openwebtorrent.com:80"
-        "udp://tracker.openwebtorrent.com:1337"
-        "udp://retracker.local:80"
-        "udp://tr0.torrent4me.com:80"
-        "udp://tr1.torrent4me.com:80"
-        "udp://tr2.torrent4me.com:80"
-        "udp://tr3.torrent4me.com:80"
-        "udp://tr4.torrent4me.com:80"
-        "udp://tr0.tor4me.info:80"
-        "udp://tr1.tor4me.info:80"
-        "udp://tr2.tor4me.info:80"
-        "udp://tr3.tor4me.info:80"
-        "udp://tr4.tor4me.info:80"
-        "udp://tr0.tor2me.info:80"
-        "udp://tr1.tor2me.info:80"
-        "udp://tr2.tor2me.info:80"
-        "udp://tr3.tor2me.info:80"
-        "udp://tr4.tor2me.info:80"
+        "wss://tracker.openwebtorrent.com"
     )
     magnet="magnet:?xt=urn:btih:$info_hash"
     for tracker in "${trackers[@]}"; do
@@ -2352,11 +2502,11 @@ while :
             else
                 menu-status "🐸 Список загружаемых торрентов (обновлено: $(date '+%H:%M:%S')):" "$CHAT"
             fi
-        ### Request: /info hash 🔄
+        ### Request: /info hash 🔄🔄🔄
         elif [[ $command == /info* ]]; then
             qb_hash=$(echo $command | sed "s/\/info //")
             menu-info $qb_hash
-        ### Request: /torrent_content hash 📖
+        ### Request: /torrent_content hash 📖📖📖
         elif [[ $command == /torrent_content* ]]; then
             qb_hash=$(echo $command | sed "s/\/torrent_content //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_content for torrent hash: $qb_hash" >> $path_log
@@ -2420,7 +2570,7 @@ while :
                     menu-status "🐸 Торрент файл не добавлен (ошибка):" "$CHAT"
                 fi
             fi
-        ### Request: /pause hash ⏸
+        ### Request: /pause hash ⏸⏸⏸
         elif [[ $command == /pause* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/pause //")
             qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
@@ -2434,7 +2584,7 @@ while :
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
             echo "[INFO] $(date '+%H:%M:%S'): After status: $qb_status" >> $path_log
             menu-info "$qb_hash"
-        ### Request: /resume hash ▶️
+        ### Request: /resume hash ▶️▶️▶️
         elif [[ $command == /resume* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/resume //")
             qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
@@ -2448,7 +2598,7 @@ while :
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
             echo "[INFO] $(date '+%H:%M:%S'): After status: $qb_status" >> $path_log
             menu-info "$qb_hash"
-        ### Request: /delete_torrent hash 🗑
+        ### Request: /delete_torrent hash 🗑🗑🗑
         elif [[ $command == /delete_torrent* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/delete_torrent //")
             qb_state_all=$(qbittorrent-info)
@@ -2468,7 +2618,7 @@ while :
                 echo "[WARN] $(date '+%H:%M:%S'): Torrent file not deleted" >> $path_log
                 menu-status "🐸 Возникла ошибка при удалении:" "$CHAT"
             fi
-        ### Request: /delete_video hash ❌
+        ### Request: /delete_video hash ❌❌❌
         elif [[ $command == /delete_video* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/delete_video //")
             qb_state_all=$(qbittorrent-info)
@@ -2488,6 +2638,31 @@ while :
                 echo "[WARN] $(date '+%H:%M:%S'): Torrent file and video content not deleted" >> $path_log
                 menu-status "🐸 Возникла ошибка при удалении:" "$CHAT"
             fi
+        ### Request: /add_torrent hash 🧲🧲🧲
+        elif [[ $command == /add_torrent* ]]; then
+            qb_hash=$(echo $command | sed -r "s/\/add_torrent //")
+            echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $qb_hash" >> $path_log
+            qbittorrent-add-torrent-from-hash "$qb_hash"
+            menu-status "🐸 Список загружаемых торрентов (обновлено: $(date '+%H:%M:%S')):" "$CHAT"
+        ### Request: /get_torrent hash 🧲⬆️
+        elif [[ $command == /get_torrent* ]]; then
+            qb_hash=$(echo $command | sed -r "s/\/get_torrent //")
+            echo "[INFO] $(date '+%H:%M:%S'): Get torrent files from hash: $qb_hash" >> $path_log
+            # Экспортируем торрент файл на сервер
+            echo "[INFO] $(date '+%H:%M:%S'): Export and send torrent file: $path/$qb_hash.torrent" >> $path_log
+            qbittorrent-export-torrent-file "$qb_hash"
+            # Отправляем файл в телеграм
+            send-file "$path/$qb_hash.torrent"
+            # Удаляем торрент файл на сервере
+            # rm "$path/$qb_hash.torrent"
+            menu-info $qb_hash
+        ### Request: /torrent_recheck hash ♻️♻️♻️
+        elif [[ $command == /torrent_recheck* ]]; then
+            qb_hash=$(echo $command | sed -r "s/\/torrent_recheck //")
+            echo "[INFO] $(date '+%H:%M:%S'): Recheck torrent: $qb_hash" >> $path_log
+            qbittorrent-recheck "$qb_hash"
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            menu-info $qb_hash
         ###### 🟠 🟠 🟠 PLEX 🟠 🟠 🟠
         ### Request: /plex_info 🟠
         elif [[ $command == /plex_info ]]; then
@@ -2694,16 +2869,16 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                         ### Фильтрация постов по рейтингу
                         if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
                             ((count_skip++))
-                            echo "[INFO] $(date '+%H:%M:%S'): Skip: $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             continue
                         ### Фильтрация постов по году выхода
                         elif [[ $year < $FILTER_YEAR ]]; then
                             ((count_skip++))
-                            echo "[INFO] $(date '+%H:%M:%S'): Skip: $a (year: $year)" >> $path_log
+                            echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (year: $year)" >> $path_log
                             continue
                         else
                             ((count_post++))
-                            echo "[OK]   $(date '+%H:%M:%S'): Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            echo "[OK]   $(date '+%H:%M:%S'): + Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             data=$(read-html "$html" "$a" "Channel")
                             keyboard='{"inline_keyboard":['
                             ### Отдаем ссылки на 🟠 Кинопоиск, 🟡 IMDb и 🟣 Кинозал, если они были получены
@@ -2733,31 +2908,36 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             ### Source: https://github.com/Lifailon/magnet2url
                             # magnet=$(magnet-uri "$info_hash")
                             # url_magnet="https://lifailon.github.io/magnet2url#$magnet"
-                            ### Параметр #tr добавляет список серверов торрент трекеров при переадресации
+                            ### (error) keyboard не принимает символы & в параметрах url
+                            ### Параметр #tr добавляет список серверов торрент трекеров при переадресации через magnet2url
                             url_magnet=$(echo "https://lifailon.github.io/magnet2url#$info_hash#tr" | sed -r "s/\s//g")
-                            keyboard+="[{\"text\":\"Скачать раздачу\",\"url\":\"$url_magnet\"},"
+                            keyboard+="[{\"text\":\"🧲 Скачать\",\"url\":\"$url_magnet\"},"
                             ######################### ▶️▶️▶️ Kinomix © Kinobox ▶️▶️▶️ #########################
                             ### Source: https://kinobox.tv
                             kp_id=$(echo $url_kp | sed -r "s/.+\///g")
                             url_km="https://kinomix.web.app/#$kp_id"
-                            keyboard+="{\"text\":\"Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
+                            keyboard+="{\"text\":\"▶️ Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                             send-keyboard "$encoded_data" "$TG_CHANNEL" "$keyboard"
+                            # (Debug) Отправить в чат бота
+                            # send-keyboard "$encoded_data" "$CHAT" "$keyboard"
+                            # send-keyboard "Test keyboard" "$CHAT" "$keyboard"
+                            # send-keyboard "$encoded_data" "$CHAT"
                         fi
                     else
                         ((count_error++))
-                        echo "[ERRO] $(date '+%H:%M:%S'): HTML data not avaliable: $a" >> $path_log
+                        echo "[ERRO] $(date '+%H:%M:%S'): ! HTML data not avaliable: $a" >> $path_log
                     fi
                 done
                 echo "[INFO] $(date '+%H:%M:%S'): All records: $count_all, post: $count_post, skip: $count_skip, error: $count_error" >> $path_log
                 link_temp=$link
                 echo "[INFO] $(date '+%H:%M:%S'): Update last link: $link_temp" >> $path_log
             else
-                echo "[INFO] $(date '+%H:%M:%S'): RSS no new data. Last link: $link_temp" >> $path_log
+                echo "[INFO] $(date '+%H:%M:%S'): RSS no new data (last link: $link_temp)" >> $path_log
             fi
             sleep $TIMEOUT_SEC_POST
         else
-            echo "[ERRO] $(date '+%H:%M:%S'): RSS data not avaliable" >> $path_log
+            echo "[ERRO] $(date '+%H:%M:%S'): ! RSS data not avaliable" >> $path_log
             sleep $TIMEOUT_SEC_ERROR
         fi
     done &
