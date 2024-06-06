@@ -24,6 +24,7 @@
 # TorAPI: https://github.com/Lifailon/TorAPI
 # TMDB api: https://developer.themoviedb.org/reference/intro/getting-started
 # Kinobox api: https://kinobox.tv/api
+# Remove and download media for send to Telegram via Everything api (https://www.voidtools.com/ru-ru/)
 
 ###############################################################################
 
@@ -38,20 +39,23 @@
 ### 20.01.2023 (0.4.3) - Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
 # Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data).
 ### 30.05.2023 (0.4.4): 
-# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (список файлов);
+# + Добавлены параметры управления для вывода логов текущего сервера и журнала работы qBittorrent (функция qbittorrent-log);
+# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /find_kinozal);
 # + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
 # + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
 # + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
-# + Добавлена возможность загрузить торрент по инфо хэшу (/add_torrent из меню);
+# + Добавлена возможность загрузить торрент по инфо хэш (/add_torrent из меню);
 # + Выгрузить торрент файла из клиента qBittorrent (после загрузки метаданных) на сервер с отправкой в телеграм;
 # + Добавлена проверка (сканирование целостности) торрент раздачи в qBittorrent;
 # + Добавлен статус приоритета и загрузки в списке файлов выбранного торрента;
 # + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
 # + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
+# + Добавлена информация о настройках и лимитах qBittorrent в список торрентов (/status) и переключение на альтернатывные лимиты скорости (/torrent_limit);
 # ~ Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент;
 # ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск + IMDb + Кинозал + Magnet + Kinobox);
 # ~ Обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов;
-# + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url.
+# + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url;
+# + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
 
 ###############################################################################
 
@@ -105,6 +109,7 @@
 # /add_torrent <hash> - Добавить раздачу на загрузку в qBittorrent по инфо хэш
 # /get_torrent <hash> - Выгрузить торрент файл на сервер по инфо хэш и отправить в телеграмм
 # /torrent_recheck <hash> - Проверить торрент файл
+# /torrent_limit - Переключить альтернативные лимиты скорости загрузки и отдачи
 
 ###############################################################################
 
@@ -120,13 +125,6 @@
 # / find - Поиск в Plex
 
 ###############################################################################
-
-### Параметры управления:
-# bash kinozal-bot-0.4.4.sh # запустить сервер
-# bash kinozal-bot-0.4.4.sh status
-# bash kinozal-bot-0.4.4.sh log
-# bash kinozal-bot-0.4.4.sh log 20
-# bash kinozal-bot-0.4.4.sh stop
 
 ### Поиск в Кинозал по id:
 # /find_kinozal 1940284
@@ -162,6 +160,17 @@
 # /add_torrent A72BD27A0CE265A3C7965392BC06C25EDD759214
 
 ###############################################################################
+
+### Параметры управления:
+# bash kinozal-bot-0.4.4.sh         # запустить сервер
+# bash kinozal-bot-0.4.4.sh status  # статус работы и количество активных потоков процесса
+# bash kinozal-bot-0.4.4.sh stop    # остановить сервер
+# bash kinozal-bot-0.4.4.sh log     # выводить лог в реальном времени
+# bash kinozal-bot-0.4.4.sh log 20  # вывести N (количество) записей
+# bash kinozal-bot-0.4.4.sh qb      # вывести лог с qBittorrent клиента (WARNING и CRITICAL)
+# bash kinozal-bot-0.4.4.sh qb all  # вывести все логи
+
+###############################################################################
 ############################## Debug to console ###############################
 
 ### Получить путь к конфигурации (по умолчанию файл конфигурации находится рядом со скриптом сервера)
@@ -188,6 +197,47 @@ fi
 
 ### (Debug) Отключить второй поток канала (раскомментировать перед запуском, если не задано в конфигурации)
 # TG_CHANNEL_USE="False"
+
+### Функция авторизации в qBittorrent
+function qbittorrent-auth {
+        echo "[INFO] $(date '+%H:%M:%S'): Authorization to qBittorrent" >> $path_log
+        endpoint_auth="api/v2/auth/login"
+        curl -s "$QB_ADDR/$endpoint_auth" \
+            --max-time 1 \
+            -c $path_qb_cookies \
+            --header "Referer: $QB_ADDR" \
+            --data "username=$QB_USER&password=$QB_PASS" 1> /dev/null
+}
+
+### Журнал работы с клиента qBittorrent
+function qbittorrent-log {
+    type=$1
+    all=false
+    if [[ $type == "all" ]]; then
+        all=true
+    fi
+    qbittorrent-auth
+    endpoint="api/v2/log/main"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "normal=$all" \
+        --data "info=$all" \
+        --data "warning=true" \
+        --data "critical=true" \
+        --data "last_known_id=-1" | jq '.[] | {
+            type: (
+                if .type == 1 then "NORMAL"
+                elif .type == 2 then "INFO"
+                elif .type == 4 then "WARNING"
+                elif .type == 8 then "CRITICAL"
+                else "UNKNOWN"
+                end
+            ),
+            datetime: (.timestamp | todateiso8601),
+            message: .message
+        }'
+}
 
 ### Параметры управления
 if [ -n "$1" ]; then
@@ -223,6 +273,12 @@ if [ -n "$1" ]; then
             tail -n $2 $path_log
         else
             tail -f $path_log
+        fi
+    elif [[ $1 == "qb" ]]; then
+        if [[ $2 == "all" ]]; then
+            qbittorrent-log all
+        else
+            qbittorrent-log
         fi
     else
         echo "Available parameters: status, log and stop"
@@ -375,17 +431,6 @@ function read-telegram {
 ### WebUI API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
 ### Tested on version 4.6.0 and 4.6.5
 
-### Функция авторизации в qBittorrent
-function qbittorrent-auth {
-        echo "[INFO] $(date '+%H:%M:%S'): Authorization to qBittorrent" >> $path_log
-        endpoint_auth="api/v2/auth/login"
-        curl -s "$QB_ADDR/$endpoint_auth" \
-            --max-time 1 \
-            -c $path_qb_cookies \
-            --header "Referer: $QB_ADDR" \
-            --data "username=$QB_USER&password=$QB_PASS" 1> /dev/null
-}
-
 ### Проверка доступности qBittorrent
 function qbittorrent-test {
     qbittorrent-auth
@@ -416,8 +461,45 @@ function qbittorrent-test {
 # 2 - Служба не запущена (порт недоступен)
 # 3 - Сервер недоступен (нет пинга)
 
-### Для функции menu-info (/info)
-### Функция получения информации о всех текущих раздачах на клиенте
+### Найстройки приложения
+function qbittorrent-settings {
+    # qbittorrent-auth
+    endpoint="api/v2/app/preferences"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq .
+}
+
+# qbittorrent-settings
+# qbittorrent-settings | jq -r .save_path
+
+### Общие настройки лимитов скорости загрузки и отдачи ⬇️⬆️📶
+function qbittorrent-get-limit {
+    endpoint=$1
+    # qbittorrent-auth
+    curl -s "$QB_ADDR/api/v2/transfer/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq .
+}
+
+# qbittorrent-get-limit info
+# qbittorrent-get-limit speedLimitsMode
+# qbittorrent-get-limit downloadLimit
+# qbittorrent-get-limit uploadLimit
+
+### Переключить на альтернативные ограничения скорости (POST) 📶📶📶
+function qbittorrent-switch-limit {
+    qbittorrent-auth
+    endpoint="api/v2/transfer/toggleSpeedLimitsMode"
+    curl -s -X POST "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR"
+}
+
+# qbittorrent-switch-limit
+
+### Для конечной точки /status (функция menu-status) и /info (функция menu-info)
+### Основная функция получения списка торрентов добавленных на клиенте и дополнительная информация для выбранной раздачи
 function qbittorrent-info {
     qbittorrent-auth
     echo "[INFO] $(date '+%H:%M:%S'): Get info (status) from qBittorrent" >> $path_log
@@ -517,7 +599,7 @@ function qbittorrent-priority {
 # qbittorrent-priority "a72bd27a0ce265a3c7965392bc06c25edd759214" 3 7
 
 ### /download_video_id
-### ⏩ Добавить на загрузку выбранный торрент файл
+### ⏩ Добавить на загрузку выбранный торрент файл (POST)
 function qbittorrent-download {
     qbittorrent-auth
     filename_id=$1
@@ -635,10 +717,11 @@ function qbittorrent-export-torrent-file {
 #-----------------------------------------------------------------------------------------------------
 
 ### Функция проверки статуса загрузки метаданных
-function qbittorrent-status-metadata {
+function qbittorrent-metadata-status {
     hash=$1
-    # qbittorrent-auth
-    status=$(curl -s "$QB_ADDR/api/v2/torrents/info?hashes=$hash" \
+    qbittorrent-auth
+    endpoint="api/v2/torrents/info"
+    status=$(curl -s "$QB_ADDR/$endpoint?hashes=$hash" \
         -b $path_qb_cookies \
         --header "Referer: $QB_ADDR" | jq -r '.[0].state')
     if [[ $status == "null" ]]; then
@@ -653,25 +736,22 @@ function qbittorrent-status-metadata {
     fi
 }
 
-# qbittorrent-status-metadata "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+# qbittorrent-metadata-status "A72BD27A0CE265A3C7965392BC06C25EDD759214"
 
 ### Переименовать торрент раздачу (которая отображается в клиенте)
 function qbittorrent-rename-torrent {
     torrent_hash=$1
     new_name_torrent=$2
     qbittorrent-auth
-    endpoint="api/v2/torrents/rename"
+    endpoint="api/v2/torrents/trackers"
     curl "$QB_ADDR/$endpoint" \
         -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" \
-        --data "hash=$torrent_hash" \
-        --data "deleteFiles=$delete_type" \
-        --data "name=$new_name_torrent"
+        --header "Referer: $QB_ADDR" | jq .
 }
 
 # qbittorrent-rename-torrent "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick"
 
-### Переименовать торрент файл
+### Переименовать торрент файл или директорию
 function qbittorrent-rename-file {
     torrent_hash=$1
     new_name_file=$2
@@ -698,7 +778,27 @@ function qbittorrent-rename-file {
 # qbittorrent-rename-file "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick" "File"
 # qbittorrent-rename-file "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick" "Folder"
 
-### Получить список добавленных RSS.xml, которые случает клиент
+### Список всех уникальных трекеров используемых торрентами
+function qbittorrent-tracker-list {
+    qbittorrent-auth
+    endpoint="api/v2/torrents/info"
+    hash_list=$(curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq -r .[].hash)
+    endpoint="api/v2/torrents/trackers"
+    tracker_list=""
+    for hash in $hashes; do
+        trackers=$(curl -s "$QB_ADDR/$endpoint?hash=$hash" -b $path_qb_cookies --header "Referer: $QB_ADDR")
+        tracker_list+="$(echo "$trackers" | jq -r .[].url)"
+        tracker_list+=$'\n'
+    done
+    echo "$tracker_list" | grep . | sort | uniq
+}
+
+# qbittorrent-tracker-list
+
+### RSS
+### Получить список добавленных новостных лент и их содержимое (true), которые слушает клиент
 function qbittorrent-rss {
     type=$1
     qbittorrent-auth
@@ -711,6 +811,118 @@ function qbittorrent-rss {
 
 # qbittorrent-rss
 # qbittorrent-rss true
+
+############################## 🍿🍿🍿 qBittorrent Search Plugins 🍿🍿🍿 ##############################
+### Список плагинов и процесс установки: https://github.com/qbittorrent/search-plugins/wiki
+### Плагин для Kinozal, RuTracker, RuTor и NoNameClub: https://github.com/imDMG/qBt_SE
+### Файл настроек: "%localappdata%\qBittorrent\nova3\engines\kinozal.json"
+### Автоматизированный процесс установки и настройки плагина для Windows: https://github.com/Lifailon/PS-Commands/blob/rsa/Scripts/qbittorrent-plugin-search-kinozal-install.ps1
+
+### Получить список установленных плагинов поиска
+function qbittorrent-plugin-list {
+    qbittorrent-auth
+    endpoint="api/v2/search/plugins"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq '.[] | {
+            Name: .fullName,
+            Url: .url,
+            Enabled: .enabled
+        }'
+}
+
+# qbittorrent-plugin-list
+
+### Установить плагин
+function qbittorrent-install-plugin {
+    url=$1
+    qbittorrent-auth
+    endpoint="api/v2/search/installPlugin"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR"
+        --data "sources=$url"
+}
+
+# qbittorrent-install-plugin "https://raw.githubusercontent.com/imDMG/qBt_SE/master/engines/kinozal.py"
+
+### Начать поиск и получить его идентификатор (POST)
+function qbittorrent-search {
+    title=$1
+    plugin=$1
+    category="all"
+    qbittorrent-auth
+    endpoint="api/v2/search/start"
+    curl -s -X POST "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "pattern=$title" \
+        --data "plugins=$plugin" \
+        --data "category=$category" | jq -r .id
+}
+
+# search_id=$(qbittorrent-search "Rocky" "Kinozal")
+# search_id=$(qbittorrent-search "Rocky" "all")
+# search_id=$(qbittorrent-search "Rocky" "enabled")
+
+### Получить статус поиска (Running или Stopped) и количество результатов (total)
+function qbittorrent-status {
+    id=$1
+    qbittorrent-auth
+    endpoint="api/v2/search/status"
+    if [[ -z "$id" ]]; then
+        curl -s "$QB_ADDR/$endpoint" \
+            -b $path_qb_cookies \
+            --header "Referer: $QB_ADDR"
+    else
+        curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "id=$id"
+    fi
+}
+
+# qbittorrent-status
+# qbittorrent-status $search_id | jq -r .[].status
+
+### Остановить поиск
+function qbittorrent-stop {
+    id=$1
+    qbittorrent-auth
+    endpoint="api/v2/search/stop"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "id=$id"
+}
+
+# qbittorrent-stop $search_id
+
+### Получить результаты поиска
+function qbittorrent-result {
+    id=$1
+    qbittorrent-auth
+    endpoint="api/v2/search/results"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "id=$id" | jq .
+}
+
+# qbittorrent-result $search_id
+
+### Удалить поиск
+function qbittorrent-clear {
+    id=$1
+    qbittorrent-auth
+    endpoint="api/v2/search/delete"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "id=$id" | jq -r .
+}
+
+# qbittorrent-clear $search_id
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -1542,7 +1754,7 @@ function menu-files {
 # ⚠️ unknown             Неизвестный статус
 
 ### /status
-### 🟢 Список торрент раздач загруженных в qBittorrent
+### 🟢 Список торрент раздач добавленных в qBittorrent
 function menu-status {
     TEXT=$1
     CHAT=$2
@@ -1582,11 +1794,11 @@ function menu-status {
     done
     app_name="qbittorrent"
     keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/status\"},"
+    keyboard+="{\"text\":\"📶 Переключить лимит\",\"callback_data\":\"\/torrent_limit\"}],"
     #keyboard+="{\"text\":\"🟢 Управление\",\"callback_data\":\"\/app_status $app_name\"}],"
-    keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
-    keyboard+="[{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"},"
+    keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     #keyboard+="[{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"},"
-    keyboard+="{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$TEXT" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -2500,7 +2712,24 @@ while :
             elif [[ $qb_check == 3 ]]; then
                 send-telegram "Сервер qBittorrent недоступен" "$CHAT"
             else
-                menu-status "🐸 Список загружаемых торрентов (обновлено: $(date '+%H:%M:%S')):" "$CHAT"
+                save_path_default=$(qbittorrent-settings | jq -r .save_path)
+                qb_limit_down=$(qbittorrent-get-limit downloadLimit)
+                qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
+                qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
+                qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
+                qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
+                if [[ $qb_limit_mode == 0 ]]; then
+                    qb_limit_mode_text="Отключены"
+                elif [[ $qb_limit_mode == 1 ]]; then
+                    qb_limit_mode_text="Включены"
+                fi
+                data="🐸 Список загружаемых торрентов \n"
+                data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
+                data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
+                data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
+                data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
+                data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
+                menu-status "$(echo -e $data)" "$CHAT"
             fi
         ### Request: /info hash 🔄🔄🔄
         elif [[ $command == /info* ]]; then
@@ -2643,7 +2872,24 @@ while :
             qb_hash=$(echo $command | sed -r "s/\/add_torrent //")
             echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $qb_hash" >> $path_log
             qbittorrent-add-torrent-from-hash "$qb_hash"
-            menu-status "🐸 Список загружаемых торрентов (обновлено: $(date '+%H:%M:%S')):" "$CHAT"
+            save_path_default=$(qbittorrent-settings | jq -r .save_path)
+            qb_limit_down=$(qbittorrent-get-limit downloadLimit)
+            qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
+            qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
+            qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
+            qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
+            if [[ $qb_limit_mode == 0 ]]; then
+                qb_limit_mode_text="Отключены"
+            elif [[ $qb_limit_mode == 1 ]]; then
+                qb_limit_mode_text="Включены"
+            fi
+            data="🐸 Список загружаемых торрентов \n"
+            data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
+            data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
+            data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
+            data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
+            data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
+            menu-status "$(echo -e $data)" "$CHAT"
         ### Request: /get_torrent hash 🧲⬆️
         elif [[ $command == /get_torrent* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/get_torrent //")
@@ -2662,7 +2908,32 @@ while :
             echo "[INFO] $(date '+%H:%M:%S'): Recheck torrent: $qb_hash" >> $path_log
             qbittorrent-recheck "$qb_hash"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_recheck" >> $path_log
             menu-info $qb_hash
+        ### Request: /torrent_limit 📶📶📶
+        elif [[ $command == /torrent_limit ]]; then
+            echo "[INFO] $(date '+%H:%M:%S'): Switch torrent limit" >> $path_log
+            qbittorrent-switch-limit
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_limit" >> $path_log
+            save_path_default=$(qbittorrent-settings | jq -r .save_path)
+            qb_limit_down=$(qbittorrent-get-limit downloadLimit)
+            qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
+            qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
+            qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
+            qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
+            if [[ $qb_limit_mode == 0 ]]; then
+                qb_limit_mode_text="Отключены"
+            elif [[ $qb_limit_mode == 1 ]]; then
+                qb_limit_mode_text="Включены"
+            fi
+            data="🐸 Список загружаемых торрентов \n"
+            data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
+            data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
+            data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
+            data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
+            data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
+            menu-status "$(echo -e $data)" "$CHAT"
         ###### 🟠 🟠 🟠 PLEX 🟠 🟠 🟠
         ### Request: /plex_info 🟠
         elif [[ $command == /plex_info ]]; then
