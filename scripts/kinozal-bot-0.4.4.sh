@@ -20,11 +20,11 @@
 # jq 1.6 (https://github.com/jqlang/jq)
 
 ### Development:
-# Reverse proxy server: https://github.com/Lifailon/ReverseProxyNET
-# TorAPI: https://github.com/Lifailon/TorAPI
-# TMDB api: https://developer.themoviedb.org/reference/intro/getting-started
-# Kinobox api: https://kinobox.tv/api
-# Remove and download media for send to Telegram via Everything api (https://www.voidtools.com/ru-ru/)
+# Everything api (https://www.voidtools.com/ru-ru/) for download media and send to Telegram.
+# Support Reverse Proxy Server (https://github.com/Lifailon/ReverseProxyNET)
+# TorAPI (https://github.com/Lifailon/TorAPI)
+# TMDB api (https://developer.themoviedb.org/reference/intro/getting-started)
+# Kinobox api (https://kinobox.tv/api)
 
 ###############################################################################
 
@@ -39,7 +39,7 @@
 ### 20.01.2023 (0.4.3) - Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
 # Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data).
 ### 30.05.2023 (0.4.4): 
-# + Добавлены параметры управления для вывода логов текущего сервера и журнала работы qBittorrent (функция qbittorrent-log);
+# + Добавлены параметры управления для вывода логов текущего сервера, журнала работы клиента qBittorrent и сервера Plex;
 # + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /find_kinozal);
 # + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
 # + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
@@ -162,20 +162,33 @@
 ###############################################################################
 
 ### Параметры управления:
-# bash kinozal-bot-0.4.4.sh         # запустить сервер
-# bash kinozal-bot-0.4.4.sh status  # статус работы и количество активных потоков процесса
-# bash kinozal-bot-0.4.4.sh stop    # остановить сервер
-# bash kinozal-bot-0.4.4.sh log     # выводить лог в реальном времени
-# bash kinozal-bot-0.4.4.sh log 20  # вывести N (количество) записей
-# bash kinozal-bot-0.4.4.sh qb      # вывести лог с qBittorrent клиента (WARNING и CRITICAL)
-# bash kinozal-bot-0.4.4.sh qb all  # вывести все логи
+# bash kinozal-bot-0.4.4.sh start
+# bash kinozal-bot-0.4.4.sh status
+# bash kinozal-bot-0.4.4.sh stop
+# bash kinozal-bot-0.4.4.sh log bot
+# bash kinozal-bot-0.4.4.sh log bot 50
+# bash kinozal-bot-0.4.4.sh log qb
+# bash kinozal-bot-0.4.4.sh log qb all
+# bash kinozal-bot-0.4.4.sh log plex server
+# bash kinozal-bot-0.4.4.sh log plex server all
+# bash kinozal-bot-0.4.4.sh log plex system
+# bash kinozal-bot-0.4.4.sh log plex system all
 
 ###############################################################################
-############################## Debug to console ###############################
 
 ### Получить путь к конфигурации (по умолчанию файл конфигурации находится рядом со скриптом сервера)
 kinozal_bot_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 conf="$kinozal_bot_path/kinozal-bot.conf"
+
+###############################################################################
+############################## Debug to console ###############################
+###############################################################################
+
+### (Debug) Отключаем обработку параметров запуска
+# START_DEBUG=true
+
+### (Debug) Отключить второй поток канала (раскомментировать перед запуском, если не задано в конфигурации)
+# TG_CHANNEL_USE="False"
 
 ### (Debug) Передаем путь к конфигурации вручную
 # conf="/home/lifailon/kinozal-torrent/kinozal-bot.conf"
@@ -189,14 +202,11 @@ else
     exit 1
 fi
 
-### (Debug) Забираем первый id из массива для отправки сообщений в консоли
+### (Debug) Забираем первый id из массива для отправки сообщений в Telegram через консоли
 # CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
 
 ### (Debug) Формируем URL Proxy-сервера
 # URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
-
-### (Debug) Отключить второй поток канала (раскомментировать перед запуском, если не задано в конфигурации)
-# TG_CHANNEL_USE="False"
 
 ### Функция авторизации в qBittorrent
 function qbittorrent-auth {
@@ -209,11 +219,11 @@ function qbittorrent-auth {
             --data "username=$QB_USER&password=$QB_PASS" 1> /dev/null
 }
 
-### Журнал работы с клиента qBittorrent
+### Журнал работы клиента qBittorrent
 function qbittorrent-log {
-    type=$1
+    count=$1
     all=false
-    if [[ $type == "all" ]]; then
+    if [[ $count == "all" ]]; then
         all=true
     fi
     qbittorrent-auth
@@ -225,65 +235,120 @@ function qbittorrent-log {
         --data "info=$all" \
         --data "warning=true" \
         --data "critical=true" \
-        --data "last_known_id=-1" | jq '.[] | {
+        --data "last_known_id=-1" | jq -r '.[] | {
             type: (
-                if .type == 1 then "NORMAL"
+                if .type == 1 then "NORM"
                 elif .type == 2 then "INFO"
-                elif .type == 4 then "WARNING"
-                elif .type == 8 then "CRITICAL"
+                elif .type == 4 then "WARN"
+                elif .type == 8 then "CRIT"
                 else "UNKNOWN"
                 end
             ),
             datetime: (.timestamp | todateiso8601),
             message: .message
-        }'
+        } | "[\(.type)] \(.datetime): \(.message)"' | while read -r line; do
+            datetime=$(echo "$line" | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
+            formatted_datetime=$(date -d "$datetime" "+%d.%m.%Y %H:%M:%S")
+            echo "$line" | sed "s/$datetime/$formatted_datetime/"
+        done
+}
+
+### Журнал работы сервера Plex
+function plex-log {
+    type=$1
+    count=$2
+    path_plex_log="$path/plex-log"
+    plex_log_name=$(date "+%H:%M-%d.%m.%Y")
+    if [ -d "$path_plex_log" ]; then
+        rm -r $path_plex_log
+    fi
+    mkdir $path_plex_log
+    endpoint="diagnostics/logs"
+    curl -s "$PLEX_ADDR/$endpoint" \
+        -H "X-Plex-Token: $PLEX_TOKEN" \
+        -o "$path_plex_log/plex-log-$plex_log_name.zip"
+    unzip "$path_plex_log/plex-log-$plex_log_name.zip" -d $path_plex_log > null
+    if [[ $type == "server" && $count == "all" ]]; then
+        cat "$path_plex_log/Plex Media Server.log"
+    elif [[ $type == "server" && $count != "all" ]]; then
+        cat "$path_plex_log/Plex Media Server.log" | grep -E "ERROR|WARN"
+    elif [[ $type == "system" && $count != "all" ]]; then
+        cat "$path_plex_log/com.plexapp.system.log" | grep -E "ERROR|WARN"
+    elif [[ $type == "system" && $count == "all" ]]; then
+        cat "$path_plex_log/com.plexapp.system.log"
+    fi
 }
 
 ### Параметры управления
-if [ -n "$1" ]; then
-    process_name="kinozal"
-    if [[ $1 == "stop" ]]; then
-        ### Найти все процессы kinozal, исключил текущий процесс отановки
-        proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop" | awk '{print $2}'))
-        if [[ ${#proc[@]} != 0 ]]; then
-            for p in ${proc[@]}; do
-                echo "kill $p"
-                kill -9 $p
-            done
-            sleep $TIMEOUT_SEC_UPDATE_STATUS
-            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop"))
-            if [[ ${#proc[@]} == 0 ]]; then
-                echo "[OK]   $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+if [[ $START_DEBUG != true ]]; then
+    if [[ $1 == "start" ]]; then
+        echo "[OK]   $(date '+%H:%M:%S'): Server started" >> $path_log
+        cat $path_log | tail -n 1
+    else
+        process_name="kinozal"
+        if [[ $1 == "stop" ]]; then
+            ### Найти все процессы kinozal, исключив текущий процесс отановки
+            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop" | awk '{print $2}'))
+            if [[ ${#proc[@]} != 0 ]]; then
+                for p in ${proc[@]}; do
+                    echo "kill $p"
+                    kill -9 $p
+                done
+                sleep $TIMEOUT_SEC_UPDATE_STATUS
+                proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop"))
+                if [[ ${#proc[@]} == 0 ]]; then
+                    echo "[OK]   $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+                else
+                    echo "[ERR]  $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+                fi
             else
-                echo "[ERR]  $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+                echo "[WARN] $(date '+%H:%M:%S'): Server is already stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+            fi
+            cat $path_log | tail -n 1
+        elif [[ $1 == "status" ]]; then
+            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
+            if [ -n "$proc" ]; then 
+                echo "[INFO] $(date '+%H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
+            else
+                echo "[INFO] $(date '+%H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
+            fi
+        elif [[ $1 == "log" ]]; then
+            if [[ $2 == "bot" ]]; then
+                if [ -n "$3" ]; then
+                    tail -n $3 $path_log
+                else
+                    tail -f $path_log
+                fi
+            elif [[ $2 == "qb" ]]; then
+                if [[ $3 == "all" ]]; then
+                    qbittorrent-log all
+                else
+                    qbittorrent-log
+                fi
+            elif [[ $2 == "plex" ]]; then
+                if [[ $3 == "server" ]]; then
+                    if [[ $4 == "all" ]]; then
+                        plex-log server all
+                    else
+                        plex-log server
+                    fi
+                elif [[ $3 == "system" ]]; then
+                    if [[ $4 == "all" ]]; then
+                        plex-log system all
+                    else
+                        plex-log system
+                    fi
+                else
+                    echo "Available parameters: server and system"
+                fi
+            else
+                echo "Available parameters: bot, qb and plex"
             fi
         else
-            echo "[WARN] $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+            echo "Available parameters: start, status, log and stop"
         fi
-        cat $path_log | tail -n 1
-    elif [[ $1 == "status" ]]; then
-        proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
-        if [ -n "$proc" ]; then 
-            echo "Server running (active process: $(echo ${#proc[@]}))"
-        else
-            echo "Server not running (active process: $(echo ${#proc[@]}))"
-        fi
-    elif [[ $1 == "log" ]]; then
-        if [ -n "$2" ]; then
-            tail -n $2 $path_log
-        else
-            tail -f $path_log
-        fi
-    elif [[ $1 == "qb" ]]; then
-        if [[ $2 == "all" ]]; then
-            qbittorrent-log all
-        else
-            qbittorrent-log
-        fi
-    else
-        echo "Available parameters: status, log and stop"
+        exit 0
     fi
-    exit 0
 fi
 
 ### Логирование
@@ -296,8 +361,6 @@ function log-rotate {
         cp $path_log $(echo "$path_log"_bak)
         rm $path_log
     fi
-    echo "[OK]   $(date '+%H:%M:%S'): Server started" >> $path_log
-    echo "Server started"
 }
 
 log-rotate
@@ -928,12 +991,21 @@ function qbittorrent-clear {
 
 ############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
 ### No official API documentation
+### Token: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token
+### Endpoint list:
+# curl -s "$PLEX_ADDR" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq -r .MediaContainer.Directory[].key
+### Version
+# curl -s "$PLEX_ADDR/servers" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq -r .MediaContainer.Server[].version
+### Builder Tasks:
+# curl -s "$PLEX_ADDR/butler" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq .ButlerTasks.ButlerTask[]
+### Plugins:
+# curl -s "$PLEX_ADDR/channels/all" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq .
+### Devices (web clients):
+# curl -s "$PLEX_ADDR/devices" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq .
 
 ### /plex_status_<key>
 ### Даты создания, обновления контента и последней синхронизации в выбранной секции Plex
 function plex-sections {
-    PLEX_ADDR=$PLEX_ADDR
-    PLEX_TOKEN=$PLEX_TOKEN
     endpoint="library/sections"
     plex_dir=$(curl -m 2 -s -X GET "$PLEX_ADDR/$endpoint" \
         -H "X-Plex-Token: $PLEX_TOKEN" \
@@ -949,8 +1021,10 @@ function plex-sections {
     }"
 }
 
+# plex-sections
+
 ### /plex_info
-### Список всех секций на сервере Plex
+### Функция получения списка всех секций на сервере Plex через функция plex-sections для отправки в Telegram
 function plex-info {
     plex_sections=$(plex-sections | jq -r ".name,.key")
     keyboard='{"inline_keyboard":['
@@ -984,25 +1058,24 @@ function plex-info {
     fi
 }
 
-### /plex_sync_key 
+### /plex_sync_<key>
 ### Синхронизация указанной секции в Plex по ключу
 function plex-sync-section {
     key=$1
-    PLEX_ADDR=$PLEX_ADDR
-    PLEX_TOKEN=$PLEX_TOKEN
     endpoint="library/sections/$key/refresh"
     curl -s -X GET "$PLEX_ADDR/$endpoint" \
         -H "X-Plex-Token: $PLEX_TOKEN" \
         -H "accept: application/json"
 }
 
-### /plex_folder_
+# plex-sections | jq -r '. | select(.key == "2") | .scanned'
+# plex-sync-section 2
+# plex-sections | jq -r '. | select(.key == "2") | .scanned'
+
+### /plex_folder_<key>
 ### Получить список директорий и файлов в корне выбранной секции
-# plex-folder-from-section 2
 function plex-folder-from-section {
     key=$1
-    PLEX_ADDR=$PLEX_ADDR
-    PLEX_TOKEN=$PLEX_TOKEN
     endpoint="library/sections/$key/folder"
     plex_dir=$(curl -s -X GET "$PLEX_ADDR/$endpoint" \
         -H "X-Plex-Token: $PLEX_TOKEN" \
@@ -1014,14 +1087,12 @@ function plex-folder-from-section {
     }'
 }
 
-### /find
-### Получить список всех файлов по указанному пути через endpoint
-# plex-content-from-folder "/library/sections/2/folder?parent=46"
-# plex-content-from-folder $(plex-folder-from-section $(plex-sections | jq -r .key) | jq -r .endpoint)
+# plex-folder-from-section 2
+
+### /find <key/endpoint>
+### Получить список всех файлов в указанной директории через ключ конечной точки
 function plex-content-from-folder {
     endpoint="$1"
-    PLEX_ADDR=$PLEX_ADDR
-    PLEX_TOKEN=$PLEX_TOKEN
     plex_dir=$(curl -s -X GET "$PLEX_ADDR$endpoint" \
         -H "X-Plex-Token: $PLEX_TOKEN" \
         -H "accept: application/json" | jq ".MediaContainer.Metadata[]")
@@ -1054,6 +1125,9 @@ function plex-content-from-folder {
         } end
     "
 }
+
+# plex-content-from-folder "/library/sections/2/folder?parent=46"
+# plex-content-from-folder $(plex-folder-from-section $(plex-sections | jq -r .key) | jq -r .endpoint)
 
 ############################### 🟣 🟣 🟣 Kinozal 🟣 🟣 🟣 ###############################
 ### Получить хэш и список файлов раздачи используя авторизацию
@@ -2100,6 +2174,10 @@ function menu-plex-find {
     fi
 }
 
+###############################################################################
+################################## Debug end ##################################
+###############################################################################
+
 ###### ⚙️ ⚙️ ⚙️ WinAPI ⚙️ ⚙️ ⚙️
 ### REST API server based on .NET HttpListener and PowerShell Core
 ### Source: https://github.com/Lifailon/WinAPI (© Lifailon)
@@ -2383,9 +2461,6 @@ function magnet-uri {
 }
 
 # magnet-uri "7395a859e8e590418f422e7d0dfe68860de90631"
-
-################################## Debug end ##################################
-###############################################################################
 
 ###############################################################################
 ################################# Thread 1️⃣ ##################################
@@ -3025,8 +3100,6 @@ while :
         elif [[ $command == /plex_last_added ]]; then
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_last_added" >> $path_log
             endpoint="/library/recentlyAdded"
-            PLEX_ADDR=$PLEX_ADDR
-            PLEX_TOKEN=$PLEX_TOKEN
             plex_dir=$(curl -s -X GET "$PLEX_ADDR$endpoint" \
                 -H "X-Plex-Token: $PLEX_TOKEN" \
                 -H "accept: application/json" | jq ".MediaContainer.Metadata[]")
