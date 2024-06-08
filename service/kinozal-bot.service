@@ -1,0 +1,12 @@
+[Unit]
+Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBittorrent and Plex Media>
+After=network.target
+
+[Service]
+ExecStart=/bin/bash "/home/lifailon/kinozal-torrent/kinozal-bot-0.4.4.sh" start all log
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+Type=forking
+
+[Install]
+WantedBy=multi-user.target
