@@ -1,5 +1,5 @@
 [Unit]
-Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBittorrent and Plex Media>
+Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBittorrent and Plex Media Server
 After=network.target
 
 [Service]
