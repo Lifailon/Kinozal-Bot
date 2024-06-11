@@ -1,102 +1,167 @@
-# <img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/ico/kinozal-bot-256px.png" width="25" /> Kinozal-Bot
+<h1 align="center">
+    <img src="image/logo/kinozal-bot-256px.png" width="32" />
+    Kinozal Bot & News
+    <img src="image/logo/kinozal-news-512px.png" width="32" />
+</h1>
 
-![GitHub release (with filter)](https://img.shields.io/github/v/release/lifailon/kinozal-bot?color=<green>)
-![GitHub top language](https://img.shields.io/github/languages/top/lifailon/kinozal-bot)
-![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/lifailon/kinozal-bot)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/lifailon/kinozal-bot)
-![GitHub License](https://img.shields.io/github/license/lifailon/kinozal-bot?color=<green>) \
-[![Kinozal-News](https://img.shields.io/github/v/release/lifailon/kinozal-bot?label=Telegram+Kinozal-News&logo=Telegram&style=social)](https://t.me/kinozal_news)
+<p align="center">
+    <a href="https://github.com/Lifailon/Kinozal-Bot/releases"><img title="GitHub Release"src="https://img.shields.io/github/v/release/Lifailon/Kinozal-Bot?logo=github&label=version&color=white"></a>
+    <a href="https://github.com/Lifailon/Kinozal-Bot"><img title="GitHub Top Language"src="https://img.shields.io/github/languages/top/Lifailon/KInozal-Bot?label=bash&color=green"></a>
+    <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/LICENSE"><img title="GitHub License"src="https://img.shields.io/github/license/Lifailon/Kinozal-Bot?color=orange"></a>
+</p>
 
-🔈 **[Описание на русском](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/README_RU.md)**
+<p align="center">
+    <a href="https://t.me/kinozal_news"><img title="GitHub Created At"src="https://img.shields.io/github/created-at/Lifailon/Kinozal-Bot?logo=telegram&label=Kinozal-News&labelColor=white&color=blue"></a>
+</p>
 
-📝 **[Публикация на Habr](https://habr.com/ru/articles/782028/)**
+Telegram бот, который позволяет автоматизировать процесс доставки контента до вашего телевизора, используя только телефон.
 
-🍿 Project purpose:
+Идея заключалась в том
 
-- Generation of new posts with sending to Telegram channel based on new publications in tracker **[Kinozal](https://kinozal.tv)** with filtering by rating and year of release.
-- Automation of the process of delivering content to the TV using only the phone. Selection (proposed from the post of the channel or manual search in the bot) and downloading of a suitable torrent-file (using the proposed recommended links to each publication), setting to download in qBittorrent with the ability to manage and track the status, as well as changing the priority of downloading files, and synchronization of content with Plex Media Server, as well as viewing the contents of sections and directories.
+⚠️ Бот предназначен исключтельно для локального использования, так как основной целью является централизованное управление приложениями в **вашей домашней среде** находясь удаленно от дома (краткий обзор в **[публикации на Habr](https://habr.com/ru/articles/782028/)**).
 
-## 📚 Stack
+💁‍♂️ Протестирован и работает в виртуальной среде (**Hyper-V/VMWare**) на системе **Ubuntu 18.04** и выше (возможен запуск на системе Windows через **Git Bash** или **MobaXterm**) для удаленного управления торрент клиентом qBittorrent и Plex Media Server, установленные на системе Windows. Хранение торрент-файлов происходит в системе, на которой запущен бот.
 
-- **Kinozal**: read RSS feed, retrieve data from html (no api), search and filter content, download torrent files;
-- **Telegram api**: sending messages to the channel, reading (commands only) and sending reply messages in menu format (keyboard);
-- **qBittorrent api**: download data from torrent files and manage data (pause, delete, change priority);
-- **Plex Media Server api**: synchronize data and get information about content of sections and child files.
+На базе бота реализовн новостной канала 📢 [Kinozal-News](https://t.me/kinozal_news), который генерирует посты на основе новых публикаций в торрент трекере **[Кинозал](https://kinozal.tv)** с фильтрацией по **рейтингу (7.0+)** и **году выхода (2023+)**. Каждый пост содержит краткую информацию о раздаче (год выхода, страна и компания производства, рейтинг, качество и перевод), а также **# хештеги по жанру для быстрой фильтрации контента на канале** и прямые ссылки с описанием фильма или сериала в базах данных о кинематографе [Кинопоиск](https://www.kinopoisk.ru) и [IMDb](https://www.imdb.com), бесплатный онлайн просмотр через плееры ▶️ [Kinobox](https://kinobox.tv) и 🧲 **магнтиную ссылку** для загрузки содержимого раздачи в вашем торрент клиенте (применимо как для bittorrent-клиентов на телефоне, так и Linux или Windows, быстрее всего метаданные подгружает десктопный клиент [WebTorrent](https://github.com/webtorrent/webtorrent-desktop)).
 
-**Optional:**
+### 🍿 Реализовано:
 
-- Any **VPN client application and/or proxy server** for access to Kinozal;
-- **[Kinopoisk API](https://github.com/mdwitr0/kinopoiskdev)**: get information about the movie and trailers in youtube (**Description Kinopoisk** button), actor links in Kinopoisk and filmography from Kinozal (added in version 0.4.2);
-- **[WinAPI](https://github.com/Lifailon/WinAPI)**: stop and start Plex and qBittorrent applications, manage directories and files, get system health metrics (to be added in the next version).
+- ✅ Интерфейс для взаимодействия с торрент трекером **[Кинозал](https://kinozal.tv)**. Поиск раздач с фильтрацией по году выхода и формату разрешения, поиск фильмографии по актеру, получение подробной информации о раздачах, содержимое раздачи и загрузка торрент файлов.
+- ✅ Централизованное управление загруженными торрент файлами (`.torrent`), с возможностью выгрузки в Telegram.
+- ✅ Интерфейс для удаленного управления вашем торрент клиентом [qBittorrent](https://github.com/qbittorrent/qBittorrent). Добавление раздач на загрузку из торрент файла и [инфо хеш](https://en.wikipedia.org/wiki/Magnet_URI_scheme) (передается в каждой публикации новостного канала и при поиске раздач в боте), получение подробной информацию (скорость загрузки, статус, пиры, сиды и т.д.), пауза и возобновление загрузки, проверка на целостность, переключение лимитов скорости, управление приоритетом отдельных файлов, удаление торрента и содержимого раздачи в системе.
+- ✅ Синхронизация контента с [Plex Media Server](https://www.plex.tv), а также просмотр содержимого директорий и дочерних файлов.
 
-## 🎉 Example
+🧲 Добавление торрента по хэшу возможно из любого источника, это также дает возможность сформировать и сохранить торрент файл на сервере с полученными метаданными через торрент клиент qBittorrent, с выгрузкой в Telegram.
 
-An active channel with publications: 📢 **[Kinozal-News](https://t.me/kinozal_news)** 
+### 📚 Stack:
 
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/1-kinozal-info.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/8-plex-content.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/2-kinopoisk-description.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/7-kinozal-profile-and-torrent-files.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/3-actor-list.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/4-actor-info.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/5-torrent-status.jpg" width="400"/></a>
-<img src="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/example/0.4.2/6-torrent-files.jpg" width="400"/></a>
+- [Telegram api](https://core.telegram.org/bots/api);
+- [qBittorrent api](https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1));
+- Plex Media Server api (не содержит официальной документации).
 
-## 🚀 Install
+**Зависимости:**
 
-For the bot to work, you need to prepare your own environment. All settings of connection and filtering of new publications are set in the configuration file: **kinozal-bot.conf** 📑.
+- [jq](https://github.com/jqlang/jq) для обработки данных в формате *json*.
 
-1. Register an account in **Kinozal** and fill in the parameters in the configuration:
+**Опционально:**
 
-`KZ_PROFILE="id_you_profile"` - used to get information from the profile \
-`KZ_USER="LOGIN"` - used at the stage of torrent file downloading and obtaining information in the profile \
+- Клиентское приложение **VPN и/или Proxy-сервер** для доступа в Кинозал
+
+---
+
+## 🎉 Примеры использования
+
+- Загрузка раздачи из канала по 🧲 магнитной ссылки (переадресация происходит автоматически в торрент клиент по умолчанию):
+
+💡 Так как параметр url в keyboard Telegram API не поддерживает магнет ссылки, был реалезован механизм переадресации.
+
+<h1 align="center">
+<img src="image/examples/magnet-download.jpg" width="400"/></a> <img src="image/examples/magnet-redirect.jpg" width="400"></a>
+</h1>
+
+- Демонстрация работы поиска и добавление на загрузку в qBittorrent:
+
+<h1 align="center">
+<img src="image/examples/search-and-download.gif"/></a>
+</h1>
+
+- 🔍 Поиск в торрент трекере c фильтрацией по году выхода и формату разрешения:
+
+<h1 align="center">
+<img src="image/examples/search-all.jpg" width="450"/></a> <img src="image/examples/search-filter.jpg" width="450"></a>
+</h1>
+
+- Профиль Кинозал, список торрент файлов на сервере и выгрузка всех торрент файлов (с полученными метаданными) в Telegram:
+
+<h1 align="center">
+<img src="image/examples/torrent-file-list.jpg" width="450"/></a> <img src="image/examples/torrent-file-download-all.jpg" width="450"></a>
+</h1>
+
+- Список всех активных торрентов, добавленных в клиент qBittorrent, статус выбранной раздачи и поиск выбранной раздачи в базе Кинозал:
+
+<h1 align="center">
+<img src="image/examples/the-rookie-qbittorrent.jpg" width="450"/></a> <img src="image/examples/the-rookie-kinozal.jpg" width="450"></a>
+</h1>
+
+- Содержимое торрента (список файлов) для изменения приоритезацией загрузки и управление контентом в Plex. 
+
+<h1 align="center">
+<img src="image/examples/qbittorrent-file-list.jpg" width="450"/></a> <img src="image/examples/plex-content.jpg" width="450"></a>
+</h1>
+
+
+---
+
+## ⚙️ Настройка
+
+Для работы бота, необходимо подготовить свою среду, все настройки подключения задаются в конфигурационном файле: 📑 **[kinozal-bot.conf](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/scripts/kinozal-bot.conf)**.
+
+1. Зарегистрировать аккаунт в **Кинозал** и заполнить параметры конфигурации:
+
+`KZ_PROFILE="id_you_profile"` - используется для получения информации из профиля Кинозал \
+`KZ_USER="LOGIN"` - используется на этапе получения инфо хэш из раздачи и загрузки торрент-файлов \
 `KZ_PASS="PASSWORD"`
 
-2. If you do not have direct access to Kinozal, you can use a VPN or proxy server (I use **Handy Cache** in conjunction with **VPN Hotspot Shield in Split Tunneling mode** based on the Windows operating system) through which the bot can proxy its requests.
+2. Если у вас заблокирован доступ в Кинозал, вы можете воспользоваться VPN или Proxy, через который бот сможет проксировать свои запросы.
 
-`PROXY="True"` - enable the use of a proxy server in curl-requests when accessing Kinozal \
-`PROXY_ADDR="http://192.168.3.100:9090"` \
+> Я использую **HandyCache** на системе Windows, рядом с которым запущена бесплатная версия **VPN Hotspot Shield** в режиме раздельного туннелирования (Split Tunneling) до сайта Кинозал.
+
+`PROXY="True"` - включить использование прокси сервера в curl-запросах при обращении к Кинозал \
+`PROXY_ADDR="http://192.168.3.100:9090"` - адрес сервера и порт, на котором слушает запросы Proxy-сервер \
 `PROXY_USER="LOGIN"` \
 `PROXY_PASS="PASSWORD"`
 
-3. Create a bot in **[@botfather](https://t.me/BotFather)** using an intuitive interface and get its API token. Also create your channel for new publications in Kinozal and separately start your chat with the previously created bot to interact with the services. Get the id of the channel (starts with "-") and chat using the bot: **[Get My ID](https://t.me/getmyid_arel_bot)** and fill in the parameters:
+3. Создать своего Telegram бота через **[@botfather](https://t.me/BotFather)** используя интуитивно понятный интерфейс и получите API-токен доступа. Что бы получить ваш **id чата** с ботом (необходим для ограничения доступа), можете возспользоваться ботом **[Get My ID](https://t.me/getmyid_arel_bot)**, которому необходимо переслать ваше сообщение из чата с ботом, после чего заполните параметры:
 
-`TG_TOKEN="6873341222:AAFnVgfavenjwbKutRwROQQBya_XXXXXXXX"` - used to read and send messages to Telegram chatbot \
-`TG_CHANNEL="-1002064864175"` - used to send messages to the channel \
-`TG_CHAT="8888888888,999999999"` - id of all chat rooms for access to the bot (to be filled in with commas), further id can be obtained in the log output from requests of new clients requests \
-`TG_BOT_NAME="lifailon_ps_bot"` - used to link to the bot from the channel
+`TG_TOKEN="6873341222:AAFnVgfavenjwbKutRwROQQBya_XXXXXXXX"` - используется для чтения и отправки сообщений ботом \
+`TG_CHAT="8888888888,999999999"` - id всех чатов, которые будут иметь доступа к боту. 
 
-4. Install torrent client **qBittorrent** and enable **Web interface** in the settings.
+> В дальнейшем id можно получить в логе из запросов новых клиентов, которые вы сможете добавить в конфигурацию через запятую.
 
-`QB_ADDR="http://192.168.3.100:8888"` - specify the final URL, which specifies the IP address of the machine running qBittorrent and port (set in the settings) \
-`QB_USER="LOGIN"` - is specified in the **Authentication** field in the **Web Interface** settings \
-`QB_PASS="PASSWORD"`
+4. Установить и настроить торрент клиент [qBittorrent](https://www.qbittorrent.org/download).
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-settings.jpg)
+- 4.1. Включить **Веб-интерфейс** в настройках приложения:
 
-> Add a directory with the contents of the Plex contact to be downloaded by default in qBittorrent
+![Image alt](image/settings/qbittorrent-settings.jpg)
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/qbittorrent-default-directory.jpg)
+Указать параметры подключения к клиенту:
 
-5. Install **Plex Media Server** (in my case installed where the qBittorrent client is on my Windows machine) and **get the key/token** to access the REST API. I couldn't find a way to get the key in the web interface, so I captured the token in the network log url request (X-Plex-Token=) during authorization using **Development Tools** (no time limit).
+`QB_ADDR="http://192.168.3.100:8888"` - указать URL-адрес, где указан протокол (по умолчанию, **http**), ip-адрес машины, на которой запущен qBittorrent и порт (задается в настройках **Веб-интерфейса**) \
+`QB_USER="LOGIN"` - указывается в поле **Аутентификация** в настройках **Веб-интерфейса** \
+`QB_PASS="PASSWORD"` - указывается в поле **Аутентификация** в настройках **Веб-интерфейса**
+
+- 4.1. Указать директорию для загрузки контента по умолчанию в qBittorrent. 
+
+💡 Это должна быть директория, которая будет добавлена на сервер Plex, что бы в дальнейшем можно было синхронизировать загруженный контент, используя бот.
+
+![Image alt](image/settings/qbittorrent-default-directory.jpg)
+
+5. Установить [Plex Media Server](https://www.plex.tv/ru/media-server-downloads/?cat=computer&plat=windows) и [получить токен доступа](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token).
+
+Так как нет возможности напрямую получить токент доступа в веб-интерфейсе, можно воспользоваться панелью разработчика ([Development Tools](https://developer.chrome.com/docs/devtools?hl=ru)) в браузере. Перейдите на вкладку **сеть (network)** и обновите страницу с интерфейсом вашего сервера Plex, после чего вы можете увидеть токен в любом из url-запросов (X-Plex-Token=**ваш_токена**). Передайте адрес сервера (по умолчанию, порт **32400**) и содержимое токена в параметры:
 
 `PLEX_ADDR="http://192.168.3.100:32400"` \
-`PLEX_TOKEN="TOKEN"`
+`PLEX_TOKEN="ваш_токена"`
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-token.jpg)
+![Image alt](image/settings/plex-token.jpg)
 
-> Add the content directory to the Plex server to which the qBittorrent client is configured by default
+💡 Создайте новую секцию на сервере Plex и укажите путь к директории хранения вашего контента, на которую уже **настроен клиент qBittorrent по умолчанию**:
 
-![Image alt](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/image/settings/plex-add-directory.jpg)
+![Image alt](image/settings/plex-add-directory.jpg)
 
-6. **Get your API token to access the Kinopoisk database** (unofficial, from IMDb), using a Telegram bot **[@kinopoiskdev_bot](https://t.me/kinopoiskdev_bot)** (200 requests per day in the free version).
+6. Пути для сохранения торрент файлов, cookie (временные файлы, для авторизации в qBittorrent и Кинозал), а также лог-файлов **задаются в конфигурации**.
 
-`KINOPOISK_API="True"` - information about the actor will be retrieved from the Kinopoisk database (if **False**, the link to Kinozal will be retrieved). \
-`KINOPOISK_TOKEN="XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"`
+```
+path="/home/lifailon/kinozal-torrent"
+path_qb_cookies="/home/lifailon/kinozal-torrent/qbittorrent.cookies"
+path_kz_cookies="/home/lifailon/kinozal-torrent/kinozal.cookies"
+path_log="/home/lifailon/kinozal-torrent/kinozal-bot.log"
+log_size_mbyte=10
+```
 
-## 🐧 Start
+## 🐧 Запуск
 
-Check that you have **[jq](https://github.com/jqlang/jq)** installed:
+Проверьте, что у вас установлен **[jq](https://github.com/jqlang/jq)**:
 
 ```bash
 apt install jq
@@ -104,61 +169,220 @@ jq --version
 jq-1.6
 ```
 
-To run the bot on a remote machine (I use Ubuntu Server 22.04) place the configuration file **kinozal-bot.conf** next to the script (the paths for storing the log file, cookies and torrent files are set in the configuration) and use the 🐧 interpreter to run it (root privileges are not required):
+Для запуска бота [загрузите](https://github.com/Lifailon/Kinozal-Bot/tree/rsa/scripts) скрипт `kinozal-bot-*.sh` последней версии, и расположите предварительно настроенный конфигурационный файл **kinozal-bot.conf** рядом со скриптом.
+
+Я использую директорию `kinozal-torrent` в корне домашнего каталога текущего пользователя, вот пример состава файлов:
+
+![Image alt](image/settings/kinozal-bot-files.jpg)
+
+- Используйте интерпретатор 🐧 **Bash** для запуска (**root** права не требуются):
 
 ```bash
-bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh
+cd ~/kinozal-torrent
+bash kinozal-bot-0.4.4.sh start bot
 ```
 
-On startup, the path to the log will be given. There are 2 main threads (processes) and up to 20 child threads running.
-
-**Stop the service:**
+- Узнать статус работы и количество активных процессов:
 
 ```bash
-bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh stop
-bash ~/bash kinozal-torrent/kinozal-bot-0.4.sh status
+bash kinozal-bot-0.4.4.sh status
+bash kinozal-bot-0.4.4.sh status proc
 ```
 
-## 📌 Commands
+- Проверка подключения к qBittorrent:
 
-A list of all available commands (except `/search`) are automated through the bot menu.
+```bash
+bash kinozal-bot-0.4.4.sh log qb
+bash kinozal-bot-0.4.4.sh log qb all
+```
 
-`/search` - Search in Kinozal by title (takes the year of release for filtering at the beginning of the query) \
-`/profile ` - Profile Kinozal (the number of available for download torrent files, download and upload statistics, time sid and peer) \
-`/torrent_files` - List of downloaded torrent files (with the ability to delete files) \
-`/status` - qBittorrent manager (list and status of all current torrents added to the torrent client) \
-`/plex_info` - Plex content (list of available sections for selection) \
-`/download_torrent` - Download torrent file (pass two parameters: id and file name without spaces) \
-`/delete_torrent_file_id` - Delete torrent file by id \
-`/find_kinozal_id` - Search in Kinozal by id \
-`/download_video_id` - Add to qBittorrent to download from torrent file \
-`/info` - Download status of the specified torrent (pass parameter: torrent hash) \
-`/torrent_content` - Contents (files) of the torrent (pass parameter: torrent hash) \
-`/file_torrent` - Status of selected torrent file (pass parameter: file index) \
-`/torrent_priority` - Change the priority of the selected file in /file_torrent (pass parameter: priority number) \
-`/pause` - Set to pause (pass parameter: torrent hash) \
-`/resume` - Restore download (pass parameter: torrent hash) \
-`/delete_torrent` - Remove torrent from download (pass parameter: torrent hash) \
-`/delete_video` - Delete with video data (pass parameter: hash of torrent) \
-`/plex_status_key` - Information about the selected section in Plex (pass parameter: section key) \
-`/plex_sync_key` - Synchronize the specified section in Plex (pass parameter: section key) \
-`/plex_folder_key` - Get the list of directories and files in the selected section \
-`/find` - Search for content in Plex by path (pass parameter: endpoint)
+> Если настройки заданы правильно, вы можете отобразить журнал работы qBittorrent клиента и сервера Plex в своей консоли.
 
-### Added in version 0.4.1:
+- Отобразить журнал работы сервера и системы Plex:
 
-`/plex_last_views` - List of last views (date of viewing and stop time) \
-`/plex_last_added` - List of last added files \
-`/kinozal_description` - Movie description from Kinozal (pass parameter: id kinozal)
+```bash
+bash kinozal-bot-0.4.4.sh log plex server
+bash kinozal-bot-0.4.4.sh log plex server all
+bash kinozal-bot-0.4.4.sh log plex system
+bash kinozal-bot-0.4.4.sh log plex system all
+```
 
-### Added in version 0.4.2:
+- Вывести журнал работы бота:
 
-`/kinozal_actors` - List of actors from Kinozal (pass parameter: id kinozal) \
-`/actor` - Description and search for the actor and his filmography from Kinozal and link to Kinopoisk (pass parameter: actor name) \
-`/kinopoisk_movie` - Movie information from Kinopoisk by kinopoisk id (pass parameter: kinozal id)
+💡 Все запросы к боту, а также его ответы логируются.
 
-### Example commands:
+```bash
+bash kinozal-bot-0.4.4.sh log bot   
+bash kinozal-bot-0.4.4.sh log bot 50
+```
 
-`/search Rocky 2` - Search all movies (up to 50 movie buttons with movie link) \
-`/search 1979 Rocky` - Search for a movie filtered by year of release \
-`/actor Sylvester Stallone` - Search by actor
+- Остановить бота и все его дочерние процессы:
+
+```bash
+bash ~/kinozal-torrent/kinozal-bot-0.4.4.sh stop
+bash ~/kinozal-torrent/kinozal-bot-0.4.4.sh status
+```
+
+## 🚀 Служба
+
+Если все настройки заданы и подключение проверено, можно запустить бота как службу **systemd**, что бы автоматизировать процесс запуска в случае перезагрузки системы или другого сбоя, а также передать поток логов в системный журнал.
+
+- Создайте файл службы и откройте его в любом текстовом редакторе:
+
+```
+touch /etc/systemd/system/kinozal-bot.service
+nano /etc/systemd/system/kinozal-bot.service
+```
+
+- Скопируйте туда следующее [содержимое](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/service/kinozal-bot.service):
+
+```
+[Unit]
+Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBittorrent and Plex Media Server
+After=network.target
+
+[Service]
+ExecStart=/bin/bash "/home/lifailon/kinozal-torrent/kinozal-bot-0.4.4.sh" start bot log
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+Type=forking
+
+[Install]
+WantedBy=multi-user.target
+```
+
+💡 Замените путь к скрипту сервера в параметре запуска `ExecStart` на своей.
+
+- Примените настройки, настройте автозапуск и запустите бота:
+
+```bash
+systemctl daemon-reload
+systemctl enable kinozal-bot
+systemctl start kinozal-bot
+systemctl status kinozal-bot
+```
+
+Теперь вы можете управлять запуском, используя команды: `start`, `stop` и `restart`.
+
+Для просмотра журнала работы бота, можете использовать утилиту `journalctl`:
+
+```bash
+journalctl -fu kinozal-bot
+```
+
+---
+
+## 📌 Команды
+
+💁‍♂️ Список всех доступных команд (за исключением `/search`) автоматизированы через меню кнопок (**keyboard**), остальные команды доступны в 
+
+`/search` - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации) \
+`/profile` - Профиль Кинозал (количество доступных для загрузки торрент файлов, статистика загрузки и отдачи, время сид и пир) \
+`/torrent_files` - Список загруженных торрент файлов с возможностью удаления \
+`/status` -  список и статус всех текущих торрентов, добавленных в торрент-клиент qBittorrent \
+`/plex_info` - Список секций на сервере Plex для доступа к их контенту \
+`/download_torrent <id> <file_name>` - Загрузить торрент файл (передать два параметра: id и имя файла без пробелов) \
+`/delete_torrent_file_<id>` - Удалить торрент файл по id \
+`/find_kinozal <id>` - Поиск в Кинозал по id \
+`/download_video_<id>` - Добавить торрент файла на загрузку в qBittorrent \
+`/info <hash>` - Статус загрузки указанного торрента (передать параметр: hash торрента) \
+`/torrent_content <hash>` - Содержимое торрента (список файлов) \
+`/file_torrent <index>` - Статус выбранного торрент файла (передать параметр: порядковый индекс файла) \
+`/torrent_priority <num>` - Изменить приоритет выбранного файла в /file_torrent (передать параметр: номер приоритета) \
+`/pause <hash>` - Установить на паузу \
+`/resume <hash>` - Восстановить загрузку \
+`/delete_torrent <hash>` - Удалить торрент из клиента \
+`/delete_video <hash>` - Удалить вместе с данными \
+`/plex_status_<key>` - Информация о выбранной секции в Plex (передать параметр: ключ секции) \
+`/plex_sync_<key>` - Синхронизировать выбранную секцию в Plex \
+`/plex_folder_<key>` - Получить список директорий и файлов в выбранной секции \
+`/find` - Поиск контента в Plex по пути (передать параметр: конечную точку)
+
+### Добавлено в версии 0.4.1:
+
+`/plex_last_views` - Список последних просмотров (дата просмотра и время остановки) в Plex \
+`/plex_last_added` - Список последних добавленных файлов в Plex \
+`/kinozal_description <id>` - Описание фильма из Кинозал (передать параметр: id kinozal)
+
+### Добавлено в версии 0.4.2:
+
+`/kinozal_actors <id>` - Список актеров из Кинозал (передать параметр: id kinozal) \
+`/actor <id>` - Описание, поиск актера и его фильмографии из Кинозала и ссылка на Кинопоиск (передать параметр: имя актера) \
+`/kinopoisk_movie <id>` - Информация о фильме из Кинопоиск по id kinopoisk (передать параметр: id kinozal)
+
+### Добавлено в версии 0.4.4:
+
+`/search <year*> <format*> <title>` - Поиск с фильтрацией по году выхода и формату разрешения \
+`/research` - Повторить последний поиск (id не требуется) \
+`/file_list` - Извлечь список файлов и их размер из раздачи \
+`/send_torrent_file_id` - Отправка загруженного торрент-файла в Telegram \
+`/send_last_torrent_file` - Отправить последний загруженный торрент-файл \
+`/send_all_torrent_files` - Отправить все загруженные торрент-файлы \
+`/skip_all_files <hash>` - Пропустить загрузку всех файлов путем изменения приоритета в qBittorrent \
+`/normal_all_files <hash>` - Восстановить загрузку всех файлов \
+`/add_torrent <hash>` - Добавить раздачу на загрузку в qBittorrent по инфо хэш \
+`/get_torrent <hash>` - Выгрузить торрент файл на сервер по инфо хэш и отправить в телеграмм \
+`/torrent_recheck <hash>` - Проверить торрент файл \
+`/torrent_limit` - Переключить альтернативные лимиты скорости загрузки и отдачи
+
+## 🔍 Примеры команд поиска
+
+- Поиск в Кинозал по id:
+
+```
+/find_kinozal 1940284
+```
+
+- Поиск по названию фильма или сериала:
+
+```
+/search Рокки 2
+/search Рокки 4
+```
+
+- Поиск с фильтрацией по году выхода:
+
+```
+/search 1979 Рокки
+/search 1985 Рокки
+```
+
+- Поиск с фильтрацией по формату разрешения:
+
+```
+/search (720) Рокки
+/search (1080) Рокки
+/search (2160) Рокки
+```
+
+- Поиск с фильтрацией по формату разрешения и году выхода:
+
+```
+/search 1985 (2160) Рокки
+/search (2160) 1985 Рокки
+```
+
+- Поиск фильмографии по имени актера (получить список фильмов из Кинозал):
+
+```
+/actor Сильвестр Сталлоне
+```
+
+- Неверный поиск (находит только актера в Кинопоиск по api без фильмографии):
+
+```
+/actor сильвестр сталлоне
+/actor Сильвестр Сталоне
+```
+
+- Повторить последний запрос поиска (для фильма/сериала или актера):
+
+```
+/research
+```
+
+- Добавить торрент по инфо хэш в qBittorrent на загрузку:
+
+```
+/add_torrent A72BD27A0CE265A3C7965392BC06C25EDD759214
+```
