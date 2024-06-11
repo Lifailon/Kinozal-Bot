@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ©2023-2024 by Lifailon
+# © 2023-2024 by Lifailon
 # Source GitHub: https://github.com/Lifailon/Kinozal-Bot
 # Publication on Habr: https://habr.com/ru/articles/782028
 # Active Telegram Channel: @kinozal_news
@@ -13,33 +13,37 @@
 # Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
 # qBittorrent api: загрузка данных из торрент файлов и управление данными (пауза, удаление и изменение приоритета)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
+### Зависимости:
+# jq 1.6 (https://github.com/jqlang/jq)
 ### Опционально:
 # VPN через Proxy сервер (например, HandyCache и Hotspot Shield в режиме Split Tunneling) для доступа в Кинозал
 # Kinopoisk unofficial API (https://github.com/mdwitr0/kinopoiskdev)
-### Зависимости:
-# jq 1.6 (https://github.com/jqlang/jq)
 
-### Development:
-# Everything api (https://www.voidtools.com/ru-ru/) for download media and send to Telegram.
-# Support Reverse Proxy Server (https://github.com/Lifailon/ReverseProxyNET)
-# TorAPI (https://github.com/Lifailon/TorAPI)
-# TMDB api (https://developer.themoviedb.org/reference/intro/getting-started)
-# Kinobox api (https://kinobox.tv/api)
+###############################################################################
+
+### Backlog:
+# Добавить Everything api для выгрузки видеофайлов в Telegram
+# Поддержка обратного прокси сервера
+# Обновить получение информации по актеру
+# Заменить Kinopoisk unofficial API на TMDB api
+# Получить список плееров через Kinobox api и трейлеров через YouTube
+# Получить список выхода серий через внешние сервисы (Toramp, MyShows или Film.ru)
 
 ###############################################################################
 
 ### Change log:
-### 16.11.2023 (0.1) - Создан новостной канал Kinozal_News и Telegram-бот для скачивания торрент-файлов и управления qBittorrent.
-### 27.11.2023 (0.2) - Добавлено меню клавиатуры Telegram, удаление торрент-файлов и профиль в Кинозал с информацией о загрузках.
-### 30.11.2023 (0.3) - Добавлен функционал Plex для просмотра содержимого секций и синхронизации контента.
-### 04.12.2023 (0.4.0) - Добавлен поиск в Кинозал, список альтернативных ссылок, получение содержимого торрент файла и изменение приоритета.
-### 07.12.2023 (0.4.1) - Добавлено получение дополнительной информации из Кинозал и поиске в Plex.
-### 27.12.2023 (0.4.2) - Добавлен список актеров для каждого фильма, просмотр их фильмографии и ссылка на Кинопоиск.
+### 16.11.2023 (0.1):   Создан новостной канал Kinozal_News и Telegram-бот для скачивания торрент-файлов и управления qBittorrent.
+### 27.11.2023 (0.2):   Добавлено меню клавиатуры Telegram, удаление торрент-файлов и профиль в Кинозал с информацией о загрузках.
+### 30.11.2023 (0.3):   Добавлен функционал Plex для просмотра содержимого секций и синхронизации контента.
+### 04.12.2023 (0.4.0): Добавлен поиск в Кинозал, список альтернативных ссылок, получение содержимого торрент файла и изменение приоритета.
+### 07.12.2023 (0.4.1): Добавлено получение дополнительной информации из Кинозал и поиск в Plex.
+### 27.12.2023 (0.4.2): Добавлен список актеров для каждого фильма, просмотр их фильмографии и ссылка на Кинопоиск.
 # Получение дополнительной информации и список трейлеров из kinopoisk api. Фильтрация для поиска фильмов по году выхода.
-### 20.01.2023 (0.4.3) - Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
+### 20.01.2023 (0.4.3): Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
 # Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data).
-### 30.05.2023 (0.4.4): 
-# + Добавлены параметры управления для вывода логов текущего сервера, журнала работы клиента qBittorrent и сервера Plex;
+### 16.05.2024-11.06.2024 (0.4.4):
+# + Изменены параметры управления запуска (2 режима) и возможность настройки управления чере службу systemd;
+# + Добавлены параметры вывода логов бота, журнала работы клиента qBittorrent и сервера Plex;
 # + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /find_kinozal);
 # + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
 # + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
@@ -61,33 +65,33 @@
 
 ### Bot commands (endpoint):
 # /search - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
-# /profile - Профиль Кинозал
-# /torrent_files - Список загруженных торрент файлов
-# /status - qBittorrent manager
-# /plex_info - Plex content
+# /profile - Профиль Кинозал (количество доступных для загрузки торрент файлов, статистика загрузки и отдачи, время сид и пир)
+# /torrent_files - Список загруженных торрент файлов с возможностью удаления
+# /status - список и статус всех текущих торрентов, добавленных в торрент-клиент qBittorrent
+# /plex_info - Список секций на сервере Plex для доступа к их контенту
 # /download_torrent <id> <file_name> - Загрузить торрент файл (передать два параметра: id и имя файла без пробелов)
-# /delete_torrent_file_id - Удалить торрент файл по id
+# /delete_torrent_file_<id> - Удалить торрент файл по id
 # /find_kinozal <id> - Поиск в Кинозал по id
-# /download_video_id - Добавить в qBittorrent на загрузку из торрент файла
-# /info <hash> - Статус загрузки указанного торрента
-# /torrent_content <hash> - Содержимое (файлы) торрента
-# /file_torrent - Статус выбранного торрент файла (передать параметр: порядковый индекс файла)
-# /torrent_priority - Изменить приоритет выбранного файла в /file_torrent (передать параметр: номер приоритета)
+# /download_video_<id> - Добавить торрент файла на загрузку в qBittorrent
+# /info <hash> - Статус загрузки указанного торрента (передать параметр: hash торрента)
+# /torrent_content <hash> - Содержимое торрента (список файлов)
+# /file_torrent <index> - Статус выбранного торрент файла (передать параметр: порядковый индекс файла)
+# /torrent_priority <num> - Изменить приоритет выбранного файла в /file_torrent (передать параметр: номер приоритета)
 # /pause <hash> - Установить на паузу
 # /resume <hash> - Восстановить загрузку
-# /delete_torrent <hash> - Удалить торрент из загрузки
-# /delete_video <hash> - Удалить вместе с видео данными
-# /plex_status_key - Информация о выбранной секции в Plex (передать параметр: ключ секции)
-# /plex_sync_key - Синхронизировать указанную секцию в Plex
-# /plex_folder_key - Получить список директорий и файлов в выбранной секции
-# /find <endpoint> - Поиск контента в Plex по пути (передать параметр: endpoint)
+# /delete_torrent <hash> - Удалить торрент из клиента
+# /delete_video <hash> - Удалить вместе с данными
+# /plex_status_<key> - Информация о выбранной секции в Plex (передать параметр: ключ секции)
+# /plex_sync_<key> - Синхронизировать выбранную секцию в Plex
+# /plex_folder_<key> - Получить список директорий и файлов в выбранной секции
+# /find <endpoint> - Поиск контента в Plex по пути (передать параметр: конечную точку)
 ### 0.4.1:
-# /plex_last_views - Список последних просмотров (дата просмотра и время остановки)
-# /plex_last_added - Список последних добавленных файлов
+# /plex_last_views - Список последних просмотров (дата просмотра и время остановки) в Plex
+# /plex_last_added - Список последних добавленных файлов в Plex
 # /kinozal_description <id> - Описание фильма из Кинозал (передать параметр: id kinozal)
 ### 0.4.2:
 # /kinozal_actors <id> - Список актеров из Кинозал (передать параметр: id kinozal)
-# /actor <actor_name> - Описание и поиск актера и его фильмографии из Кинозала и ссылка на Кинопоиск (передать параметр: имя актера)
+# /actor <actor_name> - Описание, поиск актера и его фильмографии из Кинозала и ссылка на Кинопоиск (передать параметр: имя актера)
 # /kinopoisk_movie <id> - Информация о фильме из Кинопоиск по id kinopoisk (передать параметр: id kinozal)
 ### 0.4.3 (удалено из меню):
 # /win_state - Получение информации о состояние системы через WinAPI
@@ -100,8 +104,8 @@
 ### 0.4.4:
 # /search <year*> <format*> <title> - Поиск с фильтрацией по году выхода и формату разрешения
 # /research - Повторить последний поиск (id не требуется)
-# /file_list - Извлечь список файлов (содержимое раздачи) и их размера из раздачи
-# /send_torrent_file_id - Отправка загруженного торрент-файла в телеграм
+# /file_list - Извлечь список файлов и их размер из раздачи
+# /send_torrent_file_id - Отправка загруженного торрент-файла в Telegram
 # /send_last_torrent_file - Отправить последний загруженный торрент-файл
 # /send_all_torrent_files - Отправить все загруженные торрент-файлы
 # /skip_all_files <hash> - Пропустить загрузку всех файлов путем изменения приоритета в qBittorrent
@@ -114,15 +118,15 @@
 ###############################################################################
 
 ### Telegram menu (Edit Bot - Edit commands):
-# / find_kinozal - Поиск в Кинозал по id
-# / search - Поиск фильма или сериала
-# / actor - Поиск по актеру
-# / research - Повторить последний поиск
-# / add_torrent - Добавить торрент по инфо хэш
-# / torrent_files - Загруженные торрент файлы
-# / status - Управление qBittorrent
-# / plex_info - Управление Plex
-# / find - Поиск в Plex
+# / find_kinozal - 🔎 Поиск в Кинозал по id
+# / search - 🍿 Поиск по названию
+# / actor - 👥 Поиск по актеру
+# / research - 🔄 Повторить последний поиск
+# / add_torrent - ⬇️ Добавить торрент по инфо хэш
+# / torrent_files - 🗂 Торрент файлы
+# / status - 🟢 qBittorrent
+# / plex_info - 🟠 Plex
+# / find - 🔍 Поиск в Plex
 
 ###############################################################################
 
@@ -146,7 +150,7 @@
 # /search 1985 (2160) Рокки
 # /search (2160) 1985 Рокки
 
-### Поиск список фильмов из Кинозал (фильмография актера):
+### Поиск фильмографии по имени актера (получить список фильмов из Кинозал):
 # /actor Сильвестр Сталлоне
 
 ### Неверный поиск (находит только актера в Кинопоиск по api без фильмографии):
@@ -156,23 +160,52 @@
 ### Повторить последний запрос поиска (для фильма/сериала или актера):
 # /research
 
-### Добавить торрент по инфо хэш в qBittorrent клиент на загрузку:
+### Добавить торрент по инфо хэш в qBittorrent на загрузку:
 # /add_torrent A72BD27A0CE265A3C7965392BC06C25EDD759214
 
 ###############################################################################
 
 ### Параметры управления:
-# bash kinozal-bot-0.4.4.sh start
-# bash kinozal-bot-0.4.4.sh status
-# bash kinozal-bot-0.4.4.sh stop
-# bash kinozal-bot-0.4.4.sh log bot
-# bash kinozal-bot-0.4.4.sh log bot 50
-# bash kinozal-bot-0.4.4.sh log qb
-# bash kinozal-bot-0.4.4.sh log qb all
-# bash kinozal-bot-0.4.4.sh log plex server
-# bash kinozal-bot-0.4.4.sh log plex server all
-# bash kinozal-bot-0.4.4.sh log plex system
-# bash kinozal-bot-0.4.4.sh log plex system all
+# bash kinozal-bot-0.4.4.sh start bot                       # запустить только бот (1 поток)
+# bash kinozal-bot-0.4.4.sh start all                       # запустить бот и канал (2 потока)
+# bash kinozal-bot-0.4.4.sh start <bot/all> log             # запустить дополнительный поток вывода логов для службы systemd
+# bash kinozal-bot-0.4.4.sh status                          # статус работы сервера и количство активных процессов
+# bash kinozal-bot-0.4.4.sh status proc                     # вывести список активных процессов
+# bash kinozal-bot-0.4.4.sh stop                            # остановить сервер (остановить все процессы)
+# bash kinozal-bot-0.4.4.sh log bot                         # вывести журнал работы бота в реальном времени
+# bash kinozal-bot-0.4.4.sh log bot 50                      # вывести 50 записей журнала
+# bash kinozal-bot-0.4.4.sh log qb                          # вывести журнал работы с клиента qBittorrent (critical и warning)
+# bash kinozal-bot-0.4.4.sh log qb all                      # вывести все записи журнала qBittorrent
+# bash kinozal-bot-0.4.4.sh log plex server                 # вывести журнал работы сервер plex (error и warning)
+# bash kinozal-bot-0.4.4.sh log plex system                 # вывести системный журнал plex (error и warning)
+# bash kinozal-bot-0.4.4.sh log plex <server/system> all    # вывести все записи журнала plex
+
+###############################################################################
+
+### Служба для управления ботом
+
+### nano /etc/systemd/system/kinozal-bot.service
+
+# [Unit]
+# Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBittorrent and Plex Media Server
+# After=network.target
+# 
+# [Service]
+# ExecStart=/bin/bash "/home/lifailon/kinozal-torrent/kinozal-bot-0.4.4.sh" start all log
+# ExecReload=/bin/kill -HUP $MAINPID
+# Restart=on-failure
+# Type=forking
+# 
+# [Install]
+# WantedBy=multi-user.target
+
+### systemctl daemon-reload         # применить настройки
+### systemctl enable kinozal-bot    # включать автозапуск при перезагрузки
+### systemctl start kinozal-bot     # запустить бота
+### systemctl status kinozal-bot    # статус работы
+### systemctl restart kinozal-bot   # перезапустить бота
+### journalctl -fu kinozal-bot      # вывести журнал работы бота в реальном времени
+### journalctl -eu kinozal-bot      # вывесли журнал работы бота с конца
 
 ###############################################################################
 
@@ -186,9 +219,6 @@ conf="$kinozal_bot_path/kinozal-bot.conf"
 
 ### (Debug) Отключаем обработку параметров запуска
 # START_DEBUG=true
-
-### (Debug) Отключить второй поток канала (раскомментировать перед запуском, если не задано в конфигурации)
-# TG_CHANNEL_USE="False"
 
 ### (Debug) Передаем путь к конфигурации вручную
 # conf="/home/lifailon/kinozal-torrent/kinozal-bot.conf"
@@ -282,8 +312,21 @@ function plex-log {
 ### Параметры управления
 if [[ $START_DEBUG != true ]]; then
     if [[ $1 == "start" ]]; then
-        echo "[OK]   $(date '+%H:%M:%S'): Server started" >> $path_log
-        cat $path_log | tail -n 1
+        if [[ $2 == "bot" ]]; then
+            TG_CHANNEL_USE="false"
+            echo "[OK]   $(date '+%H:%M:%S'): Server started (only bot)" >> $path_log
+            cat $path_log | tail -n 1
+        elif [[ $2 == "all" ]]; then
+            TG_CHANNEL_USE="True"
+            echo "[OK]   $(date '+%H:%M:%S'): Server started (bot and channel)" >> $path_log
+            cat $path_log | tail -n 1
+        else
+            echo "Available parameters: bot and all"
+            exit 0
+        fi
+        if [[ $3 == "log" ]]; then
+            tail -f $path_log &
+        fi
     else
         process_name="kinozal"
         if [[ $1 == "stop" ]]; then
@@ -306,15 +349,23 @@ if [[ $START_DEBUG != true ]]; then
             fi
             cat $path_log | tail -n 1
         elif [[ $1 == "status" ]]; then
-            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
-            if [ -n "$proc" ]; then 
-                echo "[INFO] $(date '+%H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
+            if [[ $2 == "proc" ]]; then
+                ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{
+                    printf "%s %s %s %s %s ", $1, $5, $6, $8, $10
+                    for (i=11; i<=NF; i++)
+                    printf "%s ", $i; printf "\n"
+                }'
             else
-                echo "[INFO] $(date '+%H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
+                proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
+                if [ -n "$proc" ]; then 
+                    echo "[INFO] $(date '+%H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
+                else
+                    echo "[INFO] $(date '+%H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
+                fi
             fi
         elif [[ $1 == "log" ]]; then
             if [[ $2 == "bot" ]]; then
-                if [ -n "$3" ]; then
+                if [[ $3 =~ ^[0-9]+$ ]]; then
                     tail -n $3 $path_log
                 else
                     tail -f $path_log
@@ -1279,8 +1330,8 @@ function read-html {
     size=$(printf "%s\n" "${html[@]}" | grep "floatright green" -m 1 | sed -r 's/.+n">//;s/\s.+//')
     # Обновленный парсинг (в 0.4.4)
     length=$(printf "%s\n" "${html[@]}" | grep "Продолжительность:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
-    lang=$(printf "%s\n" "${html[@]}" | grep "Перевод:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
-    video=$(printf "%s\n" "${html[@]}" | grep "Качество:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
+    lang=$(printf "%s\n" "${html[@]}" | grep "Перевод:" | sed -r "s/.+<\/b> //g; s/<br.+>//g" | sed -r "s/<.+//g")
+    video=$(printf "%s\n" "${html[@]}" | grep "Качество:" | sed -r "s/.+<\/b> //g; s/<br.+>//g" | sed -r "s/<.+//g")
     audio=$(printf "%s\n" "${html[@]}" | grep "Аудио:" | sed -r "s/.+<\/b> //g; s/<br.+>//g")
     # length=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -A 1 | tail -n 1 | sed -r 's/.+b> //; s/<.+//')
     # lang=$(printf "%s\n" "${html[@]}" | grep $size -m 2 -A 2 | tail -n 1 | sed -r 's/.+b> //; s/<.+//')
@@ -1348,6 +1399,8 @@ function read-html {
     else
         if [ -n "$link_kp" ]; then
             data+=$(echo "*Кинопоиск*: $link_kp \n")
+            kp_id=$(echo $link_kp | sed -r "s/.+\///g")
+            data+=$(echo "*Кинобокс*: https://kinomix.web.app/#$kp_id \n")
         fi
         if [ -n "$link_imdb" ]; then
             data+=$(echo "*IMDb*: $link_imdb \n")
@@ -2181,6 +2234,10 @@ function menu-plex-find {
 ###### ⚙️ ⚙️ ⚙️ WinAPI ⚙️ ⚙️ ⚙️
 ### REST API server based on .NET HttpListener and PowerShell Core
 ### Source: https://github.com/Lifailon/WinAPI (© Lifailon)
+
+WIN_API_ADDR="http://192.168.3.100:8443"
+WIN_API_USER="rest"
+WIN_API_PASS="api"
 
 function win-state {
     hardware=$(curl -s -X GET -u $WIN_API_USER:$WIN_API_PASS $WIN_API_ADDR/api/hardware)
