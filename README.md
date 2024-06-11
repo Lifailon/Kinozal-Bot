@@ -1,7 +1,7 @@
 <h1 align="center">
     <img src="image/logo/kinozal-bot-256px.png" width="32" />
     Kinozal Bot & News
-    <img src="image/logo/kinozal-news-512px.png" width="32" />
+    <img src="image/logo/kinozal-news-256px.png" width="32" />
 </h1>
 
 <p align="center">
