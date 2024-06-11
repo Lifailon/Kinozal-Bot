@@ -68,25 +68,25 @@ Telegram бот, который позволяет автоматизирова�
 - 🔍 Поиск в торрент трекере c фильтрацией по году выхода и формату разрешения:
 
 <h1 align="center">
-<img src="image/examples/search-all.jpg" width="450"/></a> <img src="image/examples/search-filter.jpg" width="450"></a>
+<img src="image/examples/search-all.jpg" width="400"/></a> <img src="image/examples/search-filter.jpg" width="400"></a>
 </h1>
 
 - Профиль Кинозал, список торрент файлов на сервере и выгрузка всех торрент файлов (с полученными метаданными) в Telegram:
 
 <h1 align="center">
-<img src="image/examples/torrent-file-list.jpg" width="450"/></a> <img src="image/examples/torrent-file-download-all.jpg" width="450"></a>
+<img src="image/examples/torrent-file-list.jpg" width="400"/></a> <img src="image/examples/torrent-file-download-all.jpg" width="400"></a>
 </h1>
 
 - Список всех активных торрентов, добавленных в клиент qBittorrent, статус выбранной раздачи и поиск выбранной раздачи в базе Кинозал:
 
 <h1 align="center">
-<img src="image/examples/the-rookie-qbittorrent.jpg" width="450"/></a> <img src="image/examples/the-rookie-kinozal.jpg" width="450"></a>
+<img src="image/examples/the-rookie-qbittorrent.jpg" width="400"/></a> <img src="image/examples/the-rookie-kinozal.jpg" width="400"></a>
 </h1>
 
 - Содержимое торрента (список файлов) для изменения приоритезацией загрузки и управление контентом в Plex. 
 
 <h1 align="center">
-<img src="image/examples/qbittorrent-file-list.jpg" width="450"/></a> <img src="image/examples/plex-content.jpg" width="450"></a>
+<img src="image/examples/qbittorrent-file-list.jpg" width="400"/></a> <img src="image/examples/plex-content.jpg" width="400"></a>
 </h1>
 
 
@@ -386,3 +386,38 @@ journalctl -fu kinozal-bot
 ```
 /add_torrent A72BD27A0CE265A3C7965392BC06C25EDD759214
 ```
+
+---
+
+## Change log
+
+### 11.06.2024 (0.4.4):
+
+- Изменены параметры управления запуска (2 режима) и возможность настройки управления чере службу systemd;
+- Добавлены параметры вывода логов бота, журнала работы клиента qBittorrent и сервера Plex;
+- Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /find_kinozal);
+- Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
+- Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
+- Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
+- Добавлена возможность загрузить торрент по инфо хэш (/add_torrent из меню);
+- Выгрузить торрент файла из клиента qBittorrent (после загрузки метаданных) на сервер с отправкой в телеграм;
+- Добавлена проверка (сканирование целостности) торрент раздачи в qBittorrent;
+- Добавлен статус приоритета и загрузки в списке файлов выбранного торрента;
+- Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
+- Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
+- Добавлена информация о настройках и лимитах qBittorrent в список торрентов (/status) и переключение на альтернатывные лимиты скорости (/torrent_limit);
+- Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент;
+- Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск + IMDb + Кинозал + Magnet + Kinobox);
+- Обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов;
+- Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url;
+- Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
+
+## Backlog
+
+- Добавить [Everything api](https://www.voidtools.com) для выгрузки видеофайлов в Telegram;
+- Поддержка [обратного прокси сервера](https://github.com/Lifailon/ReverseProxyNET);
+- Обновить получение информации по актеру;
+- Получить список плееров через [Kinobox api](https://kinobox.tv) и трейлеров через YouTube;
+- Получить список выхода серий через внешние сервисы ([Toramp](https://toramp.com), [MyShows](https://myshows.me) или [Film.ru](https://film.ru));
+- Заменить Kinopoisk unofficial API на [TMDB api](https://developer.themoviedb.org/reference/intro/getting-started);
+- [TorAPI](https://github.com/Lifailon/TorAPI).
