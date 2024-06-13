@@ -9,9 +9,10 @@
 ###############################################################################
 
 ### Stack:
-# Kinozal: чтение RSS ленты, получение данных из html (api отсутствует), поиск и фильтрация контента, загрузка торрент файлов
+# Kinozal: чтение RSS ленты, получение данных из HTML, поиск с фильтрацией контента и загрузка торрент файлов
 # Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
-# qBittorrent api: загрузка данных из торрент файлов и управление данными (пауза, удаление и изменение приоритета)
+# qBittorrent WebUI api: добавление торрентов из торрент файлов или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
+# Transmission rpc api: добавление торрентов из инфо хеш и управление загрузкой (пауза и удаление)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
@@ -22,14 +23,11 @@
 ###############################################################################
 
 ### Backlog:
-# Добавить Everything api для выгрузки видеофайлов в Telegram
 # Поддержка обратного прокси сервера
+# Добавить Everything api для выгрузки видеофайлов в Telegram
 # Отладить получение информации по актеру
-# Поддержка других торрент клиентов (например, Transmission)
+# Получить список плееров через Kinobox api
 # Заменить Kinopoisk unofficial API на TMDB api
-# Получить список плееров через Kinobox api и трейлеров через YouTube
-# Получить список выхода серий через внешние сервисы (Toramp, MyShows или Film.ru)
-# Добавление торрент файла на загрузку (предлагать выбор клиента)
 
 ###############################################################################
 
@@ -50,7 +48,7 @@
 # + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
 # + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
 # + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
-# + Добавлена возможность загрузить торрент по инфо хэш (/add_torrent из меню);
+# + Добавлена возможность загрузить торрент по инфо хеш (/add_torrent из меню);
 # + Выгрузить торрент файла из клиента qBittorrent (после загрузки метаданных) на сервер с отправкой в телеграм;
 # + Добавлена проверка (сканирование целостности) торрент раздачи в qBittorrent;
 # + Добавлен статус приоритета и загрузки в списке файлов выбранного торрента;
@@ -64,6 +62,7 @@
 # + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
 ### 14.06.2024 (0.4.5):
 # + Добавлен функционал управления торрент клиентом Transmission (добавление по хэшу, остановка и возобновление загрузки, удаление торрента и данных)
+# ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
 
 ###############################################################################
 
@@ -114,10 +113,16 @@
 # /send_all_torrent_files - Отправить все загруженные торрент-файлы
 # /skip_all_files <hash> - Пропустить загрузку всех файлов путем изменения приоритета в qBittorrent
 # /normal_all_files <hash> - Восстановить загрузку всех файлов
-# /add_torrent <hash> - Добавить раздачу на загрузку в qBittorrent по инфо хэш
-# /get_torrent <hash> - Выгрузить торрент файл на сервер по инфо хэш и отправить в телеграмм
+# /add_torrent <hash> - Добавить раздачу на загрузку в qBittorrent по инфо хеш
+# /get_torrent <hash> - Выгрузить торрент файл на сервер по инфо хеш и отправить в телеграмм
 # /torrent_recheck <hash> - Проверить торрент файл
 # /torrent_limit - Переключить альтернативные лимиты скорости загрузки и отдачи
+### 0.4.5:
+# /trans_status - Список и статус всез торрент в клиенте Transmission
+# /trans_info <id> - Получить подробную информацию о торренте
+# /trans_pause <id> <type> - установить на паузу или возобновить
+# /trans_remove <id> <type> - удалить торрент и данные
+# /add_hash <qbit/trans> <hash> - Добавить торрент по инфо хеш в указанный клиент
 
 ###############################################################################
 
@@ -126,9 +131,10 @@
 # / search - 🍿 Поиск по названию
 # / actor - 👥 Поиск по актеру
 # / research - 🔄 Повторить последний поиск
-# / add_torrent - ⬇️ Добавить торрент по инфо хэш
+# / add_torrent - ⬇️ Добавить торрент по инфо хеш
 # / torrent_files - 🗂 Торрент файлы
 # / status - 🟢 qBittorrent
+# / trans_status - 🔲 Transmission
 # / plex_info - 🟠 Plex
 # / find - 🔍 Поиск в Plex
 
@@ -164,8 +170,12 @@
 ### Повторить последний запрос поиска (для фильма/сериала или актера):
 # /research
 
-### Добавить торрент по инфо хэш в qBittorrent на загрузку:
+### Добавить торрент по инфо хеш на загрузку с выбором клиента через меню:
 # /add_torrent A72BD27A0CE265A3C7965392BC06C25EDD759214
+
+### Добавить торрент по инфо хеш в указанный торрент клиент:
+# /add_hash qbit A72BD27A0CE265A3C7965392BC06C25EDD759214
+# /add_hash trans A72BD27A0CE265A3C7965392BC06C25EDD759214
 
 ###############################################################################
 
@@ -1047,6 +1057,94 @@ function qbittorrent-clear {
 ################################# 🔲 🔲 🔲 Transmission 🔲 🔲 🔲 ##################################
 # RPC API documentation: https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md
 
+### Arguments:
+# activityDate - Дата последней активности торрента
+# addedDate - Дата добавления торрента
+# availability - Доступность торрента (сколько процентов от общего размера доступно)
+# bandwidthPriority - Приоритет пропускной способности для торрента
+# comment - Комментарий к торренту
+# corruptEver - Объем данных, полученных с ошибками
+# creator - Создатель торрента
+# dateCreated - Дата создания торрента
+# desiredAvailable - Объем доступных данных, которые еще не загружены
+# doneDate - Дата завершения загрузки торрента
+# downloadDir - Директория для загрузки файлов торрента
+# downloadedEver - Объем данных, загруженных за все время
+# downloadLimit - Лимит скорости загрузки
+# downloadLimited - Флаг ограничения скорости загрузки
+# editDate - Дата последнего редактирования торрента
+# error - Код ошибки
+# errorString - Описание ошибки
+# eta - Ожидаемое время завершения загрузки
+# etaIdle - Ожидаемое время до перехода в режим ожидания
+# file-count - Количество файлов в торренте
+# files - Список файлов в торренте
+# fileStats - Статистика по файлам торрента
+# group - Группа, к которой принадлежит торрент
+# hashString - Хеш-строка торрента
+# haveUnchecked - Объем непроверенных данных
+# haveValid - Объем проверенных данных
+# honorsSessionLimits - Флаг соблюдения общих лимитов сессии
+# id - Уникальный идентификатор торрента
+# isFinished - Флаг завершения загрузки торрента
+# isPrivate - Флаг приватности торрента
+# isStalled - Флаг застоя торрента
+# labels - Метки торрента
+# leftUntilDone - Оставшийся объем данных до завершения загрузки
+# magnetLink - Магнет-ссылка торрента
+# manualAnnounceTime - Время до следующего ручного объявления
+# maxConnectedPeers - Максимальное количество подключенных пиров
+# metadataPercentComplete - Процент завершенности загрузки метаданных
+# name - Имя торрента
+# peer-limit - Лимит числа пиров
+# peers - Список пиров
+# peersConnected - Количество подключенных пиров
+# peersFrom - Источники пиров
+# peersGettingFromUs - Количество пиров, получающих данные от нас
+# peersSendingToUs - Количество пиров, отправляющих данные нам
+# percentComplete - Процент завершенности загрузки
+# percentDone - Процент выполнения загрузки
+# pieces - Список частей торрента
+# pieceCount - Количество частей
+# pieceSize - Размер части
+# priorities - Приоритеты файлов в торренте
+# primary-mime-type - Основной MIME-тип файлов в торренте
+# queuePosition - Позиция в очереди загрузки
+# rateDownload - Скорость загрузки в байтах в секунду
+# rateUpload - Скорость отдачи в байтах в секунду
+# recheckProgress - Прогресс повторной проверки
+# secondsDownloading - Секунды, потраченные на загрузку
+# secondsSeeding - Секунды, потраченные на раздачу
+# seedIdleLimit - Лимит времени простоя при раздаче
+# seedIdleMode - Режим ожидания при раздаче
+# seedRatioLimit - Лимит соотношения раздачи к загрузке
+# seedRatioMode - Режим соотношения раздачи к загрузке
+# sequentialDownload - Флаг последовательной загрузки
+# sizeWhenDone - Размер при завершении загрузки
+# startDate - Дата начала загрузки
+# status - Статус торрента
+# trackers - Список трекеров
+# trackerList - Список URL-адресов трекеров
+# trackerStats - Статистика по каждому трекеру
+# totalSize - Общий размер файлов, указанных в торренте
+# torrentFile - Путь к файлу .torrent в локальной файловой системе (создается клиентом автоматически)
+# uploadedEver -  Общий объем данных, отданных (загруженных другим пирам) за все время работы торрента
+# uploadLimit - Максимальная скорость отдачи (загрузки другим пирам) в килобитах в секунду
+# uploadLimited - Булево значение, установлено ли ограничение на скорость отдачи (если true, скорость отдачи ограничена значением uploadLimit)
+# uploadRatio-  Соотношение объема отданных данных к объему загруженных данных
+# wanted - Список файлов в торренте, отмеченных для загрузки (файлы, не включенные в этот список, будут пропущены при загрузке)
+# webseeds - Список URL-адресов веб-сидов, которые могут использоваться для загрузки данных торрента
+# webseedsSendingToUs - Количество веб-сидов, которые в данный момент активно отправляют данные клиенту
+
+### Status:
+# 0	- Торрент остановлен
+# 1	- Торрент в очереди на проверку локальных данных
+# 2	- Торрент проверяет локальные данные
+# 3	- Торрент в очереди на загрузку
+# 4	- Торрент загружается
+# 5	- Торрент в очереди на раздачу
+# 6	- Торрент раздается
+
 function transmission-status {
     endpoint="transmission/rpc"
     request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
@@ -1062,32 +1160,150 @@ function transmission-status {
                     "name",
                     "id",
                     "hashString",
-                    "magnetLink",
                     "comment",
                     "metadataPercentComplete",
                     "status",
+                    "percentDone",
+                    "percentComplete",
                     "isStalled",
-                    "isFinished",
                     "totalSize",
-                    "sizeWhenDone",
+                    "downloadedEver",
+                    "rateDownload",
+                    "rateUpload",
                     "addedDate",
                     "startDate",
+                    "doneDate",
                     "secondsDownloading",
-                    "creator",
-                    "dateCreated",
                     "torrentFile"
                     "downloadDir",
+                    "file-count",
                     "files",
                     "priorities",
                     "trackers"
                 ]
             }
-        }' | jq .
+        }' | jq '.arguments.torrents[] | {
+            name: .name,
+            id: .id,
+            hashString: .hashString,
+            comment: .comment,
+            metadataPercentComplete: .metadataPercentComplete,
+            status: .status,
+            percentDone: .percentDone,
+            percentDoneRaw: (.percentDone * 100 | round),
+            percentComplete: .percentComplete,
+            isStalled: .isStalled,
+            totalSizeGb: ((.totalSize / 1024 / 1024 / 1024) * 100 | round / 100),
+            downloadedGb: ((.downloadedEver / 1024 / 1024 / 1024) * 100 | round / 100),
+            DownloadMBs: ((.rateDownload / 1024 / 1024) * 100 | round / 100),
+            UploadMBs: ((.rateUpload / 1024 / 1024) * 100 | round / 100),
+            addedDate: (.addedDate | strftime("%d.%m.%Y %H:%M")),
+            startDate: (.startDate | strftime("%d.%m.%Y %H:%M")),
+            minutesDownloading: (.secondsDownloading / 60) | round,
+            torrentFile: .torrentFile,
+            downloadDir: .downloadDir,
+            fileCount: ."file-count",
+            files: .files,
+            priorities: .priorities,
+            trackers: .trackers
+        }'
 }
 
 # transmission-status
+# transmission-status | jq -r '. | "\(.name) - \(.id)"'
 
-### Добавление торрента в клиент по инфо хэш
+### Список торрентов в клиенте и их статус
+function transmission-tg-status {
+    transmission_status=$(transmission-status)
+    id_array=$(echo "$transmission_status" | jq -r .id)
+    keyboard='{"inline_keyboard":['
+    for id in $id_array; do
+        select=$(echo "$transmission_status" | jq -r ". | select(.id == $id)")
+        tr_name=$(echo $select | jq -r .name)
+        tr_percentDone=$(echo $select | jq -r .percentDone)
+        tr_percentComplete=$(echo $select | jq -r .percentComplete)
+        tr_metadata=$(echo $select | jq -r .metadataPercentComplete)
+        tr_stalled=$(echo $select | jq -r .isStalled)
+        tr_down=$(echo $select | jq -r .status)
+        if [[ $tr_percentDone == 1 || $tr_percentComplete == 1 ]]; then
+            tr_status=$(echo $tr_name | sed -r "s/^/🆗 /")
+        elif [[ $tr_metadata != 1 ]]; then
+            tr_status=$(echo $tr_name | sed -r "s/^/🧲 /")
+        elif [[ $tr_stalled == true ]]; then
+            tr_status=$(echo $tr_name | sed -r "s/^/⏸ /")
+        elif [[ $tr_down == 4 ]]; then
+            tr_status=$(echo $tr_name | sed -r "s/^/⬇️ /")
+        else
+            tr_status=$(echo $tr_name | sed -r "s/^/📶 /")
+        fi
+        keyboard+="[{\"text\":\"$tr_status\",\"callback_data\":\"/trans_info $id\"}],"
+    done
+    keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/trans_status\"},"
+    keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+    keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+    data="🔲 Список добавленных торрентов \n"
+    data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
+### Получить подробную информацию выбранной раздачи в клиенте
+function transmission-tg-info {
+    tr_id=$1
+    select=$(transmission-status | jq -r ". | select(.id == $tr_id)")
+    tr_name=$(echo $select | jq -r .name)
+    tr_percentDone=$(echo $select | jq -r .percentDone)
+    tr_percentComplete=$(echo $select | jq -r .percentComplete)
+    tr_metadata=$(echo $select | jq -r .metadataPercentComplete)
+    tr_stalled=$(echo $select | jq -r .isStalled)
+    tr_down=$(echo $select | jq -r .status)
+    if [[ $tr_percentDone == 1 || $tr_percentComplete == 1 ]]; then
+        tr_status="🆗 Загружено"
+    elif [[ $tr_metadata != 1 ]]; then
+        tr_status="🧲 Загрузка метаданных"
+    elif [[ $tr_stalled == true ]]; then
+        tr_status="⏸ Пауза"
+    elif [[ $tr_down == 4 ]]; then
+        tr_status="⬇️ Загрузка"
+    else
+        tr_status="📶 Неизвестно"
+    fi
+    data=$(echo "*Название:* $tr_name \n")
+    data+=$(echo "*Статус загрузки:* $tr_status \n")
+    data+=$(echo "*Прогресс:* $(echo $select | jq -r .percentDoneRaw) % \n")
+    data+=$(echo "*Размер:* $(echo $select | jq -r .totalSizeGb) Гб \n")
+    data+=$(echo "*Загружено:* $(echo $select | jq -r .downloadedGb) Гб \n")
+    data+=$(echo "*Количество файлов:* $(echo $select | jq -r .fileCount) \n")
+    data+=$(echo "*Скорость загрузки:* $(echo $select | jq -r .DownloadMBs) Мб/c \n")
+    data+=$(echo "*Скорость отдачи:* $(echo $select | jq -r .UploadMBs) Мб/c \n")
+    data+=$(echo "*Дата добавления:* $(echo $select | jq -r .addedDate) \n")
+    data+=$(echo "*Дата начала или продолжения загрузки:* $(echo $select | jq -r .startDate) \n")
+    data+=$(echo "*Время загрузки:* $(echo $select | jq -r .minutesDownloading) минут \n")
+    data+=$(echo "*Обновлено:* $(date '+%H:%M:%S')\n")
+    data+=$(echo "*Описание:* $(echo $select | jq -r .comment) \n")
+    data+=$(echo "*Инфо хеш:* \`$(echo $select | jq -r .hashString)\` \n")
+    keyboard='{"inline_keyboard":['
+    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/trans_status\"},"
+    keyboard+="{\"text\":\"🔄 Обновить\",\"callback_data\":\"/trans_info $tr_id\"}],"
+    keyboard+="[{\"text\":\"⏸ Пауза\",\"callback_data\":\"\/trans_pause $tr_id stop\"},"
+    keyboard+="{\"text\":\"▶️ Возобновить\",\"callback_data\":\"/trans_pause $tr_id start\"}],"
+    keyboard+="[{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/trans_remove $tr_id false\"},"
+    keyboard+="{\"text\":\"❌ Удалить данные\",\"callback_data\":\"/trans_remove $tr_id true\"}],"
+    keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]"
+    keyboard+="]}"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
+### Добавление торрента в клиент по инфо хеш
 function transmission-add {
     hash=$1
     endpoint="transmission/rpc"
@@ -1126,7 +1342,6 @@ function transmission-pause {
         }"
 }
 
-# transmission-status | jq -r '.arguments.torrents[] | "\(.name) - \(.id)"'
 # transmission-pause 5 stop
 # transmission-pause 5 start
 
@@ -1213,7 +1428,9 @@ function plex-info {
     app_name="plex_media_server"
     #keyboard+="[{\"text\":\"🟠 Управление\",\"callback_data\":\"\/app_status $app_name\"},"
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
-    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
+    keyboard+="[{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"},"
+    keyboard+="{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
     #keyboard+="{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
@@ -1390,8 +1607,9 @@ function count-torrent {
     keyboard="{
         \"inline_keyboard\":[
             [{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},
-            {\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],
-            [{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
+            {\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],
+            [{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},
+            {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
         ]
     }"
     if [[ $message_id_temp != "null" ]]; then
@@ -1962,9 +2180,10 @@ function menu-files {
     keyboard+="[{\"text\":\"⬆️ Получить последний торрент файл\",\"callback_data\":\"\/send_last_torrent_file\"}],"
     keyboard+="[{\"text\":\"⬆️ Получить все торрент файлы\",\"callback_data\":\"\/send_all_torrent_files\"}],"
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
-    keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
+    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
+    keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
     #keyboard+="[{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"}],"
-    keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
+    keyboard+="{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$TEXT" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -2033,8 +2252,9 @@ function menu-status {
         keyboard+="[{\"text\":\"$qb_name\",\"callback_data\":\"/info $qb_hash\"}],"
     done
     app_name="qbittorrent"
-    keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/status\"},"
-    keyboard+="{\"text\":\"📶 Переключить лимит\",\"callback_data\":\"\/torrent_limit\"}],"
+    keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/status\"}],"
+    keyboard+="[{\"text\":\"📶 Переключить лимит\",\"callback_data\":\"\/torrent_limit\"},"
+    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     #keyboard+="{\"text\":\"🟢 Управление\",\"callback_data\":\"\/app_status $app_name\"}],"
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -2115,7 +2335,8 @@ function menu-info {
     data+=$(echo "*Дата загрузки:* $qb_completion_date\n")
     data+=$(echo "*Дата активности:* $qb_last_activity_date\n")
     data+=$(echo "*Обновлено:* $(date '+%H:%M:%S')\n")
-    data+=$(echo "*Описание:* $qb_prop_comment")
+    data+=$(echo "*Описание:* $qb_prop_comment \n")
+    data+=$(echo "*Инфо хеш:* \`$qb_hash\`")
     #data+=$(echo "*Путь:* $qb_path")
     # Удалить расширение для поиска в plex (/find)
     qb_name_replace=$(echo $qb_name | sed -r "s/\.mkv$|\.avi$|\.mp4$//g")
@@ -2128,7 +2349,7 @@ function menu-info {
             [{\"text\":\"⬆️ Получить торрент\",\"callback_data\":\"\/get_torrent $qb_hash\"},
             {\"text\":\"♻️ Проверить\",\"callback_data\":\"\/torrent_recheck $qb_hash\"}],
             [{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/delete_torrent $qb_hash\"},
-            {\"text\":\"❌ Удалить видео\",\"callback_data\":\"\/delete_video $qb_hash\"}],
+            {\"text\":\"❌ Удалить данные\",\"callback_data\":\"\/delete_video $qb_hash\"}],
             [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/find_kinozal $kinozal_id\"},
             {\"text\":\"🟠 Plex 🔎 \",\"callback_data\":\"\/find $qb_name_replace\"}],
             [{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/status\"},
@@ -2968,7 +3189,7 @@ while :
                 elif [[ $qb_limit_mode == 1 ]]; then
                     qb_limit_mode_text="Включены"
                 fi
-                data="🐸 Список загружаемых торрентов \n"
+                data="🐸 Список добавленных торрентов \n"
                 data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
                 data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
                 data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
@@ -3114,27 +3335,44 @@ while :
             fi
         ### Request: /add_torrent hash 🧲🧲🧲
         elif [[ $command == /add_torrent* ]]; then
-            qb_hash=$(echo $command | sed -r "s/\/add_torrent //")
-            echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $qb_hash" >> $path_log
-            qbittorrent-add-torrent-from-hash "$qb_hash"
-            save_path_default=$(qbittorrent-settings | jq -r .save_path)
-            qb_limit_down=$(qbittorrent-get-limit downloadLimit)
-            qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
-            qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
-            qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
-            qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
-            if [[ $qb_limit_mode == 0 ]]; then
-                qb_limit_mode_text="Отключены"
-            elif [[ $qb_limit_mode == 1 ]]; then
-                qb_limit_mode_text="Включены"
+            torrent_hash=$(echo $command | sed -r "s/\/add_torrent //")
+            echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $torrent_hash for select torrent client (qBittorrent or Transmission)" >> $path_log
+            data="Выберите торрент клиент для загрузки:"
+            keyboard='{"inline_keyboard":['
+            keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/add_hash qbit $torrent_hash\"}],"
+            keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/add_hash trans $torrent_hash\"}]]}"
+            send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+        elif [[ $command == /add_hash* ]]; then
+            add_param=$(echo $command | sed "s/\/add_hash //")
+            selected_torrent=$(echo $add_param | awk '{print $1}')
+            torrent_hash=$(echo $add_param | awk '{print $2}')
+            echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $torrent_hash to Torrent Client: $selected_torrent" >> $path_log
+            if [[ $selected_torrent == "qbit" ]]; then
+                qbittorrent-add-torrent-from-hash "$torrent_hash"
+                sleep $TIMEOUT_SEC_UPDATE_STATUS
+                save_path_default=$(qbittorrent-settings | jq -r .save_path)
+                qb_limit_down=$(qbittorrent-get-limit downloadLimit)
+                qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
+                qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
+                qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
+                qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
+                if [[ $qb_limit_mode == 0 ]]; then
+                    qb_limit_mode_text="Отключены"
+                elif [[ $qb_limit_mode == 1 ]]; then
+                    qb_limit_mode_text="Включены"
+                fi
+                data="🐸 Список добавленных торрентов \n"
+                data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
+                data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
+                data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
+                data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
+                data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
+                menu-status "$(echo -e $data)" "$CHAT"
+            elif [[ $selected_torrent == "trans" ]]; then
+                transmission-add "$torrent_hash"
+                sleep $TIMEOUT_SEC_UPDATE_STATUS
+                transmission-tg-status
             fi
-            data="🐸 Список загружаемых торрентов \n"
-            data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
-            data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
-            data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
-            data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
-            data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
-            menu-status "$(echo -e $data)" "$CHAT"
         ### Request: /get_torrent hash 🧲⬆️
         elif [[ $command == /get_torrent* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/get_torrent //")
@@ -3172,13 +3410,41 @@ while :
             elif [[ $qb_limit_mode == 1 ]]; then
                 qb_limit_mode_text="Включены"
             fi
-            data="🐸 Список загружаемых торрентов \n"
+            data="🐸 Список добавленных торрентов \n"
             data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
             data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
             data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
             data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
             data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
             menu-status "$(echo -e $data)" "$CHAT"
+        ######  🔲 🔲 🔲 Transmission 🔲 🔲 🔲
+        ### Request: /trans_status
+        elif [[ $command == /trans_status ]]; then
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_status" >> $path_log
+            transmission-tg-status
+        ### Request: /trans_info
+        elif [[ $command == /trans_info* ]]; then
+            tr_id=$(echo $command | sed "s/\/trans_info //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_info for id: $tr_id" >> $path_log
+            transmission-tg-info "$tr_id"
+        ### Request: /trans_pause
+        elif [[ $command == /trans_pause* ]]; then
+            tr_param=$(echo $command | sed "s/\/trans_pause //")
+            tr_id=$(echo $tr_param | awk '{print $1}')
+            tr_type=$(echo $tr_param | awk '{print $2}')
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_pause type $tr_type for id: $tr_id" >> $path_log
+            transmission-pause "$tr_id" "$tr_type"
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-info "$tr_id"
+        ### Request: /trans_remove
+        elif [[ $command == /trans_remove* ]]; then
+            tr_param=$(echo $command | sed "s/\/trans_remove //")
+            tr_id=$(echo $tr_param | awk '{print $1}')
+            tr_type=$(echo $tr_param | awk '{print $2}')
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_remove (data: $tr_type) for id: $tr_id" >> $path_log
+            transmission-remove "$tr_id" "$tr_type"
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-status
         ###### 🟠 🟠 🟠 PLEX 🟠 🟠 🟠
         ### Request: /plex_info 🟠
         elif [[ $command == /plex_info ]]; then
