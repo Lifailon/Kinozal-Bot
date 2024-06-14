@@ -12,7 +12,7 @@
 # Kinozal: чтение RSS ленты, получение данных из HTML, поиск с фильтрацией контента и загрузка торрент файлов
 # Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
 # qBittorrent WebUI api: добавление торрентов из торрент файлов или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
-# Transmission rpc api: добавление торрентов из инфо хеш и управление загрузкой (пауза и удаление)
+# Transmission RPC api: добавление торрентов из инфо хеш и управление загрузкой (пауза и удаление)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
@@ -24,9 +24,7 @@
 
 ### Backlog:
 # Поддержка обратного прокси сервера
-# Добавить Everything api для выгрузки видеофайлов в Telegram
 # Отладить получение информации по актеру
-# Получить список плееров через Kinobox api
 # Заменить Kinopoisk unofficial API на TMDB api
 
 ###############################################################################
@@ -63,6 +61,7 @@
 ### 14.06.2024 (0.4.5):
 # + Добавлен функционал управления торрент клиентом Transmission (добавление по хэшу, остановка и возобновление загрузки, удаление торрента и данных)
 # ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
+# + Добавлен список плееров в меню результатов поиска Кинозал
 
 ###############################################################################
 
@@ -246,11 +245,19 @@ else
     exit 1
 fi
 
+### Пути хранения лог файла и cookie относительно заданного в конфигурации
+path_log="$path/kinozal-bot.log"
+path_qb_cookies="$path/qbittorrent.cookies"
+path_kz_cookies="$path/kinozal.cookies"
+
 ### (Debug) Забираем первый id из массива для отправки сообщений в Telegram через консоли
 # CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
 
 ### (Debug) Формируем URL Proxy-сервера
 # URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
+
+### (Debug) Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
+CHECK_TG_AND_INTERNET="False"
 
 ### Функция авторизации в qBittorrent
 function qbittorrent-auth {
@@ -430,7 +437,7 @@ function log-rotate {
 
 log-rotate
 
-############################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ###############################
+################################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ####################################
 ### API documentation: https://core.telegram.org/bots/api
 
 function test-telegram {
@@ -555,7 +562,7 @@ function read-telegram {
     done
 }
 
-############################### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ###############################
+################################## 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ##################################
 ### WebUI API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
 ### Tested on version 4.6.0 and 4.6.5
 
@@ -589,18 +596,6 @@ function qbittorrent-test {
 # 2 - Служба не запущена (порт недоступен)
 # 3 - Сервер недоступен (нет пинга)
 
-### Найстройки приложения
-function qbittorrent-settings {
-    # qbittorrent-auth
-    endpoint="api/v2/app/preferences"
-    curl -s "$QB_ADDR/$endpoint" \
-        -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" | jq .
-}
-
-# qbittorrent-settings
-# qbittorrent-settings | jq -r .save_path
-
 ### Общие настройки лимитов скорости загрузки и отдачи ⬇️⬆️📶
 function qbittorrent-get-limit {
     endpoint=$1
@@ -625,6 +620,56 @@ function qbittorrent-switch-limit {
 }
 
 # qbittorrent-switch-limit
+
+### Найстройки приложения
+function qbittorrent-settings {
+    # qbittorrent-auth
+    endpoint="api/v2/app/preferences"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq .
+}
+
+# qbittorrent-settings
+# qbittorrent-settings | jq -r .save_path
+
+### Размер свободного места на диске (server_state), список всех торрентов (torrents) и трекеров (trackers)
+function qbittorrent-free-space-disk {
+    qbittorrent-auth
+    endpoint="api/v2/sync/maindata"
+    curl -s -X POST "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" | jq .
+}
+
+# qbittorrent-free-space-disk
+
+### Функция получения данных для статус
+function qbittorrent-data {
+    free_space_disk=$(
+        qbittorrent-free-space-disk | jq -r ". | {
+            free_space: (.server_state.free_space_on_disk / 1024 / 1024 / 1024 | round )
+        } | .free_space"
+    )
+    save_path_default=$(qbittorrent-settings | jq -r .save_path)
+    qb_limit_down=$(qbittorrent-get-limit downloadLimit)
+    qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
+    qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
+    qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
+    qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
+    if [[ $qb_limit_mode == 0 ]]; then
+        qb_limit_mode_text="Отключены"
+    elif [[ $qb_limit_mode == 1 ]]; then
+        qb_limit_mode_text="Включены"
+    fi
+    data="🐸 Список добавленных торрентов \n"
+    data+="*Свободного места на диске*: $free_space_disk Гб \n"
+    data+="*Путь сохранения (по умолчанию):* $save_path_default \n"
+    data+="*Лимит скорости:* $qb_limit_down_mb ⬇️ $qb_limit_upload_mb ⬆️ МБайт/c \n"
+    data+="*Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
+    data+="*Обновлено:* $(date '+%H:%M:%S')"
+    echo -e "$data"
+}
 
 ### Для конечной точки /status (функция menu-status) и /info (функция menu-info)
 ### Основная функция получения списка торрентов добавленных на клиенте и дополнительная информация для выбранной раздачи
@@ -813,7 +858,7 @@ function qbittorrent-recheck {
 
 # qbittorrent-recheck "A72BD27A0CE265A3C7965392BC06C25EDD759214"
 
-################################## 🧲🧲🧲 Info hash 🧲🧲🧲 ##################################
+##################################### 🧲🧲🧲 Info hash 🧲🧲🧲 #####################################
 
 ### Добавить торрент файл по хэш сумме
 function qbittorrent-add-torrent-from-hash {
@@ -977,7 +1022,7 @@ function qbittorrent-install-plugin {
 ### Начать поиск и получить его идентификатор (POST)
 function qbittorrent-search {
     title=$1
-    plugin=$1
+    plugin=$2
     category="all"
     qbittorrent-auth
     endpoint="api/v2/search/start"
@@ -1034,7 +1079,7 @@ function qbittorrent-result {
     curl -s "$QB_ADDR/$endpoint" \
         -b $path_qb_cookies \
         --header "Referer: $QB_ADDR" \
-        --data "id=$id" | jq .
+        --data "id=$id"
 }
 
 # qbittorrent-result $search_id
@@ -1051,6 +1096,43 @@ function qbittorrent-clear {
 }
 
 # qbittorrent-clear $search_id
+
+#################################### ❤️❤️❤️ WebTorrent ❤️❤️❤️ #####################################
+
+### Формируем magnet ссылку из хэша с указанием списка серверов торрент трекеров 
+function magnet-uri {
+    info_hash=$1
+    trackers=(
+        "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr2.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr3.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr4.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr5.torrent4me.com/ann?uk=kCm7WcIM00"
+        "http://tr0.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr1.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr2.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr3.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr4.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr5.tor4me.info/ann?uk=kCm7WcIM00"
+        "http://tr0.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr1.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr2.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr3.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr4.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://tr5.tor2me.info/ann?uk=kCm7WcIM00"
+        "http://retracker.local/announce"
+        "wss://tracker.openwebtorrent.com"
+        "wss://tracker.openwebtorrent.com"
+    )
+    magnet="magnet:?xt=urn:btih:$info_hash"
+    for tracker in "${trackers[@]}"; do
+      magnet+="&tr=$(echo -n "$tracker")"
+    done
+    echo $magnet | sed -r "s/\s//g"
+}
+
+# magnet-uri "7395a859e8e590418f422e7d0dfe68860de90631"
 
 #-----------------------------------------------------------------------------------------------------
 
@@ -1243,7 +1325,7 @@ function transmission-tg-status {
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     data="🔲 Список добавленных торрентов \n"
-    data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
+    data+="*Обновлено:* $(date '+%H:%M:%S')"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -1510,7 +1592,7 @@ function plex-content-from-folder {
 # plex-content-from-folder "/library/sections/2/folder?parent=46"
 # plex-content-from-folder $(plex-folder-from-section $(plex-sections | jq -r .key) | jq -r .endpoint)
 
-############################### 🟣 🟣 🟣 Kinozal 🟣 🟣 🟣 ###############################
+################################### 🟣 🟣 🟣 Kinozal 🟣 🟣 🟣 #####################################
 ### Получить хэш и список файлов раздачи используя авторизацию
 function files-and-hash {
     kz_id=$1
@@ -1731,7 +1813,7 @@ function read-html {
         if [ -n "$link_kp" ]; then
             data+=$(echo "*Кинопоиск*: $link_kp \n")
             kp_id=$(echo $link_kp | sed -r "s/.+\///g")
-            data+=$(echo "*Кинобокс*: https://kinomix.web.app/#$kp_id \n")
+            data+=$(echo "*Kinobox*: https://kinomix.web.app/#$kp_id \n")
         fi
         if [ -n "$link_imdb" ]; then
             data+=$(echo "*IMDb*: $link_imdb \n")
@@ -1798,6 +1880,25 @@ function get-links {
             keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal $kz_id\"}],"
         done
     fi
+    if [[ $KINOBOX_PLAYERS == "True" ]]; then
+        ### ▶️▶️▶️ Kinobox api
+        link_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
+        link_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r "s/.+href=\"//g; s/\".+//g")
+        if [ -n "$link_kp" ]; then
+            players_id=$(echo $link_kp | sed -r "s/\/$//; s/.+\///g")
+            players=$(kinobox-players "kinopoisk" "$players_id")
+        elif [ -n "$link_imdb" ]; then
+            players_id=$(echo $link_imdb | sed -r "s/\/$//; s/.+\///g")
+            players=$(kinobox-players "imdb" "$players_id")
+        fi
+        keyboard+=$(echo $players | jq -c '[
+            {
+                "text": ("▶️ " + .provider),
+                "url": .url
+            }
+        ]' | sed -r "s/]/],/g; s/&.+/\"}],/g")
+    fi
+    ### Main menu
     keyboard+="[{\"text\":\"🔎 Повторить последний поиск\",\"callback_data\":\"\/research\"}],"
     keyboard+="[{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/kinozal_actors $id_find\"},"
     keyboard+="{\"text\":\"📄 Содержимое раздачи\",\"callback_data\":\"\/file_list\"}],"
@@ -2072,7 +2173,26 @@ function get-actor {
     fi
 }
 
-###### 🟡 🟡 🟡 Kinopoisk API 🟡 🟡 🟡
+################################### ▶️ ▶️ ▶️ Kinobox ▶️ ▶️ ▶️ #####################################
+### Kinobox api: https://kinobox.tv/api
+
+function kinobox-players {
+    source_player=$1
+    id_player=$2
+    if [[ $source_player == "kinopoisk" ]]; then
+        players=$(curl -s -X GET "https://kinobox.tv/api/players?kinopoisk=$id_player" -H "accept: application/json")
+    elif [[ $source_player == "imdb" ]]; then
+        players=$(curl -s -X GET "https://kinobox.tv/api/players?imdb=$id_player" -H "accept: application/json")
+    fi
+    echo $players | jq ".[] | select(.source != null and .iframeUrl != null) | {
+        provider: .source,
+        url: .iframeUrl
+    }"
+}
+# kinobox-players kinopoisk 1142153
+# kinobox-players imdb tt7587890
+
+################################ 🟡 🟡 🟡 Kinopoisk API 🟡 🟡 🟡 ##################################
 ### API documentation: https://api.kinopoisk.dev/documentation
 
 ### Функции кодирования и декодирования кириллицы для передачи в параметр функции get-actor-kinopoisk
@@ -2159,7 +2279,7 @@ function get-movie-kinopoisk-id {
     fi
 }
 
-###### 🔵 Telegram menu 📚📝📄
+##################################### 🔵 Telegram menu 📚📝📄 #######################################
 
 ### /torrent_files
 ### 🗂 Список скаченных торрент файлов на сервере
@@ -2565,7 +2685,64 @@ function menu-plex-find {
 ################################## Debug end ##################################
 ###############################################################################
 
-###### ⚙️ ⚙️ ⚙️ WinAPI ⚙️ ⚙️ ⚙️
+################################## 🔎 🔎 🔎 Everything 🔎 🔎 🔎 ###################################
+### HTTP API documentation: https://www.voidtools.com/support/everything/http
+
+EVERYTHING_ADDR="http://192.168.3.100:9999"
+EVERYTHING_USER="every"
+EVERYTHING_PASS="thing"
+
+function everything-search {
+    every_search=$1
+    param="path_column=1"
+    param+="&size_column=1"
+    param+="&date_modified_column=1"
+    param+="&json=1"
+    curl -s "$EVERYTHING_ADDR/?search=$every_search&$param" \
+        -u "$EVERYTHING_USER:$EVERYTHING_PASS" \
+        -H "Content-Type: application/json" | jq .
+}
+
+# everything-search Jurassic.World.Chaos.Theory.S01E01.WEBDL.1080p.RGzsRutracker.mkv
+# everything-search 2fdb28133eee0e3842ed855a08c07f35e482eedc.torrent
+
+### Скачивает первый [0] найденный файл в фоновом потоке (или отфильтровать вывод по директории)
+function everything-download {
+    every_search=$1
+    path=$path
+    every_result=$(everything-search $every_search | jq .results[0])
+    every_path=$(echo $every_result | jq -r .path)
+    every_name=$(echo $every_result | jq -r .name)
+    every_path_down="$every_path\\$every_name"
+    curl "$EVERYTHING_ADDR/$every_path_down" \
+        -u "$EVERYTHING_USER:$EVERYTHING_PASS" \
+        -o "$path/$every_name" &> "$EVERYTHING_LOCAL_PATH/everything_progress.txt" &
+}
+
+# everything-download Jurassic.World.Chaos.Theory.S01E01.WEBDL.1080p.RGzsRutracker.mkv
+
+### Проверяем статус загрузки, по завершению отправляем файл в Telegram и удаляем файл
+### ⚠️ Боты могут отправлять файлы любого типа размером до 50 МБ через метод sendDocument ⚠️
+function everything-send {
+    every_search=$1
+    every_result=$(everything-search $every_search | jq .results[0])
+    every_name=$(echo $every_result | jq -r .name)
+    while :
+        do
+        everything_progress=$(cat -v kinozal-torrent/everything_progress.txt | tail -n 1| sed -r "s/.+\^M//g" | awk '{print $1}') # awk '{print $1"% ("$4"/"$2") "$12"/s"}'
+        if [[ $everything_progress == 100 ]]; then
+            break
+        fi
+    done &
+    sleep $TIMEOUT_SEC_UPDATE_STATUS
+    send-file "$path/$every_name"
+    sleep $TIMEOUT_SEC_UPDATE_STATUS
+    # rm "$path/$every_name"
+}
+
+# everything-send Jurassic.World.Chaos.Theory.S01E01.WEBDL.1080p.RGzsRutracker.mkv
+
+#################################### ⚙️ ⚙️ ⚙️ WinAPI ⚙️ ⚙️ ⚙️ #####################################
 ### REST API server based on .NET HttpListener and PowerShell Core
 ### Source: https://github.com/Lifailon/WinAPI (© Lifailon)
 
@@ -2807,51 +2984,6 @@ function win-service {
         send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
     fi
 }
-
-### ❤️❤️❤️ WebTorrent ❤️❤️❤️
-
-# magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&xs=https://webtorrent.io/torrents/sintel.torrent
-
-# magnet:?xt=urn:btih:33c66636a3350b653462f9b210287eeb0d627ba0&dn=Eric.2024.S01.1080p.WEB-DL.NewComersX&tr=http%3A%2F%2Ftr0.torrent4me.com%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr0.tor4me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr0.tor2me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Fretracker.local%2Fannounce&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com
-# https://instant.io/#33c66636a3350b653462f9b210287eeb0d627ba0
-
-# magnet:?xt=urn:btih:799b790d5ea6e0772b60624928df9e412175119e&tr=http%3A%2F%2Ftr1.tor4me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr1.tor2me.info%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Ftr1.torrent4me.com%2Fann%3Fuk%3DkCm7WcIM00&tr=http%3A%2F%2Fretracker.local%2Fannounce
-# 799b790d5ea6e0772b60624928df9e412175119e3
-
-### Формируем magnet ссылку из хэша с указанием списка серверов торрент трекеров 
-function magnet-uri {
-    info_hash=$1
-    trackers=(
-        "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00"
-        "http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
-        "http://tr2.torrent4me.com/ann?uk=kCm7WcIM00"
-        "http://tr3.torrent4me.com/ann?uk=kCm7WcIM00"
-        "http://tr4.torrent4me.com/ann?uk=kCm7WcIM00"
-        "http://tr5.torrent4me.com/ann?uk=kCm7WcIM00"
-        "http://tr0.tor4me.info/ann?uk=kCm7WcIM00"
-        "http://tr1.tor4me.info/ann?uk=kCm7WcIM00"
-        "http://tr2.tor4me.info/ann?uk=kCm7WcIM00"
-        "http://tr3.tor4me.info/ann?uk=kCm7WcIM00"
-        "http://tr4.tor4me.info/ann?uk=kCm7WcIM00"
-        "http://tr5.tor4me.info/ann?uk=kCm7WcIM00"
-        "http://tr0.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://tr1.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://tr2.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://tr3.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://tr4.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://tr5.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://retracker.local/announce"
-        "wss://tracker.openwebtorrent.com"
-        "wss://tracker.openwebtorrent.com"
-    )
-    magnet="magnet:?xt=urn:btih:$info_hash"
-    for tracker in "${trackers[@]}"; do
-      magnet+="&tr=$(echo -n "$tracker")"
-    done
-    echo $magnet | sed -r "s/\s//g"
-}
-
-# magnet-uri "7395a859e8e590418f422e7d0dfe68860de90631"
 
 ###############################################################################
 ################################# Thread 1️⃣ ##################################
@@ -3178,24 +3310,7 @@ while :
             elif [[ $qb_check == 3 ]]; then
                 send-telegram "Сервер qBittorrent недоступен" "$CHAT"
             else
-                save_path_default=$(qbittorrent-settings | jq -r .save_path)
-                qb_limit_down=$(qbittorrent-get-limit downloadLimit)
-                qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
-                qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
-                qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
-                qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
-                if [[ $qb_limit_mode == 0 ]]; then
-                    qb_limit_mode_text="Отключены"
-                elif [[ $qb_limit_mode == 1 ]]; then
-                    qb_limit_mode_text="Включены"
-                fi
-                data="🐸 Список добавленных торрентов \n"
-                data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
-                data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
-                data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
-                data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
-                data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
-                menu-status "$(echo -e $data)" "$CHAT"
+                menu-status "$(qbittorrent-data)" "$CHAT"
             fi
         ### Request: /info hash 🔄🔄🔄
         elif [[ $command == /info* ]]; then
@@ -3350,24 +3465,7 @@ while :
             if [[ $selected_torrent == "qbit" ]]; then
                 qbittorrent-add-torrent-from-hash "$torrent_hash"
                 sleep $TIMEOUT_SEC_UPDATE_STATUS
-                save_path_default=$(qbittorrent-settings | jq -r .save_path)
-                qb_limit_down=$(qbittorrent-get-limit downloadLimit)
-                qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
-                qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
-                qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
-                qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
-                if [[ $qb_limit_mode == 0 ]]; then
-                    qb_limit_mode_text="Отключены"
-                elif [[ $qb_limit_mode == 1 ]]; then
-                    qb_limit_mode_text="Включены"
-                fi
-                data="🐸 Список добавленных торрентов \n"
-                data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
-                data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
-                data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
-                data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
-                data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
-                menu-status "$(echo -e $data)" "$CHAT"
+                menu-status "$(qbittorrent-data)" "$CHAT"
             elif [[ $selected_torrent == "trans" ]]; then
                 transmission-add "$torrent_hash"
                 sleep $TIMEOUT_SEC_UPDATE_STATUS
@@ -3399,24 +3497,7 @@ while :
             qbittorrent-switch-limit
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_limit" >> $path_log
-            save_path_default=$(qbittorrent-settings | jq -r .save_path)
-            qb_limit_down=$(qbittorrent-get-limit downloadLimit)
-            qb_limit_upload=$(qbittorrent-get-limit uploadLimit)
-            qb_limit_down_mb=$(echo "scale=2; $qb_limit_down/1024/1024" | bc)
-            qb_limit_upload_mb=$(echo "scale=2; $qb_limit_upload/1024/1024" | bc)
-            qb_limit_mode=$(qbittorrent-get-limit speedLimitsMode)
-            if [[ $qb_limit_mode == 0 ]]; then
-                qb_limit_mode_text="Отключены"
-            elif [[ $qb_limit_mode == 1 ]]; then
-                qb_limit_mode_text="Включены"
-            fi
-            data="🐸 Список добавленных торрентов \n"
-            data+="*🗂 Путь сохранения (по умолчанию):* $save_path_default \n"
-            data+="*⬇️ Лимит скорости загрузки:* $qb_limit_down_mb МБайт/c \n"
-            data+="*⬆️ Лимит скорости отдачи:* $qb_limit_upload_mb МБайт/c \n"
-            data+="*📶 Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
-            data+="*🔄 Обновлено:* $(date '+%H:%M:%S')"
-            menu-status "$(echo -e $data)" "$CHAT"
+            menu-status "$(qbittorrent-data)" "$CHAT"
         ######  🔲 🔲 🔲 Transmission 🔲 🔲 🔲
         ### Request: /trans_status
         elif [[ $command == /trans_status ]]; then
