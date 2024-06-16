@@ -12,20 +12,29 @@
 # Kinozal: чтение RSS ленты, получение данных из HTML, поиск с фильтрацией контента и загрузка торрент файлов
 # Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
 # qBittorrent WebUI api: добавление торрентов из торрент файлов или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
-# Transmission RPC api: добавление торрентов из инфо хеш и управление загрузкой (пауза и удаление)
+# Transmission RPC api: добавление торрентов из инфо хеш и управление данными (пауза, удаление и изменение приоритета)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
 ### Опционально:
-# VPN через Proxy сервер (например, HandyCache и Hotspot Shield в режиме Split Tunneling) для доступа в Кинозал
+# VPN через Proxy сервер или обратный прокси сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache или ReverseProxyNET) для доступа в Кинозал
 # Kinopoisk unofficial API (https://github.com/mdwitr0/kinopoiskdev)
 
 ###############################################################################
 
-### Backlog:
-# Поддержка обратного прокси сервера
-# Отладить получение информации по актеру
-# Заменить Kinopoisk unofficial API на TMDB api
+### Mirror
+
+# KZ_ADDR="https://kinozal.tv"
+# KZ_ADDR="https://kinozal.me"
+
+### Reverse Proxy
+
+### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
+# rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
+
+### Отключите в конфигурации использование Proxy-сервера и измените адрес на обратный прокси сервер
+# PROXY="False"
+# KZ_ADDR="http://192.168.3.100:8443"
 
 ###############################################################################
 
@@ -59,9 +68,11 @@
 # + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url;
 # + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
 ### 14.06.2024 (0.4.5):
-# + Добавлен функционал управления торрент клиентом Transmission (добавление по хэшу, остановка и возобновление загрузки, удаление торрента и данных)
+# + Добавлен функционал управления торрент клиентом Transmission (добавление по хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных)
 # ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
-# + Добавлен список плееров в меню результатов поиска Кинозал
+# + Добавлена поддержка использования зеркала и обратного прокси сервера
+# + Добавлен размер свободного места на диске в статус qBittorrent
+# + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS)
 
 ###############################################################################
 
@@ -119,6 +130,8 @@
 ### 0.4.5:
 # /trans_status - Список и статус всез торрент в клиенте Transmission
 # /trans_info <id> - Получить подробную информацию о торренте
+# /trans_file_all <id> <type> - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет)
+# /trans_file_select <id> <file_index> - Переключить приоритет выбранного файла (пропустить или высокий приоритет)
 # /trans_pause <id> <type> - установить на паузу или возобновить
 # /trans_remove <id> <type> - удалить торрент и данные
 # /add_hash <qbit/trans> <hash> - Добавить торрент по инфо хеш в указанный клиент
@@ -204,7 +217,7 @@
 # After=network.target
 # 
 # [Service]
-# ExecStart=/bin/bash "/home/lifailon/kinozal-torrent/kinozal-bot-0.4.4.sh" start all log
+# ExecStart=/bin/bash "/home/lifailon/kinozal-web/kinozal-bot-0.4.5.sh" start all log
 # ExecReload=/bin/kill -HUP $MAINPID
 # Restart=on-failure
 # Type=forking
@@ -234,7 +247,7 @@ conf="$kinozal_bot_path/kinozal-bot.conf"
 # START_DEBUG=true
 
 ### (Debug) Передаем путь к конфигурации вручную
-# conf="/home/lifailon/kinozal-torrent/kinozal-bot.conf"
+# conf="/home/lifailon/kinozal-web/kinozal-bot.conf"
 
 ### Прочитать конфигурацию сервера
 if [ -f "$conf" ]; then
@@ -1349,7 +1362,7 @@ function transmission-priority {
                 \"$trans_param\": [$trans_file_index]
             }
         }"
-    # Если функция принимает изминение приоритета, по умолчанию возобновляется загрузка из пропуска
+    # Если функция принимает параметр изминение приоритета, также возобновить загрузку
     if [[ $trans_file_pri == "low" || $trans_file_pri == "high" || $trans_file_pri == "normal" ]]; then
         transmission-priority $trans_torrent_id $trans_file_index resume
     fi
@@ -1464,10 +1477,10 @@ function transmission-tg-info {
     keyboard='{"inline_keyboard":['
     transmission_files_array=$(transmission-files $tr_id)
     IFS=$'\n'
-    pri_num=-1
+    tr_file_index=-1
     for tfile in ${transmission_files_array[@]}; do
         # tfile=$(echo "$transmission_files_array" | head -n 1)
-        pri_num=$(echo $pri_num + 1 | bc)
+        tr_file_index=$(echo $tr_file_index + 1 | bc)
         tfile_proc=$(echo $tfile | awk '{print $1}')
         tfile_pri=$(echo $tfile | awk '{print $2}')
         tfile_stat=$(echo $tfile | awk '{print $3}')
@@ -1496,8 +1509,8 @@ function transmission-tg-info {
         else
             squares="⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️"
         fi
-        # keyboard+="[{\"text\":\"$(number-emoji $(echo $pri_num + 1 | bc)) 🔹 $tfile_pri_stat $squares ($tfile_proc%)\",\"callback_data\":\"/trans_info $tr_id\"}],"
-        keyboard+="[{\"text\":\"$tfile_pri_stat $squares\",\"callback_data\":\"/trans_info $tr_id\"}],"
+        # keyboard+="[{\"text\":\"$(number-emoji $(echo $tr_file_index + 1 | bc)) 🔹 $tfile_pri_stat $squares ($tfile_proc%)\",\"callback_data\":\"/trans_file_select $tr_id $tr_file_index\"}],"
+        keyboard+="[{\"text\":\"$tfile_pri_stat $squares\",\"callback_data\":\"/trans_file_select $tr_id $tr_file_index\"}],"
     done
     # ⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️
     # 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
@@ -1505,6 +1518,8 @@ function transmission-tg-info {
     keyboard+="{\"text\":\"🔄 Обновить\",\"callback_data\":\"/trans_info $tr_id\"}],"
     keyboard+="[{\"text\":\"⏸ Пауза\",\"callback_data\":\"\/trans_pause $tr_id stop\"},"
     keyboard+="{\"text\":\"▶️ Возобновить\",\"callback_data\":\"/trans_pause $tr_id start\"}],"
+    keyboard+="[{\"text\":\"⏸ Пропустить все\",\"callback_data\":\"/trans_file_all $tr_id skip\"},"
+    keyboard+="{\"text\":\"▶️ Позобновить все\",\"callback_data\":\"/trans_file_all $tr_id resume\"}],"
     keyboard+="[{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/trans_remove $tr_id false\"},"
     keyboard+="{\"text\":\"❌ Удалить данные\",\"callback_data\":\"/trans_remove $tr_id true\"}],"
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
@@ -1728,9 +1743,9 @@ function plex-content-from-folder {
 ### Получить хэш и список файлов раздачи используя авторизацию
 function files-and-hash {
     kz_id=$1
-    url_hash="https://kinozal.tv/get_srv_details.php?id=$kz_id&action=2"
-    url_login="https://kinozal.tv/takelogin.php"
-    url_refrer="https://kinozal.tv/"
+    url_hash="$KZ_ADDR/get_srv_details.php?id=$kz_id&action=2"
+    url_login="$KZ_ADDR/takelogin.php"
+    url_refrer="$KZ_ADDR/"
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
         curl -s $url_login -X POST \
@@ -1755,9 +1770,12 @@ function files-and-hash {
 function download-torrent {
     kz_id=$1
     kz_name=$2
-    url_down="https://dl.kinozal.tv/download.php?id=$kz_id"
-    url_login="https://kinozal.tv/takelogin.php"
-    url_refrer="https://kinozal.tv/"
+    # Извлечь протокол и адрес
+    protocol=${KZ_ADDR%%://*}
+    address=${KZ_ADDR#*://}
+    url_down="$protocol://dl.$address/download.php?id=$kz_id"
+    url_login="$KZ_ADDR/takelogin.php"
+    url_refrer="$KZ_ADDR/"
     path_down="$path/$kz_id-$kz_name.torrent"
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
@@ -1783,9 +1801,9 @@ function download-torrent {
 
 ### Текущая статистика в профиле Кинозал (загрузок на день, залито и скачено в ГБ, сид и пир в часах)
 function count-torrent {
-    url_profile="https://kinozal.tv/userdetails.php?id=$KZ_PROFILE"
-    url_login="https://kinozal.tv/takelogin.php"
-    url_refrer="https://kinozal.tv/"
+    url_profile="$KZ_ADDR/userdetails.php?id=$KZ_PROFILE"
+    url_login="$KZ_ADDR/takelogin.php"
+    url_refrer="$KZ_ADDR/"
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
         curl -s $url_login -X POST \
@@ -1965,7 +1983,7 @@ function read-html {
 # Получить id Кинопоиск по id Кинозал для Kinopoisk API
 function get-kp-id {
     id_kz=$1
-    id_url="https://kinozal.tv/details.php?id=$id_kz"
+    id_url="$KZ_ADDR/details.php?id=$id_kz"
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
         html=$(curl -s -x $URL_PROXY $id_url | iconv -f windows-1251 -t UTF-8)
@@ -1994,7 +2012,7 @@ function get-links {
             keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal $kz_id\"}],"
         done
     elif [[ $type == "description" ]]; then
-        id_url="https://kinozal.tv/ajax/details_get.php?id=$id_find&sr=101"
+        id_url="$KZ_ADDR/ajax/details_get.php?id=$id_find&sr=101"
         echo "[INFO] $(date '+%H:%M:%S'): Url top: $id_url" >> $path_log
         if [[ $PROXY == "True" ]]; then
             URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
@@ -2142,7 +2160,7 @@ function get-search {
     search_name=$1
     search_year_test=false
     search_format_test=false
-    id_url="https://kinozal.tv/browse.php?" # формируем url
+    id_url="$KZ_ADDR/browse.php?" # формируем url
     if [[ $search_name =~ ^[0-9]{4} ]]; then
         search_year_test=true # указываем, что используется фильтрация по году (для вывода в $data)
         search_year=$(echo $search_name | grep -Po "^[0-9]{4}") # забираем год
@@ -2240,7 +2258,7 @@ function get-search {
 function get-actor {
     actor=$1
     encode_actor=$(url-encode-ru "$actor" | sed "s/\s/+/g")
-    kinozal_actor_url="https://kinozal.tv/persons.php?s=$encode_actor"
+    kinozal_actor_url="$KZ_ADDR/persons.php?s=$encode_actor"
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
         html=$(curl -s -x $URL_PROXY $kinozal_actor_url | iconv -f windows-1251 -t UTF-8)
@@ -2848,7 +2866,7 @@ function everything-download {
     every_path_down="$every_path\\$every_name"
     curl "$EVERYTHING_ADDR/$every_path_down" \
         -u "$EVERYTHING_USER:$EVERYTHING_PASS" \
-        -o "$path/$every_name" &> "$EVERYTHING_LOCAL_PATH/everything_progress.txt" &
+        -o "$path/$every_name" &> "$path/everything_progress.txt" &
 }
 
 # everything-download Jurassic.World.Chaos.Theory.S01E01.WEBDL.1080p.RGzsRutracker.mkv
@@ -2861,7 +2879,7 @@ function everything-send {
     every_name=$(echo $every_result | jq -r .name)
     while :
         do
-        everything_progress=$(cat -v kinozal-torrent/everything_progress.txt | tail -n 1| sed -r "s/.+\^M//g" | awk '{print $1}') # awk '{print $1"% ("$4"/"$2") "$12"/s"}'
+        everything_progress=$(cat -v $path/everything_progress.txt | tail -n 1 | sed -r "s/.+\^M//g" | awk '{print $1}') # awk '{print $1"% ("$4"/"$2") "$12"/s"}'
         if [[ $everything_progress == 100 ]]; then
             break
         fi
@@ -3246,7 +3264,7 @@ while :
         elif [[ $command == /find_kinozal* ]]; then
             id_find=$(echo $command | sed "s/\/find_kinozal //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /find_kinozal for $id_find" >> $path_log
-            id_url="https://kinozal.tv/details.php?id=$id_find"
+            id_url="$KZ_ADDR/details.php?id=$id_find"
             echo "[INFO] $(date '+%H:%M:%S'): Url: $id_url" >> $path_log
             if [[ $PROXY == "True" ]]; then
                 URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
@@ -3289,7 +3307,7 @@ while :
         elif [[ $command == /kinozal_description* ]]; then
             id_find=$(echo $command | sed "s/\/kinozal_description //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinozal_description for $id_find" >> $path_log
-            id_url="https://kinozal.tv/details.php?id=$id_find"
+            id_url="$KZ_ADDR/details.php?id=$id_find"
             if [[ $PROXY == "True" ]]; then
                 URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
                 html=$(curl -s -x $URL_PROXY $id_url | iconv -f windows-1251 -t UTF-8)
@@ -3316,7 +3334,7 @@ while :
         elif [[ $command == /kinozal_actors* ]]; then
             id_find=$(echo $command | sed "s/\/kinozal_actors //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinozal_actors for $id_find" >> $path_log
-            id_url="https://kinozal.tv/details.php?id=$id_find"
+            id_url="$KZ_ADDR/details.php?id=$id_find"
             if [[ $PROXY == "True" ]]; then
                 URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
                 html=$(curl -s -x $URL_PROXY $id_url | iconv -f windows-1251 -t UTF-8)
@@ -3640,7 +3658,48 @@ while :
             tr_id=$(echo $command | sed "s/\/trans_info //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_info for id: $tr_id" >> $path_log
             transmission-tg-info "$tr_id"
-        ### Request: /trans_pause
+        ### Request: /trans_file_all
+        elif [[ $command == /trans_file_all* ]]; then
+            tr_param=$(echo $command | sed "s/\/trans_file_all //")
+            tr_id=$(echo $tr_param | awk '{print $1}')
+            tr_type=$(echo $tr_param | awk '{print $2}')
+            # Фиксируем и логируем количество файлов выбранной раздачи
+            select=$(transmission-status | jq -r ". | select(.id == $tr_id) | .priorities[]")
+            files_index_array_count=$(echo $select | wc -w)
+            echo "[OK]   $(date '+%H:%M:%S'): Count files for $tr_type: $files_index_array_count" >> $path_log
+            # Формируем массив индексов
+            files_index_array=()
+            for ((i = 0; i < files_index_array_count; i++)); do
+                files_index_array+=($i)
+            done
+            # Поочередно меняем приоритет
+            for file_index in ${files_index_array[@]}; do
+                transmission-priority $tr_id $file_index $tr_type > /dev/null
+                # При возобновлении загрузки файла, выставляем обычный приоритет
+                if [[ $tr_type == "resume" ]]; then
+                    transmission-priority $tr_id $file_index normal > /dev/null
+                fi
+            done
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-info "$tr_id"
+        ### Request: /trans_file_select
+        elif [[ $command == /trans_file_select* ]]; then
+            tr_param=$(echo $command | sed "s/\/trans_file_select //")
+            tr_id=$(echo $tr_param | awk '{print $1}')
+            tr_file=$(echo $tr_param | awk '{print $2}')
+            # Получить текущий приоритет
+            select_status=$(transmission-status | jq -r ". | select(.id == $tr_id) | .fileStats[$tr_file].wanted")
+            echo "[OK]   $(date '+%H:%M:%S'): Change priority transmission torrent $tr_id for file $tr_file" >> $path_log
+            # Переключить приоритет
+            if [[ $select_status == true ]]; then
+                transmission-priority $tr_id $tr_file skip
+            elif [[ $select_status == false ]]; then
+                transmission-priority $tr_id $tr_file resume
+                transmission-priority $tr_id $tr_file high
+            fi
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-info "$tr_id"
+        ### Request: /trans_pause ▶️⏸
         elif [[ $command == /trans_pause* ]]; then
             tr_param=$(echo $command | sed "s/\/trans_pause //")
             tr_id=$(echo $tr_param | awk '{print $1}')
@@ -3649,7 +3708,7 @@ while :
             transmission-pause "$tr_id" "$tr_type"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-info "$tr_id"
-        ### Request: /trans_remove
+        ### Request: /trans_remove 🗑❌
         elif [[ $command == /trans_remove* ]]; then
             tr_param=$(echo $command | sed "s/\/trans_remove //")
             tr_id=$(echo $tr_param | awk '{print $1}')
@@ -3821,12 +3880,12 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
         do
         if [[ $PROXY == "True" ]]; then
             URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
-            rss=$(curl -s -x $URL_PROXY "https://kinozal.tv/rss.xml")
+            rss=$(curl -s -x $URL_PROXY "$KZ_ADDR/rss.xml")
         else
-            rss=$(curl -s https://kinozal.tv/rss.xml)
+            rss=$(curl -s $KZ_ADDR/rss.xml)
         fi
         if [ -n "$rss" ]; then
-            links=($(printf "%s\n" "${rss[@]}" | grep "<link>https://kinozal.tv/details" | sed -r 's/<link>|<\/link>//g'))
+            links=($(printf "%s\n" "${rss[@]}" | grep "<link>$KZ_ADDR/details" | sed -r 's/<link>|<\/link>//g'))
             link=$(echo ${links[0]})
             if [ $link != $link_temp ]; then
                 echo "[INFO] $(date '+%H:%M:%S'): RSS data updated"  >> $path_log
