@@ -3,7 +3,7 @@ Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBitto
 After=network.target
 
 [Service]
-ExecStart=/bin/bash "/home/lifailon/kinozal-torrent/kinozal-bot-0.4.4.sh" start all log
+ExecStart=/bin/bash "/home/lifailon/kinozal-bot/kinozal-bot-0.4.5.sh" start all log
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 Type=forking
