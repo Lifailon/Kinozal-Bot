@@ -1260,6 +1260,7 @@ function transmission-status {
                     "downloadDir",
                     "file-count",
                     "files",
+                    "fileStats",
                     "priorities",
                     "trackers"
                 ]
@@ -1286,6 +1287,7 @@ function transmission-status {
             downloadDir: .downloadDir,
             fileCount: ."file-count",
             files: .files,
+            fileStats: .fileStats,
             priorities: .priorities,
             trackers: .trackers
         }'
@@ -1293,6 +1295,97 @@ function transmission-status {
 
 # transmission-status
 # transmission-status | jq -r '. | "\(.name) - \(.id)"'
+
+### Приоритеты (содержит fileStats.priority и priorities)
+# 0  - Обычный
+# 1  - Высокий
+# -1 - Низкий
+# Статус пропуска содержит параметр fileStats.priority.wanted
+
+### Список файлов из статуса загрузки в процентах и номера приоритета
+function transmission-files {
+    id=$1
+    transmission_files_list=$(transmission-status | jq ". | select(.id == $id)")
+    transmission_files_array=$(echo $transmission_files_list | jq -r .files[].name)
+    pri_num=-1
+    for file in $transmission_files_array; do
+        # file=$(echo $transmission_files_list | jq -r .files[0].name)
+        pri_num=$(echo $pri_num + 1 | bc)
+        select_file=$(echo $transmission_files_list | jq -r ".files[] | select(.name == \"$file\")")
+        procCompleted=$(echo $select_file | jq -r "(.bytesCompleted / .length) * 100 | round")
+        filePrioriti=$(echo $transmission_files_list | jq -r ".priorities[$pri_num]")
+        fileSkip=$(echo $transmission_files_list | jq -r ".fileStats[$pri_num].wanted")
+        echo $procCompleted $filePrioriti $fileSkip
+    done
+}
+
+# transmission-files 1
+
+### Функция изминения приоритета и пропуск выбранного файла
+function transmission-priority {
+    trans_torrent_id=$1
+    trans_file_index=$2
+    trans_file_pri=$3
+    if [[ $trans_file_pri == "skip" ]]; then
+        trans_param="files-unwanted"
+    elif [[ $trans_file_pri == "resume" ]]; then
+        trans_param="files-wanted"
+    elif [[ $trans_file_pri == "low" || $trans_file_pri == "high" || $trans_file_pri == "normal" ]]; then
+        trans_param="priority-$trans_file_pri"
+    else
+        break
+    fi
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    curl -s -X POST "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"method\": \"torrent-set\",
+            \"arguments\": {
+                \"ids\": [$trans_torrent_id],
+                \"$trans_param\": [$trans_file_index]
+            }
+        }"
+    # Если функция принимает изминение приоритета, по умолчанию возобновляется загрузка из пропуска
+    if [[ $trans_file_pri == "low" || $trans_file_pri == "high" || $trans_file_pri == "normal" ]]; then
+        transmission-priority $trans_torrent_id $trans_file_index resume
+    fi
+}
+
+# transmission-priority 1 0 skip
+# transmission-priority 1 0 resume
+# transmission-priority 1 0 low
+# transmission-priority 1 0 high
+# transmission-priority 1 0 normal
+
+### Функция для возврата эмодзи эквивалентного переданному числу
+function number-emoji {
+    number=$1
+    digits=($(echo $number | grep -o .))
+    emoji=""
+    for digit in "${digits[@]}"; do
+        case $digit in
+            1) emoji+="1️⃣";;
+            2) emoji+="2️⃣";;
+            3) emoji+="3️⃣";;
+            4) emoji+="4️⃣";;
+            5) emoji+="5️⃣";;
+            6) emoji+="6️⃣";;
+            7) emoji+="7️⃣";;
+            8) emoji+="8️⃣";;
+            9) emoji+="9️⃣";;
+            0) emoji+="0️⃣";;
+        esac
+    done
+
+    echo $emoji
+}
+
+# number-emoji 15
+# number-emoji 100
 
 ### Список торрентов в клиенте и их статус
 function transmission-tg-status {
@@ -1369,6 +1462,45 @@ function transmission-tg-info {
     data+=$(echo "*Описание:* $(echo $select | jq -r .comment) \n")
     data+=$(echo "*Инфо хеш:* \`$(echo $select | jq -r .hashString)\` \n")
     keyboard='{"inline_keyboard":['
+    transmission_files_array=$(transmission-files $tr_id)
+    IFS=$'\n'
+    pri_num=-1
+    for tfile in ${transmission_files_array[@]}; do
+        # tfile=$(echo "$transmission_files_array" | head -n 1)
+        pri_num=$(echo $pri_num + 1 | bc)
+        tfile_proc=$(echo $tfile | awk '{print $1}')
+        tfile_pri=$(echo $tfile | awk '{print $2}')
+        tfile_stat=$(echo $tfile | awk '{print $3}')
+        if [[ $tfile_stat == false ]]; then
+            tfile_pri_stat="⏸"
+        elif [[ $tfile_pri == -1 ]]; then
+            tfile_pri_stat="🔽"
+        elif [[ $tfile_pri == 0 ]]; then
+            tfile_pri_stat="▶️"
+        elif [[ $tfile_pri == 1 ]]; then
+            tfile_pri_stat="🔼"
+        fi
+        ### Статус загрузки
+        if [[ $tfile_proc -eq 100 ]]; then
+            squares="🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩"
+        elif [[ $tfile_proc -ge 10 && $tfile_proc -lt 100 ]]; then
+            green_squares_count=$((tfile_proc / 10))
+            white_squares_count=$((10 - green_squares_count))
+            squares=""
+            for ((i=1; i<=green_squares_count; i++)); do
+                squares+="🟩"
+            done
+            for ((i=1; i<=white_squares_count; i++)); do
+                squares+="⬜️"
+            done
+        else
+            squares="⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️"
+        fi
+        # keyboard+="[{\"text\":\"$(number-emoji $(echo $pri_num + 1 | bc)) 🔹 $tfile_pri_stat $squares ($tfile_proc%)\",\"callback_data\":\"/trans_info $tr_id\"}],"
+        keyboard+="[{\"text\":\"$tfile_pri_stat $squares\",\"callback_data\":\"/trans_info $tr_id\"}],"
+    done
+    # ⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️
+    # 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/trans_status\"},"
     keyboard+="{\"text\":\"🔄 Обновить\",\"callback_data\":\"/trans_info $tr_id\"}],"
     keyboard+="[{\"text\":\"⏸ Пауза\",\"callback_data\":\"\/trans_pause $tr_id stop\"},"
