@@ -72,6 +72,7 @@
 # ~ Переработан парсинг списка фильмографии актера
 # + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS)
 # + Добавлен размер свободного места на диске в статус qBittorrent
+# + Добавлен параметр управления проверки доступности всех сервисов и получения текущей версии (version)
 # + Добавлена поддержка использования зеркала и обратного прокси сервера
 
 ###############################################################################
@@ -201,6 +202,7 @@
 # bash kinozal-bot-0.4.4.sh status                          # статус работы сервера и количство активных процессов
 # bash kinozal-bot-0.4.4.sh status proc                     # вывести список активных процессов
 # bash kinozal-bot-0.4.4.sh stop                            # остановить сервер (остановить все процессы)
+# bash kinozal-bot-0.4.4.sh version                         # Проверить подключение ко всем сервисам и получить их текущую версию
 # bash kinozal-bot-0.4.4.sh log bot                         # вывести журнал работы бота в реальном времени
 # bash kinozal-bot-0.4.4.sh log bot 50                      # вывести 50 записей журнала
 # bash kinozal-bot-0.4.4.sh log qb                          # вывести журнал работы с клиента qBittorrent (critical и warning)
@@ -246,9 +248,6 @@ conf="$kinozal_bot_path/kinozal-bot.conf"
 ############################## Debug to console ###############################
 ###############################################################################
 
-### (Debug) Отключаем обработку параметров запуска
-# START_DEBUG=true
-
 ### (Debug) Передаем путь к конфигурации вручную
 # conf="/home/lifailon/kinozal-bot/kinozal-bot.conf"
 
@@ -274,184 +273,6 @@ path_kz_cookies="$path/kinozal.cookies"
 
 ### (Debug) Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
 CHECK_TG_AND_INTERNET="False"
-
-### Функция авторизации в qBittorrent
-function qbittorrent-auth {
-        echo "[INFO] $(date '+%H:%M:%S'): Authorization to qBittorrent" >> $path_log
-        endpoint_auth="api/v2/auth/login"
-        curl -s "$QB_ADDR/$endpoint_auth" \
-            --max-time 1 \
-            -c $path_qb_cookies \
-            --header "Referer: $QB_ADDR" \
-            --data "username=$QB_USER&password=$QB_PASS" 1> /dev/null
-}
-
-### Журнал работы клиента qBittorrent
-function qbittorrent-log {
-    count=$1
-    all=false
-    if [[ $count == "all" ]]; then
-        all=true
-    fi
-    qbittorrent-auth
-    endpoint="api/v2/log/main"
-    curl -s "$QB_ADDR/$endpoint" \
-        -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" \
-        --data "normal=$all" \
-        --data "info=$all" \
-        --data "warning=true" \
-        --data "critical=true" \
-        --data "last_known_id=-1" | jq -r '.[] | {
-            type: (
-                if .type == 1 then "NORM"
-                elif .type == 2 then "INFO"
-                elif .type == 4 then "WARN"
-                elif .type == 8 then "CRIT"
-                else "UNKNOWN"
-                end
-            ),
-            datetime: (.timestamp | todateiso8601),
-            message: .message
-        } | "[\(.type)] \(.datetime): \(.message)"' | while read -r line; do
-            datetime=$(echo "$line" | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
-            formatted_datetime=$(date -d "$datetime" "+%d.%m.%Y %H:%M:%S")
-            echo "$line" | sed "s/$datetime/$formatted_datetime/"
-        done
-}
-
-### Журнал работы сервера Plex
-function plex-log {
-    type=$1
-    count=$2
-    path_plex_log="$path/plex-log"
-    plex_log_name=$(date "+%H:%M-%d.%m.%Y")
-    if [ -d "$path_plex_log" ]; then
-        rm -r $path_plex_log
-    fi
-    mkdir $path_plex_log
-    endpoint="diagnostics/logs"
-    curl -s "$PLEX_ADDR/$endpoint" \
-        -H "X-Plex-Token: $PLEX_TOKEN" \
-        -o "$path_plex_log/plex-log-$plex_log_name.zip"
-    unzip "$path_plex_log/plex-log-$plex_log_name.zip" -d $path_plex_log > null
-    if [[ $type == "server" && $count == "all" ]]; then
-        cat "$path_plex_log/Plex Media Server.log"
-    elif [[ $type == "server" && $count != "all" ]]; then
-        cat "$path_plex_log/Plex Media Server.log" | grep -E "ERROR|WARN"
-    elif [[ $type == "system" && $count != "all" ]]; then
-        cat "$path_plex_log/com.plexapp.system.log" | grep -E "ERROR|WARN"
-    elif [[ $type == "system" && $count == "all" ]]; then
-        cat "$path_plex_log/com.plexapp.system.log"
-    fi
-}
-
-### Параметры управления
-if [[ $START_DEBUG != true ]]; then
-    if [[ $1 == "start" ]]; then
-        if [[ $2 == "bot" ]]; then
-            TG_CHANNEL_USE="false"
-            echo "[OK]   $(date '+%H:%M:%S'): Server started (only bot)" >> $path_log
-            cat $path_log | tail -n 1
-        elif [[ $2 == "all" ]]; then
-            TG_CHANNEL_USE="True"
-            echo "[OK]   $(date '+%H:%M:%S'): Server started (bot and channel)" >> $path_log
-            cat $path_log | tail -n 1
-        else
-            echo "Available parameters: bot and all"
-            exit 0
-        fi
-        if [[ $3 == "log" ]]; then
-            tail -f $path_log &
-        fi
-    else
-        process_name="kinozal"
-        if [[ $1 == "stop" ]]; then
-            ### Найти все процессы kinozal, исключив текущий процесс отановки
-            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop" | awk '{print $2}'))
-            if [[ ${#proc[@]} != 0 ]]; then
-                for p in ${proc[@]}; do
-                    echo "kill $p"
-                    kill -9 $p
-                done
-                sleep $TIMEOUT_SEC_UPDATE_STATUS
-                proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop"))
-                if [[ ${#proc[@]} == 0 ]]; then
-                    echo "[OK]   $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
-                else
-                    echo "[ERR]  $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
-                fi
-            else
-                echo "[WARN] $(date '+%H:%M:%S'): Server is already stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
-            fi
-            cat $path_log | tail -n 1
-        elif [[ $1 == "status" ]]; then
-            if [[ $2 == "proc" ]]; then
-                ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{
-                    printf "%s %s %s %s %s ", $1, $5, $6, $8, $10
-                    for (i=11; i<=NF; i++)
-                    printf "%s ", $i; printf "\n"
-                }'
-            else
-                proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
-                if [ -n "$proc" ]; then 
-                    echo "[INFO] $(date '+%H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
-                else
-                    echo "[INFO] $(date '+%H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
-                fi
-            fi
-        elif [[ $1 == "log" ]]; then
-            if [[ $2 == "bot" ]]; then
-                if [[ $3 =~ ^[0-9]+$ ]]; then
-                    tail -n $3 $path_log
-                else
-                    tail -f $path_log
-                fi
-            elif [[ $2 == "qb" ]]; then
-                if [[ $3 == "all" ]]; then
-                    qbittorrent-log all
-                else
-                    qbittorrent-log
-                fi
-            elif [[ $2 == "plex" ]]; then
-                if [[ $3 == "server" ]]; then
-                    if [[ $4 == "all" ]]; then
-                        plex-log server all
-                    else
-                        plex-log server
-                    fi
-                elif [[ $3 == "system" ]]; then
-                    if [[ $4 == "all" ]]; then
-                        plex-log system all
-                    else
-                        plex-log system
-                    fi
-                else
-                    echo "Available parameters: server and system"
-                fi
-            else
-                echo "Available parameters: bot, qb and plex"
-            fi
-        else
-            echo "Available parameters: start, status, log and stop"
-        fi
-        exit 0
-    fi
-fi
-
-### Логирование
-function log-rotate {
-    byte=$((($log_size_mbyte*1024*1024)))
-    if [ ! -e "$file_path" ]; then
-        touch $path_log 
-    elif [[ $size > $byte ]]; then
-        size=$(ls -l $path_log | awk '{print $5}')
-        cp $path_log $(echo "$path_log"_bak)
-        rm $path_log
-    fi
-}
-
-log-rotate
 
 ################################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ####################################
 ### API documentation: https://core.telegram.org/bots/api
@@ -580,7 +401,19 @@ function read-telegram {
 
 ################################## 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ##################################
 ### WebUI API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
-### Tested on version 4.6.0 and 4.6.5
+### Latest API documentation: 2.8.3
+### Tested application on version 4.6.0 and 4.6.5 (api: 2.9.3)
+
+### Функция авторизации в qBittorrent
+function qbittorrent-auth {
+        echo "[INFO] $(date '+%H:%M:%S'): Authorization to qBittorrent" >> $path_log
+        endpoint_auth="api/v2/auth/login"
+        curl -s "$QB_ADDR/$endpoint_auth" \
+            --max-time 1 \
+            -c $path_qb_cookies \
+            --header "Referer: $QB_ADDR" \
+            --data "username=$QB_USER&password=$QB_PASS" 1> /dev/null
+}
 
 ### Проверка доступности qBittorrent
 function qbittorrent-test {
@@ -611,6 +444,57 @@ function qbittorrent-test {
 # 1 - Ошибка авторизации
 # 2 - Служба не запущена (порт недоступен)
 # 3 - Сервер недоступен (нет пинга)
+
+### Versions and Build
+function qbittorrent-version {
+    qbittorrent-auth
+    app_ver=$(endpoint="api/v2/app/version"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies)
+    app_web=$(endpoint="api/v2/app/webapiVersion"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies)
+    app_build=$(endpoint="api/v2/app/buildInfo"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies)
+    echo "$app_ver (api: $app_web)" | sed "s/^v//"
+}
+
+# qbittorrent-version
+
+### Журнал работы клиента qBittorrent
+function qbittorrent-log {
+    count=$1
+    all=false
+    if [[ $count == "all" ]]; then
+        all=true
+    fi
+    qbittorrent-auth
+    endpoint="api/v2/log/main"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "normal=$all" \
+        --data "info=$all" \
+        --data "warning=true" \
+        --data "critical=true" \
+        --data "last_known_id=-1" | jq -r '.[] | {
+            type: (
+                if .type == 1 then "NORM"
+                elif .type == 2 then "INFO"
+                elif .type == 4 then "WARN"
+                elif .type == 8 then "CRIT"
+                else "UNKNOWN"
+                end
+            ),
+            datetime: (.timestamp | todateiso8601),
+            message: .message
+        } | "[\(.type)] \(.datetime): \(.message)"' | while read -r line; do
+            datetime=$(echo "$line" | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
+            formatted_datetime=$(date -d "$datetime" "+%d.%m.%Y %H:%M:%S")
+            echo "$line" | sed "s/$datetime/$formatted_datetime/"
+        done
+}
 
 ### Общие настройки лимитов скорости загрузки и отдачи ⬇️⬆️📶
 function qbittorrent-get-limit {
@@ -1154,6 +1038,56 @@ function magnet-uri {
 
 ################################# 🔲 🔲 🔲 Transmission 🔲 🔲 🔲 ##################################
 # RPC API documentation: https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md
+# Tested on version 4.0.6 (38c164933e)
+
+### Проверка доступности Transmission
+function transmission-test {
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    tr_test=0
+    if [[ -z $session_id ]]; then
+        tr_test=1
+        echo "[ERRO] $(date '+%H:%M:%S'): Transmission error authorization" >> $path_log
+        TRANS_IP=$(echo $TRANS_ADDR | sed -r "s/.+\/\/|:.+//g")
+        TRANS_PORT=$(echo $TRANS_ADDR | sed -r "s/.+://")
+        timeout 2 nc -zv $TRANS_IP $TRANS_PORT &> /dev/null
+        if [ $? != 0 ]; then
+            tr_test=2
+            echo "[ERRO] $(date '+%H:%M:%S'): Transmission service not avaliable (tcp port)" >> $path_log
+            tr_ping=$(ping $TRANS_IP -c 2 | grep -i ttl)
+            if [ -z "$tr_ping" ]; then
+                tr_test=3
+                echo "[ERRO] $(date '+%H:%M:%S'): Transmission server not avaliable (icmp ping)" >> $path_log
+            fi
+        fi
+    fi
+    echo $tr_test
+}
+
+# transmission-test
+# 0 - ОК
+# 1 - Ошибка авторизации
+# 2 - Служба не запущена (порт недоступен)
+# 3 - Сервер недоступен (нет пинга)
+
+function transmission-version {
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    curl -s "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "method": "session-get",
+            "arguments": {
+                "fields": [
+                    "version"
+                ]
+            }
+        }' | jq -r .arguments.version
+}
 
 ### Arguments:
 # activityDate - Дата последней активности торрента
@@ -1602,17 +1536,79 @@ function transmission-remove {
 
 ############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
 ### No official API documentation
+### Tested on version 1.40.0.7998-c29d4c0c8
 ### Token: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token
 ### Endpoint list:
 # curl -s "$PLEX_ADDR" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq -r .MediaContainer.Directory[].key
-### Version
-# curl -s "$PLEX_ADDR/servers" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq -r .MediaContainer.Server[].version
-### Builder Tasks:
-# curl -s "$PLEX_ADDR/butler" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq .ButlerTasks.ButlerTask[]
 ### Plugins:
 # curl -s "$PLEX_ADDR/channels/all" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq .
 ### Devices (web clients):
 # curl -s "$PLEX_ADDR/devices" -H "X-Plex-Token: $PLEX_TOKEN" -H "accept: application/json" | jq .
+
+### Получить версию сервера Plex
+function plex-version {
+    endpoint="servers"
+    curl -m 2 -s -X GET "$PLEX_ADDR/servers" \
+        -H "X-Plex-Token: $PLEX_TOKEN" \
+        -H "accept: application/json" | jq -r .MediaContainer.Server[].version
+}
+
+# plex-version
+
+### Проверка доступности сервера Plex (получение версии)
+function plex-test {
+    plex_ver=$(plex-version 2> /dev/null)
+    plex_test=0
+    if [[ -z $plex_ver ]]; then
+        plex_test=1
+        echo "[ERRO] $(date '+%H:%M:%S'): Plex Media Server error authorization" >> $path_log
+        PLEX_IP=$(echo $PLEX_ADDR | sed -r "s/.+\/\/|:.+//g")
+        PLEX_PORT=$(echo $PLEX_ADDR | sed -r "s/.+://")
+        timeout 2 nc -zv $PLEX_IP $PLEX_PORT &> /dev/null
+        if [ $? != 0 ]; then
+            plex_test=2
+            echo "[ERRO] $(date '+%H:%M:%S'): Plex Media Server service not avaliable (tcp port)" >> $path_log
+            plex_ping=$(ping $PLEX_IP -c 2 | grep -i ttl)
+            if [ -z "$plex_ping" ]; then
+                plex_test=3
+                echo "[ERRO] $(date '+%H:%M:%S'): Plex Media Server server not avaliable (icmp ping)" >> $path_log
+            fi
+        fi
+    fi
+    echo $plex_test
+}
+
+# plex-test
+# 0 - ОК
+# 1 - Ошибка авторизации
+# 2 - Служба не запущена (порт недоступен)
+# 3 - Сервер недоступен (нет пинга)
+
+### Журнал работы сервера Plex
+function plex-log {
+    type=$1
+    count=$2
+    path_plex_log="$path/plex-log"
+    plex_log_name=$(date "+%H:%M-%d.%m.%Y")
+    if [ -d "$path_plex_log" ]; then
+        rm -r $path_plex_log
+    fi
+    mkdir $path_plex_log
+    endpoint="diagnostics/logs"
+    curl -s "$PLEX_ADDR/$endpoint" \
+        -H "X-Plex-Token: $PLEX_TOKEN" \
+        -o "$path_plex_log/plex-log-$plex_log_name.zip"
+    unzip "$path_plex_log/plex-log-$plex_log_name.zip" -d $path_plex_log > null
+    if [[ $type == "server" && $count == "all" ]]; then
+        cat "$path_plex_log/Plex Media Server.log"
+    elif [[ $type == "server" && $count != "all" ]]; then
+        cat "$path_plex_log/Plex Media Server.log" | grep -E "ERROR|WARN"
+    elif [[ $type == "system" && $count != "all" ]]; then
+        cat "$path_plex_log/com.plexapp.system.log" | grep -E "ERROR|WARN"
+    elif [[ $type == "system" && $count == "all" ]]; then
+        cat "$path_plex_log/com.plexapp.system.log"
+    fi
+}
 
 ### /plex_status_<key>
 ### Даты создания, обновления контента и последней синхронизации в выбранной секции Plex
@@ -1637,15 +1633,14 @@ function plex-sections {
 ### /plex_info
 ### Функция получения списка всех секций на сервере Plex через функция plex-sections для отправки в Telegram
 function plex-info {
-    plex_sections=$(plex-sections | jq -r ".name,.key")
-    keyboard='{"inline_keyboard":['
-    if [[ -z "$plex_sections" ]]; then
-        data="☹️ *Приложение Plex не запущено*"
-    else
-        data="🍿 Выберите секцию в Plex для доступа к его контенту:"
+    plex_test=$(plex-test)
+    if [[ $plex_test == 0 ]]; then
+        plex_sections=$(plex-sections | jq -r ".name,.key")
+        data="🍿 Выберите секцию на сервере Plex для доступа к его контенту:"
         IFS=$'\n'
         name_section=""
         key_section=""
+        keyboard='{"inline_keyboard":['
         for p in $plex_sections; do
             if [ -z "$name_section" ]; then
                 name_section="$p"
@@ -1656,18 +1651,42 @@ function plex-info {
                 key_section=""
             fi
         done
-    fi
-    app_name="plex_media_server"
-    #keyboard+="[{\"text\":\"🟠 Управление\",\"callback_data\":\"\/app_status $app_name\"},"
-    keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
-    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
-    keyboard+="[{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"},"
-    keyboard+="{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
-    #keyboard+="{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"}]]}"
-    if [[ $message_id_temp != "null" ]]; then
-        edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
+        app_name="plex_media_server"
+        #keyboard+="[{\"text\":\"🟠 Управление\",\"callback_data\":\"\/app_status $app_name\"},"
+        keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
+        keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
+        keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+        keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+        #keyboard+="{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"}]]}"
+        if [[ $message_id_temp != "null" ]]; then
+            edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
+        else
+            send-keyboard "$data" "$CHAT" "$keyboard"
+        fi
     else
-        send-keyboard "$data" "$CHAT" "$keyboard"
+        if [[ $plex_test == 1 ]]; then
+            echo "[WARN] $(date '+%H:%M:%S'): <<< Error authorization on /plex_info" >> $path_log
+            data="☹️ Ошибка авторизации на сервере *Plex*"
+        elif [[ $plex_test == 2 ]]; then
+            echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable tcp port on Plex Media Server" >> $path_log
+            data="☹️ Сервер *Plex* не запущен"
+        elif [[ $plex_test == 3 ]]; then
+            echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable icmp ping on Plex Media Server" >> $path_log
+            data="☹️ Сервер *Plex* недоступен"
+        fi
+        keyboard='{"inline_keyboard":['
+        #keyboard+="[{\"text\":\"▶️ Запустить\",\"callback_data\":\"\/app_start qBittorrent\"},"
+        #keyboard+="{\"text\":\"⏹ Остановить\",\"callback_data\":\"\/app_stop qBittorrent\"}],"
+        keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/plex_info\"}],"
+        keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
+        keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
+        keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+        keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+        if [[ $message_id_temp != "null" ]]; then
+            edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+        else
+            send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+        fi
     fi
 }
 
@@ -3138,7 +3157,7 @@ function app-status-response {
         data+=$(echo "*Потребление памяти (Working Set/Peak):* $WorkingSet / $PeakWorkingSet \n")
         data+=$(echo "*Потоки/Дескрипторы:* $Threads/$Handles \n\n")
     else
-        data=$(echo "☹️ *Приложение $app_name не запущено* \n")
+        data=$(echo "☹️ Приложение *$app_name* не запущено \n")
     fi
     keyboard='{"inline_keyboard":['
     keyboard+="[{\"text\":\"▶️ Запустить\",\"callback_data\":\"\/app_start $app_name\"},"
@@ -3205,6 +3224,148 @@ function win-service {
         send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
     fi
 }
+
+###############################################################################
+################################ Server Param #################################
+###############################################################################
+
+function test-status {
+    case $1 in
+    "1")
+        echo "Error authorization"
+    ;;
+    "2")
+        echo "Error network (tcp port not available)"
+    ;;
+    "3")
+        echo "Error network (icmp not available)"
+    ;;
+    esac
+}
+
+### Параметры управления ботом
+if [[ $1 == "start" ]]; then
+    if [[ $2 == "bot" ]]; then
+        TG_CHANNEL_USE="false"
+        echo "[OK]   $(date '+%H:%M:%S'): Server started (only bot)" >> $path_log
+        cat $path_log | tail -n 1
+    elif [[ $2 == "all" ]]; then
+        TG_CHANNEL_USE="True"
+        echo "[OK]   $(date '+%H:%M:%S'): Server started (bot and channel)" >> $path_log
+        cat $path_log | tail -n 1
+    else
+        echo "Available parameters: bot and all"
+        exit 0
+    fi
+    if [[ $3 == "log" ]]; then
+        tail -f $path_log &
+    fi
+else
+    process_name="kinozal"
+    if [[ $1 == "stop" ]]; then
+        ### Найти все процессы kinozal, исключив текущий процесс отановки
+        proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop" | awk '{print $2}'))
+        if [[ ${#proc[@]} != 0 ]]; then
+            for p in ${proc[@]}; do
+                echo "kill $p"
+                kill -9 $p
+            done
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop"))
+            if [[ ${#proc[@]} == 0 ]]; then
+                echo "[OK]   $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+            else
+                echo "[ERR]  $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+            fi
+        else
+            echo "[WARN] $(date '+%H:%M:%S'): Server is already stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+        fi
+        cat $path_log | tail -n 1
+    elif [[ $1 == "status" ]]; then
+        if [[ $2 == "proc" ]]; then
+            ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{
+                printf "%s %s %s %s %s ", $1, $5, $6, $8, $10
+                for (i=11; i<=NF; i++)
+                printf "%s ", $i; printf "\n"
+            }'
+        else
+            proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
+            if [ -n "$proc" ]; then 
+                echo "[INFO] $(date '+%H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
+            else
+                echo "[INFO] $(date '+%H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
+            fi
+        fi
+    elif [[ $1 == "version" ]]; then
+        qb_test=$(qbittorrent-test)
+        trans_test=$(transmission-test)
+        plex_test=$(plex-test)
+        if [[ $qb_test == 0 ]]; then
+            echo "qBittorrent Client:  $(qbittorrent-version)"
+        else
+            echo "qBittorrent Client:  $(test-status "$qb_test")"
+        fi
+        if [[ $trans_test == 0 ]]; then
+            echo "Transmission Client: $(transmission-version)"
+        else
+            echo "Transmission Client: $(test-status "$trans_test")"
+        fi
+        if [[ $plex_test == 0 ]]; then
+            echo "Plex Media Server:   $(plex-version)"
+        else
+            echo "Plex Media Server:   $(test-status "$plex_test")"
+        fi
+    elif [[ $1 == "log" ]]; then
+        if [[ $2 == "bot" ]]; then
+            if [[ $3 =~ ^[0-9]+$ ]]; then
+                tail -n $3 $path_log
+            else
+                tail -f $path_log
+            fi
+        elif [[ $2 == "qb" ]]; then
+            if [[ $3 == "all" ]]; then
+                qbittorrent-log all
+            else
+                qbittorrent-log
+            fi
+        elif [[ $2 == "plex" ]]; then
+            if [[ $3 == "server" ]]; then
+                if [[ $4 == "all" ]]; then
+                    plex-log server all
+                else
+                    plex-log server
+                fi
+            elif [[ $3 == "system" ]]; then
+                if [[ $4 == "all" ]]; then
+                    plex-log system all
+                else
+                    plex-log system
+                fi
+            else
+                echo "Available parameters: server and system"
+            fi
+        else
+            echo "Available parameters: bot, qb and plex"
+        fi
+    else
+        echo "Available parameters: start, status, ver, log and stop"
+    fi
+    exit 0
+fi
+
+### Логирование
+function log-rotate {
+    byte=$((($log_size_mbyte*1024*1024)))
+    if [ ! -e "$file_path" ]; then
+        touch $path_log 
+    elif [[ $size > $byte ]]; then
+        size=$(ls -l $path_log | awk '{print $5}')
+        cp $path_log $(echo "$path_log"_bak)
+        rm $path_log
+    fi
+}
+
+log-rotate
 
 ###############################################################################
 ################################# Thread 1️⃣ ##################################
@@ -3525,26 +3686,34 @@ while :
         ###### 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢
         ### Request: /status 🟢🐸
         elif [[ $command == /status ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /status" >> $path_log
             qb_check=$(qbittorrent-test)
-            if [[ $qb_check == 1 ]]; then
-                send-telegram "Ошибка авторизации на сервере qBittorrent" "$CHAT"
-            elif [[ $qb_check == 2 ]]; then
-                data=$(echo "☹️ *Приложение qBittorrent не запущено* \n")
+            if [[ $qb_check == 0 ]]; then
+                echo "[OK]   $(date '+%H:%M:%S'): <<< Response on qBittorrent /status" >> $path_log
+                menu-status "$(qbittorrent-data)" "$CHAT"
+            else
+                if [[ $qb_check == 1 ]]; then
+                    echo "[WARN] $(date '+%H:%M:%S'): <<< Error authorization on qBittorrent /status" >> $path_log
+                    data="☹️ Ошибка авторизации на сервере *qBittorrent*"
+                elif [[ $qb_check == 2 ]]; then
+                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable tcp port on qBittorrent" >> $path_log
+                    data="☹️ Приложение *qBittorrent* не запущено"
+                elif [[ $qb_check == 3 ]]; then
+                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable icmp ping on qBittorrent" >> $path_log
+                    data="☹️ Сервер *qBittorrent* недоступен"
+                fi
                 keyboard='{"inline_keyboard":['
-                keyboard+="[{\"text\":\"▶️ Запустить\",\"callback_data\":\"\/app_start qBittorrent\"},"
-                keyboard+="{\"text\":\"⏹ Остановить\",\"callback_data\":\"\/app_stop qBittorrent\"}],"
-                keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
-                keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}]]}"
+                #keyboard+="[{\"text\":\"▶️ Запустить\",\"callback_data\":\"\/app_start qBittorrent\"},"
+                #keyboard+="{\"text\":\"⏹ Остановить\",\"callback_data\":\"\/app_stop qBittorrent\"}],"
+                keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/status\"}],"
+                keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
+                keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
+                keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+                keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
                 if [[ $message_id_temp != "null" ]]; then
                     edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
                 else
                     send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
                 fi
-            elif [[ $qb_check == 3 ]]; then
-                send-telegram "Сервер qBittorrent недоступен" "$CHAT"
-            else
-                menu-status "$(qbittorrent-data)" "$CHAT"
             fi
         ### Request: /info hash 🔄🔄🔄
         elif [[ $command == /info* ]]; then
@@ -3735,8 +3904,34 @@ while :
         ######  🔲 🔲 🔲 Transmission 🔲 🔲 🔲
         ### Request: /trans_status
         elif [[ $command == /trans_status ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_status" >> $path_log
-            transmission-tg-status
+            trans_test=$(transmission-test)
+            if [[ $trans_test == 0 ]]; then
+                echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_status" >> $path_log
+                transmission-tg-status
+            else
+                if [[ $trans_test == 1 ]]; then
+                    echo "[WARN] $(date '+%H:%M:%S'): <<< Error authorization on /trans_status" >> $path_log
+                    data="☹️ Ошибка авторизации на сервере *Transmission*"
+                elif [[ $trans_test == 2 ]]; then
+                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable tcp port on Transmission" >> $path_log
+                    data="☹️ Приложение *Transmission* не запущено"
+                elif [[ $trans_test == 3 ]]; then
+                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable icmp ping on Transmission" >> $path_log
+                    data="☹️ Сервер *Transmission* недоступен"
+                fi
+                keyboard='{"inline_keyboard":['
+                #keyboard+="[{\"text\":\"▶️ Запустить\",\"callback_data\":\"\/app_start qBittorrent\"},"
+                #keyboard+="{\"text\":\"⏹ Остановить\",\"callback_data\":\"\/app_stop qBittorrent\"}],"
+                keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/trans_status\"},"
+                keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+                keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
+                keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+                if [[ $message_id_temp != "null" ]]; then
+                    edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+                else
+                    send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+                fi
+            fi
         ### Request: /trans_info
         elif [[ $command == /trans_info* ]]; then
             tr_id=$(echo $command | sed "s/\/trans_info //")
