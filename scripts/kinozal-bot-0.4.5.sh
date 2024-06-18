@@ -23,16 +23,13 @@
 ###############################################################################
 
 ### Mirror
-
 # KZ_ADDR="https://kinozal.tv"
 # KZ_ADDR="https://kinozal.me"
 
-### Reverse Proxy
-
+### Reverse Proxy (не поддерживается авторизация)
 ### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
 # rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
-
-### Отключите в конфигурации использование Proxy-сервера и измените адрес на обратный прокси сервер
+### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на обратный прокси сервер
 # PROXY="False"
 # KZ_ADDR="http://192.168.3.100:8443"
 
@@ -51,8 +48,8 @@
 ### 16.05.2024-12.06.2024 (0.4.4):
 # + Изменены параметры управления запуска (2 режима) и возможность настройки управления чере службу systemd;
 # + Добавлены параметры вывода логов бота, журнала работы клиента qBittorrent и сервера Plex;
-# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /find_kinozal);
-# + Повторить последний поисковой запрос (доступно из меню и /find_kinozal);
+# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /search_id);
+# + Повторить последний поисковой запрос (доступно из меню и /search_id);
 # + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
 # + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
 # + Добавлена возможность загрузить торрент по инфо хеш (/add_torrent из меню);
@@ -70,21 +67,24 @@
 ### 14.06.2024 (0.4.5):
 # + Добавлен функционал управления торрент клиентом Transmission (добавление по хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных)
 # ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
-# + Добавлена поддержка использования зеркала и обратного прокси сервера
-# + Добавлен размер свободного места на диске в статус qBittorrent
+# ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title
+# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>
+# ~ Переработан парсинг списка фильмографии актера
 # + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS)
+# + Добавлен размер свободного места на диске в статус qBittorrent
+# + Добавлена поддержка использования зеркала и обратного прокси сервера
 
 ###############################################################################
 
 ### Bot commands (endpoint):
-# /search - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
+# /search_title - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
 # /profile - Профиль Кинозал (количество доступных для загрузки торрент файлов, статистика загрузки и отдачи, время сид и пир)
 # /torrent_files - Список загруженных торрент файлов с возможностью удаления
 # /status - список и статус всех текущих торрентов, добавленных в торрент-клиент qBittorrent
 # /plex_info - Список секций на сервере Plex для доступа к их контенту
 # /download_torrent <id> <file_name> - Загрузить торрент файл (передать два параметра: id и имя файла без пробелов)
 # /delete_torrent_file_<id> - Удалить торрент файл по id
-# /find_kinozal <id> - Поиск в Кинозал по id
+# /search_id <id> - Поиск в Кинозал по id
 # /download_video_<id> - Добавить торрент файла на загрузку в qBittorrent
 # /info <hash> - Статус загрузки указанного торрента (передать параметр: hash торрента)
 # /torrent_content <hash> - Содержимое торрента (список файлов)
@@ -115,7 +115,7 @@
 # /win_api_get_dir <path> - Получить список директорий и файлов по указанному пути (нереализовано)
 # /win_api_del_dir <path> - Удалить директорию или файл по указанному пути (нереализовано)
 ### 0.4.4:
-# /search <year*> <format*> <title> - Поиск с фильтрацией по году выхода и формату разрешения
+# /search_title <year*> <format*> <title> - Поиск с фильтрацией по году выхода и формату разрешения
 # /research - Повторить последний поиск (id не требуется)
 # /file_list - Извлечь список файлов и их размер из раздачи
 # /send_torrent_file_id - Отправка загруженного торрент-файла в Telegram
@@ -128,6 +128,8 @@
 # /torrent_recheck <hash> - Проверить торрент файл
 # /torrent_limit - Переключить альтернативные лимиты скорости загрузки и отдачи
 ### 0.4.5:
+# /search_actor <name> - Поиск актеров в базе Кинозал (возвращает список найденных актеров)
+# /actor <search/list> <name> - Первый параметр принимает тип возврата (/kinozal_actors или /search_actor)
 # /trans_status - Список и статус всез торрент в клиенте Transmission
 # /trans_info <id> - Получить подробную информацию о торренте
 # /trans_file_all <id> <type> - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет)
@@ -139,9 +141,9 @@
 ###############################################################################
 
 ### Telegram menu (Edit Bot - Edit commands):
-# / find_kinozal - 🔎 Поиск в Кинозал по id
-# / search - 🍿 Поиск по названию
-# / actor - 👥 Поиск по актеру
+# / search_id - 🔎 Поиск в Кинозал по id
+# / search_title - 🍿 Поиск по названию
+# / search_actor - 👥 Поиск по актеру
 # / research - 🔄 Повторить последний поиск
 # / add_torrent - ⬇️ Добавить торрент по инфо хеш
 # / torrent_files - 🗂 Торрент файлы
@@ -153,33 +155,34 @@
 ###############################################################################
 
 ### Поиск в Кинозал по id:
-# /find_kinozal 1940284
+# /search_id 1940284
 
 ### Поиск по названию фильма или сериала:
-# /search Рокки 2
-# /search Рокки 4
+# /search_title Рокки 2
+# /search_title Рокки 4
 
 ### Поиск с фильтрацией по году выхода:
-# /search 1979 Рокки
-# /search 1985 Рокки
+# /search_title 1979 Рокки
+# /search_title 1985 Рокки
 
 ### Поиск с фильтрацией по формату разрешения:
-# /search (720) Рокки
-# /search (1080) Рокки
-# /search (2160) Рокки
+# /search_title (720) Рокки
+# /search_title (1080) Рокки
+# /search_title (2160) Рокки
 
 ### Поиск с фильтрацией по формату разрешения и году выхода:
-# /search 1985 (2160) Рокки
-# /search (2160) 1985 Рокки
+# /search_title 1985 (2160) Рокки
+# /search_title (2160) 1985 Рокки
 
-### Поиск фильмографии по имени актера (получить список фильмов из Кинозал):
-# /actor Сильвестр Сталлоне
+### Вывести список актеров в базе Кинозал по имени
+# /search_actor "Алан"
+# /search_actor "Сильвестр"
 
-### Неверный поиск (находит только актера в Кинопоиск по api без фильмографии):
-# /actor сильвестр сталлоне
-# /actor Сильвестр Сталоне
+### Получить краткую биографию и фильмографию указанного актера (и ссылка на Кинопоиск через Kinopoisk API):
+# /actor search Алан Тьюдик
+# /actor list Сильвестр Сталлоне
 
-### Повторить последний запрос поиска (для фильма/сериала или актера):
+### Повторить последний запрос поиска для фильма/сериала или актера:
 # /research
 
 ### Добавить торрент по инфо хеш на загрузку с выбором клиента через меню:
@@ -247,7 +250,7 @@ conf="$kinozal_bot_path/kinozal-bot.conf"
 # START_DEBUG=true
 
 ### (Debug) Передаем путь к конфигурации вручную
-# conf="/home/lifailon/kinozal-web/kinozal-bot.conf"
+# conf="/home/lifailon/kinozal-bot/kinozal-bot.conf"
 
 ### Прочитать конфигурацию сервера
 if [ -f "$conf" ]; then
@@ -2009,7 +2012,7 @@ function get-links {
             # Encode name to url
             encoded_kz_name=$(echo -ne "$kz_name" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
             kz_id=$(echo "$line" | grep -Po "(?<=id=)[0-9]+")
-            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal $kz_id\"}],"
+            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/search_id $kz_id\"}],"
         done
     elif [[ $type == "description" ]]; then
         id_url="$KZ_ADDR/ajax/details_get.php?id=$id_find&sr=101"
@@ -2027,7 +2030,7 @@ function get-links {
             # Encode name to url
             encoded_kz_name=$(echo -ne "$kz_name" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
             kz_id=$(echo "$line" | grep -Po "(?<=id=)[0-9]+")
-            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/find_kinozal $kz_id\"}],"
+            keyboard+="[{\"text\":\"$encoded_kz_name\",\"callback_data\":\"/search_id $kz_id\"}],"
         done
     fi
     if [[ $KINOBOX_PLAYERS == "True" ]]; then
@@ -2055,7 +2058,7 @@ function get-links {
     if [[ $type == "find" ]]; then
         keyboard+="[{\"text\":\"🟣 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
     elif [[ $type == "description" ]]; then
-        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $id_find\"},"
+        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $id_find\"},"
     fi
     keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"  
     keyboard+="[{\"text\":\"⬇️ Скачать торрент файл\",\"callback_data\":\"\/download_torrent $id_find "GLOBAL_NAME" \"},"
@@ -2067,7 +2070,7 @@ function get-links {
     echo $keyboard
 }
 
-### Функция фиксации глобального имени переменной (вызывается в /find_kinozal id)
+### Функция фиксации глобального имени переменной (вызывается в /search_id id)
 function get-global-name {
     html=$1
     name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
@@ -2237,7 +2240,7 @@ function get-search {
         name_year_quality=$(echo $name_from_id | awk -F "/" '{print $1,$3,$NF}'| sed -r "s/\s+/ /g")
         # Encode name to url
         encoded_name_year_quality=$(echo -ne "$name_year_quality" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
-        keyboard+="[{\"text\":\"$encoded_name_year_quality\",\"callback_data\":\"/find_kinozal $id\"}],"
+        keyboard+="[{\"text\":\"$encoded_name_year_quality\",\"callback_data\":\"/search_id $id\"}],"
     done
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
     keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
@@ -2253,10 +2256,60 @@ function get-search {
     fi
 }
 
+# Поиск актеров
+function search-actor {
+    actor=$1
+    encode_actor=$(url-encode-ru "$actor" | sed "s/\s/+/g")
+    kinozal_actor_url="$KZ_ADDR/personsearch.php?s=$encode_actor"
+    if [[ $PROXY == "True" ]]; then
+        URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
+        html=$(curl -s -x $URL_PROXY $kinozal_actor_url | iconv -f windows-1251 -t UTF-8)
+    else
+        html=$(curl -s $kinozal_actor_url | iconv -f windows-1251 -t UTF-8)
+    fi
+    # Количество результатов поиска
+    person_count=$(echo $html | grep -P -o "(?<=Результат поиска ).*(?=персон)" | sed -r "s/\s.+//g")
+    echo "$person_count персон"
+    # Массив имен актеров
+    html2=$(echo $html | sed -r "s/.+персон<\/div><div class=//g")
+    mapfile -t name_array < <(echo "$html2" | grep -oP '(?<=<span>).+?(?=</span>)')
+    for name_actor in "${name_array[@]}"; do
+        echo "$name_actor"
+    done
+}
+
+# search-actor "Алан"
+# search-actor "Сильвестр"
+
+# Список актеров в Telegram
+function actor-list {
+    actor=$1
+    actor_array=$(search-actor "$actor")
+    actor_count=$(echo "$actor_array" | head -n 1)
+    data="Поиск: *$actor* \n"
+    data+="Совпадений: *$actor_count*"
+    actor_array_no_conut=$(echo "$actor_array" | sed "1d")
+    keyboard='{"inline_keyboard":['
+    IFS=$'\n'
+    for a in $actor_array_no_conut; do
+        keyboard+="[{\"text\":\"$a\",\"callback_data\":\"\/actor "search" $a\"}],"
+    done
+    keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
+    keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
+    keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
 ### Получить информацию об актере и список его фильмографии из Кинозал
 ### Список актеров обрабатывается в конечной точке /kinozal_actors
 function get-actor {
-    actor=$1
+    actor_type=$1
+    actor=$2
     encode_actor=$(url-encode-ru "$actor" | sed "s/\s/+/g")
     kinozal_actor_url="$KZ_ADDR/persons.php?s=$encode_actor"
     if [[ $PROXY == "True" ]]; then
@@ -2278,6 +2331,7 @@ function get-actor {
         data+=$(echo "*Дата рождения:* $kinopoisk_actor_date\n")
         data+=$(echo "*Возраст:* $kinopoisk_actor_age\n")
         data+=$(echo "*Кинопоиск:* $kinopoisk_actor_url\n")
+        data+=$(echo "*Кинозал:* $kinozal_actor_url\n")
     else
         actor_name=$(printf "%s\n" "${html[@]}" | grep "Имя:" | sed -r "s/.+Имя://; s/<\/b> //; s/<br.+>//")
         #actor_country=$(printf "%s\n" "${html[@]}" | grep "Место рождения:" | sed -r "s/.+Место рождения://; s/<\/b> //; s/<br.+>//")
@@ -2291,8 +2345,21 @@ function get-actor {
     fi
     encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
     ### Отфильтровать все описание до фильмографии и забрать только строки с годом выхода
-    ###! Символ &#237; это верхняя одинарная ковычка (') и удалить вторую дату из диапазона (2010 - 2020)
-    films_name_array=$(printf "%s\n" "${html[@]}" | grep -A 1000 "Фильмография" | grep -P "^[0-9]{4}" | sed -r "s/\/.+//g; s/\.\.\..+//g; s/\&\#237\;/'/g; s/\&#216\;//g; s/\&//g; s/<br|<|>//; s/ – [0-9]{4}//g")
+    ### Удалить тэги, заменить символ &#237 на одинарную кавычку и &#216 на точку с запятой, заменить символ &, заменить символ удалить второе наименование через дробь, удалить диапазон дат, удалить троеточие в диапазоне дат, удалить текст после троиточия в конце, удалить содержимое в скобках и за скобками
+    films_name_array=$(printf "%s\n" "${html[@]}" | grep -A 1000 "Фильмография" | grep -P "^[0-9]{4}" | sed -r "
+        s/<.+//g;
+        s/\&\#237\;/'/g;
+        s/\&#216\;//g;
+        s/\&/and/g;
+        s/\/.+//g;
+        s/ –[0-9]{4}//g;
+        s/ -[0-9]{4}//g;
+        s/ – [0-9]{4}//g;
+        s/ - [0-9]{4}//g;
+        s/ – \.\.\.//g;
+        s/ - \.\.\.//g;
+        s/\(.+//g"
+    )
     IFS=$'\n'
     keyboard='{"inline_keyboard":['
     temp_count=0
@@ -2306,13 +2373,17 @@ function get-actor {
         if [[ $temp_count -le 70 ]]; then
             text_temp=$(echo $films_name | cut -c "1-50")
             text_temp="${text_temp%?}"
-            keyboard+="[{\"text\":\"$films_name\",\"callback_data\":\"/search $text_temp\"}],"
+            keyboard+="[{\"text\":\"$films_name\",\"callback_data\":\"/search_title $text_temp\"}],"
             temp_count=$(($temp_count + 1))
         else
             break
         fi
     done
-    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/kinozal_actors $GLOBAL_ID_FIND\"},"
+    if [[ $actor_type == "list" ]]; then
+        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/kinozal_actors $GLOBAL_ID_FIND\"},"
+    else
+        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/research\"},"
+    fi
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -2372,7 +2443,7 @@ function get-actor-kinopoisk {
         -H "X-API-KEY: $KINOPOISK_TOKEN" | jq .
 }
 
-### Описание Кинопоиск по id + трейлеры + список названий Сиквелов и Приквелов (свойство movie_similar) для передачи в поиск Кинозал (/search) 🟡
+### Описание Кинопоиск по id + трейлеры + список названий Сиквелов и Приквелов (свойство movie_similar) для передачи в поиск Кинозал (/search_title) 🟡
 ### Описание Кинозал обрабатывается в конечной точке /kinozal_description
 function get-movie-kinopoisk-id {
     movie_id=$1
@@ -2416,9 +2487,9 @@ function get-movie-kinopoisk-id {
     keyboard='{"inline_keyboard":['
     for movie_sim in $movie_similar; do
         movie_callback=$(echo $movie_sim | cut -c "1-50")
-        keyboard+="[{\"text\":\"$movie_sim\",\"callback_data\":\"/search $movie_callback\"}],"
+        keyboard+="[{\"text\":\"$movie_sim\",\"callback_data\":\"/search_title $movie_callback\"}],"
     done
-    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $GLOBAL_ID_FIND\"},"
+    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $GLOBAL_ID_FIND\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -2445,7 +2516,7 @@ function menu-files {
         torrent_id=$(echo $l | awk -F "-" '{print $1}')
         torrent_name=$(echo $l | sed -r "s/$torrent_id-//")
         torrent_name=$(echo $torrent_name | sed -r "s/_/ /g")
-        keyboard+="[{\"text\":\"$torrent_name\",\"callback_data\":\"/find_kinozal $torrent_id\"}],"
+        keyboard+="[{\"text\":\"$torrent_name\",\"callback_data\":\"/search_id $torrent_id\"}],"
     done
     keyboard+="[{\"text\":\"⬆️ Получить последний торрент файл\",\"callback_data\":\"\/send_last_torrent_file\"}],"
     keyboard+="[{\"text\":\"⬆️ Получить все торрент файлы\",\"callback_data\":\"\/send_all_torrent_files\"}],"
@@ -2620,7 +2691,7 @@ function menu-info {
             {\"text\":\"♻️ Проверить\",\"callback_data\":\"\/torrent_recheck $qb_hash\"}],
             [{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/delete_torrent $qb_hash\"},
             {\"text\":\"❌ Удалить данные\",\"callback_data\":\"\/delete_video $qb_hash\"}],
-            [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/find_kinozal $kinozal_id\"},
+            [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/search_id $kinozal_id\"},
             {\"text\":\"🟠 Plex 🔎 \",\"callback_data\":\"\/find $qb_name_replace\"}],
             [{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/status\"},
             {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
@@ -3260,10 +3331,10 @@ while :
                 menu-files "🗂 Торрент файл не удален:" $CHAT
                 echo "[ERRO] $(date '+%H:%M:%S'): Error delete torrent file" >> $path_log
             fi
-        ### Request: /find_kinozal <id> 🔎🔎🔎
-        elif [[ $command == /find_kinozal* ]]; then
-            id_find=$(echo $command | sed "s/\/find_kinozal //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /find_kinozal for $id_find" >> $path_log
+        ### Request: /search_id <id> 🔎🔎🔎
+        elif [[ $command == /search_id* ]]; then
+            id_find=$(echo $command | sed "s/\/search_id //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search_id for $id_find" >> $path_log
             id_url="$KZ_ADDR/details.php?id=$id_find"
             echo "[INFO] $(date '+%H:%M:%S'): Url: $id_url" >> $path_log
             if [[ $PROXY == "True" ]]; then
@@ -3348,9 +3419,9 @@ while :
             IFS=',' read -r -a actors_array <<< $actors
             keyboard='{"inline_keyboard":['
             for actor in "${actors_array[@]}"; do
-                keyboard+="[{\"text\":\"$actor\",\"callback_data\":\"\/actor $actor\"}],"
+                keyboard+="[{\"text\":\"$actor\",\"callback_data\":\"\/actor "list" $actor\"}],"
             done
-            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $id_find\"},"
+            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $id_find\"},"
             keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
             keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
             keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
@@ -3360,28 +3431,40 @@ while :
             else
                 send-keyboard "$data" "$CHAT" "$keyboard"
             fi
-        ### Request: /search 🔎🟣
-        elif [[ $command == /search* ]]; then
-            search_name=$(echo $command | sed "s/\/search //")
+        ### Request: /search_title 🔎🟣
+        elif [[ $command == /search_title* ]]; then
+            search_name=$(echo $command | sed "s/\/search_title //")
             # Update global variables for research
             declare -g GLOBAL_SEARCH_NAME=$search_name
             declare -g GLOBAL_SEARCH_TYPE="Film or Serial"
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search for $search_name" >> $path_log
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search_title for $search_name" >> $path_log
             get-search "$search_name"
-        ### Request: /actor 👥
-        elif [[ $command == /actor* ]]; then
-            actor_name=$(echo $command | sed "s/\/actor //")
+        ### Request: /search_actor 🔎👥
+        elif [[ $command == /search_actor* ]]; then
+            actor_name=$(echo $command | sed "s/\/search_actor //")
             # Update global variables for research
             declare -g GLOBAL_SEARCH_NAME=$actor_name
             declare -g GLOBAL_SEARCH_TYPE="Actor"
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /actor for $actor_name" >> $path_log
-            get-actor "$actor_name"
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search_actor for $actor_name" >> $path_log
+            actor-list "$actor_name"
+        ### Request: /actor 👥
+        elif [[ $command == /actor* ]]; then
+            actor_param=$(echo $command | sed "s/\/actor //")
+            # Обработка параметра для кнопки возврата в поиск или список актеров фильма/сериала
+            back_type=$(echo $actor_param | awk '{print $1}')
+            actor_name=$(echo $actor_param | sed -r "s/$back_type //g")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /actor for $actor_name (back type: $back_type)" >> $path_log
+            if [[ $back_type == "search" ]]; then
+                get-actor "search" "$actor_name"
+            elif [[ $back_type == "list" ]]; then
+                get-actor "list" "$actor_name"
+            fi
         ### Request: /research 🔎⬅️🔄🔎
         elif [[ $command == /research ]]; then
-            search_name=$(echo $command | sed "s/\/search //")
+            search_name=$(echo $command | sed "s/\/search_title //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /research for $GLOBAL_SEARCH_NAME (type: $GLOBAL_SEARCH_TYPE)" >> $path_log
             if  [[ $GLOBAL_SEARCH_TYPE == "Actor" ]]; then
-                get-actor "$GLOBAL_SEARCH_NAME"
+                actor-list "$GLOBAL_SEARCH_NAME"
             else
                 get-search "$GLOBAL_SEARCH_NAME"
             fi
@@ -3418,7 +3501,8 @@ while :
             id_kp=$(get-kp-id "$id_kz_search")
             echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinopoisk: $id_kp" >> $path_log
             get-movie-kinopoisk-id "$id_kp"
-        ### Request: /file_list 📖📄🟣
+        ###### Kinozal hash and file list 📖🟣
+        ### Request: /file_list
         elif [[ $command == /file_list ]]; then
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /file_list" >> $path_log
             files_and_hash=$(files-and-hash "$GLOBAL_ID_FIND")
@@ -3429,7 +3513,7 @@ while :
             ### echo "$data"
             encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
             keyboard='{"inline_keyboard":['
-            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/find_kinozal $GLOBAL_ID_FIND\"},"
+            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $GLOBAL_ID_FIND\"},"
             keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
             keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
             keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
