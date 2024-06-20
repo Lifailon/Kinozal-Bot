@@ -11,8 +11,8 @@
 ### Stack:
 # Kinozal: чтение RSS ленты, получение данных из HTML, поиск с фильтрацией контента и загрузка торрент файлов
 # Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
-# qBittorrent WebUI api: добавление торрентов из торрент файлов или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
-# Transmission RPC api: добавление торрентов из инфо хеш и управление данными (пауза, удаление и изменение приоритета)
+# qBittorrent WebUI api: добавление торрентов из торрент файла или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
+# Transmission RPC api: добавление торрентов из торрент файла, инфо хеш или url-адреса и управление данными (пауза, удаление и изменение приоритета)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
@@ -22,11 +22,11 @@
 
 ###############################################################################
 
-### Mirror
+### Mirrors:
 # KZ_ADDR="https://kinozal.tv"
 # KZ_ADDR="https://kinozal.me"
 
-### Reverse Proxy (не поддерживается авторизация)
+### Reverse Proxy (не поддерживается авторизация):
 ### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
 # rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
 ### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на обратный прокси сервер
@@ -65,7 +65,8 @@
 # + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url;
 # + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
 ### 14.06.2024 (0.4.5):
-# + Добавлен функционал управления торрент клиентом Transmission (добавление по хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных)
+# + Добавлен функционал управления торрент клиентом  (добавление по торрент файлу и хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных)
+# + Добавление торрента в Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации)
 # ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
 # ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title
 # ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>
@@ -133,11 +134,13 @@
 # /actor <search/list> <name> - Первый параметр принимает тип возврата (/kinozal_actors или /search_actor)
 # /trans_status - Список и статус всез торрент в клиенте Transmission
 # /trans_info <id> - Получить подробную информацию о торренте
-# /trans_file_all <id> <type> - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет)
+# /trans_file_all <id> <skip/resume> - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет)
 # /trans_file_select <id> <file_index> - Переключить приоритет выбранного файла (пропустить или высокий приоритет)
-# /trans_pause <id> <type> - установить на паузу или возобновить
-# /trans_remove <id> <type> - удалить торрент и данные
+# /trans_pause <id> <start/stop> - установить на паузу или возобновить
+# /trans_remove <id> <false/true> - удалить торрент и данные
 # /add_hash <qbit/trans> <hash> - Добавить торрент по инфо хеш в указанный клиент
+# /add_trans_url <url> - Добавить торрент по url-адресу в Transmission клиент
+# /download_trans_<id> - Добавить торрент файла на загрузку в Transmission клиент
 
 ###############################################################################
 
@@ -146,10 +149,11 @@
 # / search_title - 🍿 Поиск по названию
 # / search_actor - 👥 Поиск по актеру
 # / research - 🔄 Повторить последний поиск
-# / add_torrent - ⬇️ Добавить торрент по инфо хеш
 # / torrent_files - 🗂 Торрент файлы
 # / status - 🟢 qBittorrent
 # / trans_status - 🔲 Transmission
+# / add_torrent - ➕🧲 Добавить торрент по инфо хеш
+# / add_trans_url - ➕🌐 Добавить торрент по url-адресу
 # / plex_info - 🟠 Plex
 # / find - 🔍 Поиск в Plex
 
@@ -192,6 +196,10 @@
 ### Добавить торрент по инфо хеш в указанный торрент клиент:
 # /add_hash qbit A72BD27A0CE265A3C7965392BC06C25EDD759214
 # /add_hash trans A72BD27A0CE265A3C7965392BC06C25EDD759214
+
+### Добавить по url-адресу торрент файла в Transmission клиент:
+# /add_trans_url https://d.rutor.info/download/869858
+# /add_trans_url https://nnmclub.to/forum/download.php?id=1308422
 
 ###############################################################################
 
@@ -1469,26 +1477,6 @@ function transmission-tg-info {
     fi
 }
 
-### Добавление торрента в клиент по инфо хеш
-function transmission-add {
-    hash=$1
-    endpoint="transmission/rpc"
-    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
-    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
-    curl -s "$TRANS_ADDR/$endpoint" \
-        -u "$TRANS_USER:$TRANS_PASS" \
-        -H "X-Transmission-Session-Id: $session_id" \
-        -H "Content-Type: application/json" \
-        -d "{
-            \"method\": \"torrent-add\",
-            \"arguments\": {
-                \"filename\": \"magnet:?xt=urn:btih:$hash\"
-            }
-        }"
-}
-
-# transmission-add 828835b8b8b50a0d57fc8c5a4d99c997e9959ea4
-
 ### Управление остановкой и возобновлением загрузки
 function transmission-pause {
     id=$1
@@ -1511,7 +1499,7 @@ function transmission-pause {
 # transmission-pause 5 stop
 # transmission-pause 5 start
 
-### Удалить торрент по id из статуса
+### Удалить торрент по id и его данные (true)
 function transmission-remove {
     id=$1
     type=$2
@@ -1533,6 +1521,74 @@ function transmission-remove {
 
 # transmission-remove 5 false
 # transmission-remove 6 true
+
+### Добавление торрента по инфо хеш
+function transmission-add-hash {
+    hash=$1
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    curl -s "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"method\": \"torrent-add\",
+            \"arguments\": {
+                \"filename\": \"magnet:?xt=urn:btih:$hash\"
+            }
+        }"
+}
+
+# transmission-add-hash 828835b8b8b50a0d57fc8c5a4d99c997e9959ea4
+
+### Добавление торрента через url-адрес для загрузки торрент файла
+function transmission-add-url {
+    torrent_url=$1
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    curl -s "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"method\": \"torrent-add\",
+            \"arguments\": {
+                \"filename\": \"$torrent_url\"
+            }
+        }"
+}
+
+# transmission-add-url https://d.rutor.info/download/869858
+# transmission-add-url https://nnmclub.to/forum/download.php?id=1308422
+
+### Добавление торрент файла
+function transmission-add-file {
+    torrent_file_path=$1
+    # Кодировать содержимое торрент файла в формат Base64 без переноса строк
+    torrent_file_base64=$(base64 -w 0 "$torrent_file_path")
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo "$request" | sed -r "s/.+Id: //g; s/<.+//")
+    # Создать временный файл с содержимым тела JSON-запроса (для обхода ошибки curl: Argument list too long)
+    json_payload=$(mktemp)
+    echo "{
+        \"method\": \"torrent-add\",
+        \"arguments\": {
+            \"metainfo\": \"$torrent_file_base64\"
+        }
+    }" > "$json_payload"
+    curl -s "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        --data-binary @"$json_payload"
+    # Удалить временный файл
+    rm "$json_payload"
+}
+
+# transmission-add-file "$path/1904445-Полиция_Токио_(1_сезон:_1-8_серии_из_8).torrent"
 
 ############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
 ### No official API documentation
@@ -1655,7 +1711,7 @@ function plex-info {
         #keyboard+="[{\"text\":\"🟠 Управление\",\"callback_data\":\"\/app_status $app_name\"},"
         keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
         keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
-        keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+        keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
         keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
         #keyboard+="{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"}]]}"
         if [[ $message_id_temp != "null" ]]; then
@@ -1680,7 +1736,7 @@ function plex-info {
         keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/plex_info\"}],"
         keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
         keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
-        keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+        keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
         keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
         if [[ $message_id_temp != "null" ]]; then
             edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -2082,8 +2138,10 @@ function get-links {
     keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"  
     keyboard+="[{\"text\":\"⬇️ Скачать торрент файл\",\"callback_data\":\"\/download_torrent $id_find "GLOBAL_NAME" \"},"
     keyboard+="{\"text\":\"🗑 Удалить торрент файл\",\"callback_data\":\"\/delete_torrent_file_$id_find\"}],"
-    keyboard+="[{\"text\":\"⏩ Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$id_find\"},"
+    keyboard+="[{\"text\":\"🐸 Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$id_find\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"/status\"}],"
+    keyboard+="[{\"text\":\"➕ Загрузить в Transmission\",\"callback_data\":\"\/download_trans_$id_find\"},"
+    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     keyboard+="[{\"text\":\"⬆️ Получить торрент файл\",\"callback_data\":\"\/send_torrent_file_$id_find\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     echo $keyboard
@@ -2263,7 +2321,7 @@ function get-search {
     done
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
     keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
-    keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+    keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     search_count=$(echo $(( $(echo $keyboard | jq . | grep "text" | wc -l) -4 )))
     echo "[INFO] $(date '+%H:%M:%S'): Search count link: $search_count" >> $path_log
@@ -2315,7 +2373,7 @@ function actor-list {
     done
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
     keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
-    keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+    keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -2404,7 +2462,7 @@ function get-actor {
         keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/research\"},"
     fi
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
-    keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+    keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -2510,7 +2568,7 @@ function get-movie-kinopoisk-id {
     done
     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $GLOBAL_ID_FIND\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
-    keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+    keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -2543,7 +2601,7 @@ function menu-files {
     keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
     #keyboard+="[{\"text\":\"⚙️ Windows API\",\"callback_data\":\"\/win_state\"}],"
-    keyboard+="{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
+    keyboard+="{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$TEXT" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -2852,7 +2910,7 @@ function menu-plex-status {
     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/plex_info\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"},"
-    keyboard+="{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
+    keyboard+="{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -3348,7 +3406,7 @@ else
             echo "Available parameters: bot, qb and plex"
         fi
     else
-        echo "Available parameters: start, status, ver, log and stop"
+        echo "Available parameters: start, status, version, log and stop"
     fi
     exit 0
 fi
@@ -3453,9 +3511,10 @@ while :
                 encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                 keyboard="{
                     \"inline_keyboard\":[
-                        [{\"text\":\"⏩ Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$down_id\"}],
-                        [{\"text\":\"⬆️ Получить торрент файл\",\"callback_data\":\"\/send_torrent_file_$down_id\"}],
-                        [{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},
+                        [{\"text\":\"🐸 Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$down_id\"}],
+                        [{\"text\":\"➕ Загрузить в Transmission\",\"callback_data\":\"\/download_trans_$down_id\"}],
+                        [{\"text\":\"⬆️ Получить торрент файл в Telegram\",\"callback_data\":\"\/send_torrent_file_$down_id\"}],
+                        [{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},
                         {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
                     ]
                 }"
@@ -3468,7 +3527,7 @@ while :
                 echo "[WARN] $(date '+%H:%M:%S'): Torrent file not uploaded (possible connection error)" >> $path_log
                 send-telegram "Ошибка при загрузке торрент файла (файл не загружен)." "$CHAT"
             fi
-        ### Request: /profile 🌐🌐🌐
+        ### Request: /profile 👤👤👤
         elif [[ $command == /profile ]]; then
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /profile" >> $path_log
             count-torrent
@@ -3676,7 +3735,7 @@ while :
             keyboard='{"inline_keyboard":['
             keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $GLOBAL_ID_FIND\"},"
             keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
-            keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+            keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
             keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
             if [[ $message_id_temp != "null" ]]; then
                 edit-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -3707,7 +3766,7 @@ while :
                 keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/status\"}],"
                 keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
                 keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
-                keyboard+="[{\"text\":\"🌐 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+                keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
                 keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
                 if [[ $message_id_temp != "null" ]]; then
                     edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -3763,17 +3822,17 @@ while :
             done
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             menu-torrent-content $global_hash
-        ### Request: /download_video_id ⏩⏩⏩
+        ### Request: /download_video_id 🐸🐸🐸⏩⏩⏩
         elif [[ $command == /download_video_* ]]; then
             id_down=$(echo $command | sed "s/\/download_video_//")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_video for $id_down" >> $path_log
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_video for id $id_down to qBittorrent" >> $path_log
             wc_be=$(qbittorrent-info | jq .name | wc -l)
             start=$(qbittorrent-download $id_down)
             wc_af=$(qbittorrent-info | jq .name | wc -l)
             echo "[INFO] $(date '+%H:%M:%S'): Before: $wc_be, after: $wc_af" >> $path_log
             if [[ $wc_af > $wc_be ]]; then
                 echo "[INFO] $(date '+%H:%M:%S'): Download started" >> $path_log
-                menu-status "🐸 Торрент добавлен в загрузку:" "$CHAT"
+                menu-status "🐸 Торрент добавлен на загрузку:" "$CHAT"
             else
                 if [[ $start == "Fails." ]]; then
                     echo "[WARN] $(date '+%H:%M:%S'): Already downloading (response: Fails)" >> $path_log
@@ -3783,6 +3842,16 @@ while :
                     menu-status "🐸 Торрент файл не добавлен (ошибка):" "$CHAT"
                 fi
             fi
+        ### Request: /download_trans_id ➕➕➕➕➕➕
+        elif [[ $command == /download_trans_* ]]; then
+            filename_id=$(echo $command | sed "s/\/download_trans_//")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_trans for id $id_down to Transmission" >> $path_log
+            filename=$(ls -l $path | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
+            file_path="$path/$filename"
+            echo "[INFO] $(date '+%H:%M:%S'): Download video from file: $file_path" >> $path_log
+            transmission-add-file $file_path
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-status
         ### Request: /pause hash ⏸⏸⏸
         elif [[ $command == /pause* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/pause //")
@@ -3851,7 +3920,7 @@ while :
                 echo "[WARN] $(date '+%H:%M:%S'): Torrent file and video content not deleted" >> $path_log
                 menu-status "🐸 Возникла ошибка при удалении:" "$CHAT"
             fi
-        ### Request: /add_torrent hash 🧲🧲🧲
+        ### Request: /add_torrent hash ➕🧲🧲🧲🧲🧲🧲
         elif [[ $command == /add_torrent* ]]; then
             torrent_hash=$(echo $command | sed -r "s/\/add_torrent //")
             echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $torrent_hash for select torrent client (qBittorrent or Transmission)" >> $path_log
@@ -3870,7 +3939,7 @@ while :
                 sleep $TIMEOUT_SEC_UPDATE_STATUS
                 menu-status "$(qbittorrent-data)" "$CHAT"
             elif [[ $selected_torrent == "trans" ]]; then
-                transmission-add "$torrent_hash"
+                transmission-add-hash "$torrent_hash"
                 sleep $TIMEOUT_SEC_UPDATE_STATUS
                 transmission-tg-status
             fi
@@ -3987,6 +4056,13 @@ while :
             transmission-pause "$tr_id" "$tr_type"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-info "$tr_id"
+        ### Request: /add_trans_url ➕🌐🌐🌐🌐🌐🌐
+        elif [[ $command == /add_trans_url* ]]; then
+            tr_url=$(echo $command | sed "s/\/add_trans_url //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_trans_url. Add torrent to Transmission from url $tr_url" >> $path_log
+            transmission-add-url $tr_url
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-status
         ### Request: /trans_remove 🗑❌
         elif [[ $command == /trans_remove* ]]; then
             tr_param=$(echo $command | sed "s/\/trans_remove //")
