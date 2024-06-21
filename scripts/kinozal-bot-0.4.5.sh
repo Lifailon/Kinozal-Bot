@@ -66,7 +66,7 @@
 # + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
 ### 14.06.2024 (0.4.5):
 # + Добавлен функционал управления торрент клиентом  (добавление по торрент файлу и хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных)
-# + Добавление торрента в Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации)
+# + Добавление торрента в qBittorrent и Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации)
 # ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
 # ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title
 # ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>
@@ -75,6 +75,7 @@
 # + Добавлен размер свободного места на диске в статус qBittorrent
 # + Добавлен параметр управления проверки доступности всех сервисов и получения текущей версии (version)
 # + Добавлена поддержка использования зеркала и обратного прокси сервера
+# + Добавлены функции TMDB и Everything
 
 ###############################################################################
 
@@ -139,8 +140,10 @@
 # /trans_pause <id> <start/stop> - установить на паузу или возобновить
 # /trans_remove <id> <false/true> - удалить торрент и данные
 # /add_hash <qbit/trans> <hash> - Добавить торрент по инфо хеш в указанный клиент
-# /add_trans_url <url> - Добавить торрент по url-адресу в Transmission клиент
 # /download_trans_<id> - Добавить торрент файла на загрузку в Transmission клиент
+# /add_url <url> - Добавить торрент по url-адресу с выбором клиента через меню
+# /add_trans_url <url> - Добавить торрент по url-адресу в Transmission клиент
+# /add_qbit_url <url> - Добавить торрент по url-адресу в qBittorrent клиент
 
 ###############################################################################
 
@@ -153,7 +156,7 @@
 # / status - 🟢 qBittorrent
 # / trans_status - 🔲 Transmission
 # / add_torrent - ➕🧲 Добавить торрент по инфо хеш
-# / add_trans_url - ➕🌐 Добавить торрент по url-адресу
+# / add_url - ➕🌐 Добавить торрент по url-адресу
 # / plex_info - 🟠 Plex
 # / find - 🔍 Поиск в Plex
 
@@ -197,9 +200,15 @@
 # /add_hash qbit A72BD27A0CE265A3C7965392BC06C25EDD759214
 # /add_hash trans A72BD27A0CE265A3C7965392BC06C25EDD759214
 
-### Добавить по url-адресу торрент файла в Transmission клиент:
+### Добавить торрент по url-адресу с выбором клиента через меню:
+# /add_url https://d.rutor.info/download/869858
+# /add_url https://nnmclub.to/forum/download.php?id=1308422
+
+### Добавить торрент в Transmission клиент:
 # /add_trans_url https://d.rutor.info/download/869858
-# /add_trans_url https://nnmclub.to/forum/download.php?id=1308422
+
+### Добавить торрент в qBittorrent клиент:
+# /add_qbit_url https://nnmclub.to/forum/download.php?id=1308422
 
 ###############################################################################
 
@@ -706,6 +715,21 @@ function qbittorrent-download {
         --header "Referer: $QB_ADDR" \
         --form "file=@$file_path"
 }
+
+### /add_url and /add_qbit_url
+### ➕🌐🌐🌐🌐🌐🌐 Добавить на загрузку выбранный торрент файл (POST)
+function qbittorrent-add-url {
+    qbittorrent-auth
+    torrent_url=$1
+    endpoint_download="api/v2/torrents/add"
+    curl -s "$QB_ADDR/$endpoint_download" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "urls=$torrent_url"
+}
+
+# qbittorrent-add-url https://d.rutor.info/download/869858
+# qbittorrent-add-url https://nnmclub.to/forum/download.php?id=1308422
 
 ### /pause
 ### ⏸ Пауза выбранного торрент файла
@@ -3929,6 +3953,7 @@ while :
             keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/add_hash qbit $torrent_hash\"}],"
             keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/add_hash trans $torrent_hash\"}]]}"
             send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+        ### Request: /add_hash hash ➕🧲
         elif [[ $command == /add_hash* ]]; then
             add_param=$(echo $command | sed "s/\/add_hash //")
             selected_torrent=$(echo $add_param | awk '{print $1}')
@@ -4056,13 +4081,6 @@ while :
             transmission-pause "$tr_id" "$tr_type"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-info "$tr_id"
-        ### Request: /add_trans_url ➕🌐🌐🌐🌐🌐🌐
-        elif [[ $command == /add_trans_url* ]]; then
-            tr_url=$(echo $command | sed "s/\/add_trans_url //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_trans_url. Add torrent to Transmission from url $tr_url" >> $path_log
-            transmission-add-url $tr_url
-            sleep $TIMEOUT_SEC_UPDATE_STATUS
-            transmission-tg-status
         ### Request: /trans_remove 🗑❌
         elif [[ $command == /trans_remove* ]]; then
             tr_param=$(echo $command | sed "s/\/trans_remove //")
@@ -4070,6 +4088,30 @@ while :
             tr_type=$(echo $tr_param | awk '{print $2}')
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_remove (data: $tr_type) for id: $tr_id" >> $path_log
             transmission-remove "$tr_id" "$tr_type"
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-status
+        ### ➕➕➕➕➕➕🌐🌐🌐🌐🌐🌐
+        ### Request: /add_url ➕🌐🟢
+        elif [[ $command == /add_url* ]]; then
+            tr_url=$(echo $command | sed "s/\/add_url //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_url for url $tr_url (select client via menu)" >> $path_log
+            data="Выберите торрент клиент для загрузки:"
+            keyboard='{"inline_keyboard":['
+            keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/add_qbit_url $tr_url\"}],"
+            keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/add_trans_url $tr_url\"}]]}"
+            send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+        ### Request: /add_qbit_url ➕🟢
+        elif [[ $command == /add_qbit_url* ]]; then
+            tr_url=$(echo $command | sed "s/\/add_qbit_url //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_qbit_url. Add torrent to qBittorrent from url $tr_url" >> $path_log
+            qbittorrent-add-url $tr_url
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            menu-status "$(qbittorrent-data)" "$CHAT"
+        ### Request: /add_trans_url ➕🔲
+        elif [[ $command == /add_trans_url* ]]; then
+            tr_url=$(echo $command | sed "s/\/add_trans_url //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_trans_url. Add torrent to Transmission from url $tr_url" >> $path_log
+            transmission-add-url $tr_url
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-status
         ###### 🟠 🟠 🟠 PLEX 🟠 🟠 🟠
