@@ -14,19 +14,19 @@
 # qBittorrent WebUI api: добавление торрентов из торрент файла или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
 # Transmission RPC api: добавление торрентов из торрент файла, инфо хеш или url-адреса и управление данными (пауза, удаление и изменение приоритета)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
+# TMDB api: получение дополнительной информации о фильме или сериале, список сезонов и даты выхода серий
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
 ### Опционально:
-# VPN через Proxy сервер или обратный прокси сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache или ReverseProxyNET) для доступа в Кинозал
-# Kinopoisk unofficial API (https://github.com/mdwitr0/kinopoiskdev)
+# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер для доступа в Кинозал
 
 ###############################################################################
 
-### Mirrors:
+### Mirror:
 # KZ_ADDR="https://kinozal.tv"
 # KZ_ADDR="https://kinozal.me"
 
-### Reverse Proxy (не поддерживается авторизация):
+### Reverse Proxy (авторизация не поддерживается):
 ### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
 # rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
 ### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на обратный прокси сервер
@@ -65,17 +65,18 @@
 # + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url;
 # + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
 ### 14.06.2024 (0.4.5):
-# + Добавлен функционал управления торрент клиентом  (добавление по торрент файлу и хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных)
-# + Добавление торрента в qBittorrent и Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации)
-# ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
-# ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title
-# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>
-# ~ Переработан парсинг списка фильмографии актера
-# + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS)
-# + Добавлен размер свободного места на диске в статус qBittorrent
-# + Добавлен параметр управления проверки доступности всех сервисов и получения текущей версии (version)
-# + Добавлена поддержка использования зеркала и обратного прокси сервера
-# + Добавлены функции TMDB и Everything
+# + Добавлен функционал управления торрент клиентом  (добавление по торрент файлу и хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных);
+# + Добавление торрента в qBittorrent и Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации);
+# ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash);
+# ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title;
+# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>;
+# ~ Переработан парсинг списка фильмографии актера;
+# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id;
+# + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS);
+# + Добавлен размер свободного места на диске в статус qBittorrent;
+# + Добавлен параметр управления version для проверки доступности всех сервисов и получения текущей версии;
+# + Добавлена поддержка использования зеркала и обратного прокси сервера;
+# - Отключен функционал Kinopoisk api (/kinopoisk_movie) и описание из Кинозал (/kinozal_description).
 
 ###############################################################################
 
@@ -104,11 +105,11 @@
 ### 0.4.1:
 # /plex_last_views - Список последних просмотров (дата просмотра и время остановки) в Plex
 # /plex_last_added - Список последних добавленных файлов в Plex
-# /kinozal_description <id> - Описание фильма из Кинозал (передать параметр: id kinozal)
+# /kinozal_description <kinozal_id> - Описание фильма из Кинозал (удалено из меню в версии 0.4.5)
 ### 0.4.2:
-# /kinozal_actors <id> - Список актеров из Кинозал (передать параметр: id kinozal)
+# /kinozal_actors <kinozal_id> - Список актеров выбранного фильма или сериала из Кинозал
 # /actor <actor_name> - Описание, поиск актера и его фильмографии из Кинозала и ссылка на Кинопоиск (передать параметр: имя актера)
-# /kinopoisk_movie <id> - Информация о фильме из Кинопоиск по id kinopoisk (передать параметр: id kinozal)
+# /kinopoisk_movie <kinozal_id> - Информация о фильме из Кинопоиск по id kinopoisk (удалено из меню в версии 0.4.5)
 ### 0.4.3 (удалено из меню):
 # /win_state - Получение информации о состояние системы через WinAPI
 # /win_process - Список запущенных процессов с фильтрацией по уникальному имени
@@ -133,6 +134,8 @@
 ### 0.4.5:
 # /search_actor <name> - Поиск актеров в базе Кинозал (возвращает список найденных актеров)
 # /actor <search/list> <name> - Первый параметр принимает тип возврата (/kinozal_actors или /search_actor)
+# /tmdb_info <kinozal_id> - Получить информацию о фильме или сериале через TMDB API
+# /tmdb_season_episodes <tmdb_id> <season_number> - Список серий в указанном сезоне
 # /trans_status - Список и статус всез торрент в клиенте Transmission
 # /trans_info <id> - Получить подробную информацию о торренте
 # /trans_file_all <id> <skip/resume> - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет)
@@ -2095,6 +2098,19 @@ function get-kp-id {
     printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+film\///; s/".+//'
 }
 
+# Получить id IMDb по id Кинозал для TMDB API
+function get-imdb-id {
+    id_kz=$1
+    id_url="$KZ_ADDR/details.php?id=$id_kz"
+    if [[ $PROXY == "True" ]]; then
+        URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
+        html=$(curl -s -x $URL_PROXY $id_url | iconv -f windows-1251 -t UTF-8)
+    else
+        html=$(curl -s $id_url | iconv -f windows-1251 -t UTF-8)
+    fi
+    printf "%s\n" "${html[@]}" | grep -P -o "(?<=imdb.com/title/).*(?=\/\")"
+}
+
 ### Список ссылок из кнопок на похожие (рекомендуемые) торрент-раздачи
 function get-links {
     id_find=$1
@@ -2151,15 +2167,16 @@ function get-links {
         ]' | sed -r "s/]/],/g; s/&.+/\"}],/g")
     fi
     ### Main menu
-    keyboard+="[{\"text\":\"🔎 Повторить последний поиск\",\"callback_data\":\"\/research\"}],"
+    keyboard+="[{\"text\":\"🔎 Повторить поиск\",\"callback_data\":\"\/research\"},"
+    # if [[ $type == "find" ]]; then
+    #     keyboard+="[{\"text\":\"💬 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
+    # elif [[ $type == "description" ]]; then
+    #     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $id_find\"},"
+    # fi
+    keyboard+="{\"text\":\"🩵 Описание TMDB\",\"callback_data\":\"/tmdb_info $id_find\"}],"
+    # keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"
     keyboard+="[{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/kinozal_actors $id_find\"},"
     keyboard+="{\"text\":\"📄 Содержимое раздачи\",\"callback_data\":\"\/file_list\"}],"
-    if [[ $type == "find" ]]; then
-        keyboard+="[{\"text\":\"🟣 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
-    elif [[ $type == "description" ]]; then
-        keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $id_find\"},"
-    fi
-    keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"  
     keyboard+="[{\"text\":\"⬇️ Скачать торрент файл\",\"callback_data\":\"\/download_torrent $id_find "GLOBAL_NAME" \"},"
     keyboard+="{\"text\":\"🗑 Удалить торрент файл\",\"callback_data\":\"\/delete_torrent_file_$id_find\"}],"
     keyboard+="[{\"text\":\"🐸 Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$id_find\"},"
@@ -2344,7 +2361,7 @@ function get-search {
         keyboard+="[{\"text\":\"$encoded_name_year_quality\",\"callback_data\":\"/search_id $id\"}],"
     done
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
-    keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}],"
+    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     search_count=$(echo $(( $(echo $keyboard | jq . | grep "text" | wc -l) -4 )))
@@ -2405,6 +2422,10 @@ function actor-list {
         send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
     fi
 }
+
+### (Debug) Включить получение информации об актере через Kinopoisk API
+# KINOPOISK_API="True"
+# KINOPOISK_TOKEN="XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
 
 ### Получить информацию об актере и список его фильмографии из Кинозал
 ### Список актеров обрабатывается в конечной точке /kinozal_actors
@@ -2517,8 +2538,7 @@ function kinobox-players {
 ################################ 🟡 🟡 🟡 Kinopoisk API 🟡 🟡 🟡 ##################################
 ### API documentation: https://api.kinopoisk.dev/documentation
 
-### Функции кодирования и декодирования кириллицы для передачи в параметр функции get-actor-kinopoisk
-
+### Функции кодирования для передачи в параметр функции get-actor-kinopoisk
 function percent-encode {
     str=$1
     echo -n "$str" | iconv -t utf8 | od -An -tx1 | tr ' ' % | tr -d '\n'
@@ -2526,6 +2546,7 @@ function percent-encode {
 
 # percent-encode "Маколей Калкин"
 
+# Функция декодирования кириллицы
 function percent-decode {
     encoded=$1
     url_encoded="${encoded//+/ }"
@@ -2600,6 +2621,247 @@ function get-movie-kinopoisk-id {
         send-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard"
     fi
 }
+
+##################################### 🔷🔷🔷 TMDB API 🔷🔷🔷 ######################################
+### API documentation: https://developer.themoviedb.org/reference/intro/getting-started
+
+### Поиск по IMDb id
+function tmdb-find {
+    TMDB_TOKEN=$TMDB_TOKEN
+    TMDB_KEY=$TMDB_KEY
+    source=$1
+    id=$2
+    lang=$3
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    if [[ $PROXY == "True" ]]; then
+        tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+        --url "https://api.themoviedb.org/3/find/$id?external_source=${source}_id&language=$lang&api_key=$TMDB_KEY" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    else
+        tmdb_data=$(curl -s -X GET \
+        --url "https://api.themoviedb.org/3/find/$id?external_source=${source}_id&language=$lang&api_key=$TMDB_KEY" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    fi
+    tmdb_id=$(echo $tmdb_data | jq .tv_results[].id)
+    tmdb_type=$(echo $tmdb_data | jq -r .tv_results[].media_type)
+    if [[ -z $tmdb_id ]]; then
+        tmdb_id=$(echo $tmdb_data | jq .movie_results[].id)
+        tmdb_type=$(echo $tmdb_data | jq -r .movie_results[].media_type)    
+    fi
+    if [[ $tmdb_type == "tv" ]]; then
+        if [[ $PROXY == "True" ]]; then
+            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_data=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+    elif [[ $tmdb_type == "movie" ]]; then
+        if [[ $PROXY == "True" ]]; then
+            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/movie/$tmdb_id?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_data=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/movie/$tmdb_id?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+    fi
+    echo $tmdb_data | jq .
+}
+
+# tmdb-find imdb tt0075148
+# tmdb-find imdb tt7587890
+# tmdb-find imdb tt11198330
+
+### Функция для отправки описания и списка сезонов в Telegram
+function tmdb-tg-find {
+    imdb_id=$1
+    # ! Принимает Кинозал id для возврата назад
+    kz_id=$2
+    # Проверяем, что был передан id IMDB
+    if [[ -n $imdb_id ]]; then
+        tmdb_data=$(tmdb-find imdb $imdb_id)
+        original_name=$(echo $tmdb_data | jq -r .original_name)
+        original_title=$(echo $tmdb_data | jq -r .original_title)
+        # Проверяем на сериал (tv) или фильм (movie)
+        if [[ $original_name != "null" ]]; then
+            data="*Оригинальное название:* $original_name \n"
+            data+="*Оценка (голосов):* $(echo $tmdb_data | jq -r .vote_average) ($(echo $tmdb_data | jq -r .vote_count)) \n"
+            data+="*Количество сезонов:* $(echo $tmdb_data | jq -r .number_of_seasons) \n"
+            data+="*Количество серий:* $(echo $tmdb_data | jq -r .number_of_episodes) \n"
+            data+="*Дата выхода первого выпуска:* $(echo $tmdb_data | jq -r .first_air_date) \n"
+            # data+="*Дата выхода последней серии:* $(echo $tmdb_data | jq -r .last_episode_to_air.air_date) \n"
+            data+="*Дата выхода последней серии:* $(echo $tmdb_data | jq -r .last_air_date) \n"
+            data+="*Дата выхода следующей серии:* $(echo $tmdb_data | jq -r .next_episode_to_air.air_date) \n"
+            data+="*Страны:* $(echo $tmdb_data | jq -r .production_countries[].name | paste -sd "," - | sed -r "s/,/, /g") \n"
+            data+="*Компании:* $(echo $tmdb_data | jq -r .production_companies[].name | paste -sd "," - | sed -r "s/,/, /g") \n"
+            tmdb_id=$(echo $tmdb_data | jq -r .id)
+            data+="*TMDB:* https://www.themoviedb.org/tv/$tmdb_id?language=ru-RU \n"
+            data+="*Описание:* $(echo $tmdb_data | jq -r .overview)"
+            seasons_array=$(echo $tmdb_data | jq .seasons[].season_number)
+            IFS=$'\n'
+            keyboard='{"inline_keyboard":['
+            for s in $seasons_array; do
+                season_select=$(echo $tmdb_data | jq ".seasons[] | select(.season_number == $s)")
+                season_number=$(echo $season_select | jq -r .name)
+                season_episode_count=$(echo $season_select | jq -r .episode_count)
+                season_date=$(echo $season_select | jq -r .air_date | awk -F - '{print $3"."$2"."$1}')
+                keyboard+="[{\"text\":\"$season_number: $season_episode_count серий ($season_date)\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $s\"}],"
+            done
+            keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $kz_id\"},"
+            keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+            keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
+            keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}]]}"
+        elif [[ $original_title != "null" ]]; then
+            data="*Оригинальное название:* $original_title \n"
+            data+="*Оценка (голосов):* $(echo $tmdb_data | jq -r .vote_average) ($(echo $tmdb_data | jq -r .vote_count)) \n"
+            tmdb_id=$(echo $tmdb_data | jq -r .id)
+            data+="*TMDB:* https://www.themoviedb.org/movie/$tmdb_id?language=ru-RU \n"
+            data+="*Описание:* $(echo $tmdb_data | jq -r .overview)"
+            ### Не формируем keyboard (подтягивает предыдущий)
+        else
+            data="Фильм или сериал не найден в базе TMDB \n"
+            search_name_temp=$(echo $GLOBAL_SEARCH_NAME | sed -r "s/ /+/g")
+            data+="*IMDb:* https://www.imdb.com/title/$imdb_id \n"
+            data+="*TMDB:* https://www.themoviedb.org/search?query=$search_name_temp"
+        fi
+    else
+        search_name_temp=$(echo $GLOBAL_SEARCH_NAME | sed -r "s/ /+/g")
+        data="В базе Кинозал отсутствует ссылка на источник IMDb \n"
+        data+="*IMDb:* https://www.imdb.com/find/?q=$search_name_temp \n"
+        data+="*TMDB:* https://www.themoviedb.org/search?query=$search_name_temp"
+    fi
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
+### Получить список серий указанного сезона по TMDB id
+function tmdb-season-episodes {
+    tmdb_id=$1
+    season_number=$2
+    lang=$3
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    if [[ $PROXY == "True" ]]; then
+        tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+        --url "https://api.themoviedb.org/3/tv/$tmdb_id/season/$season_number?language=$lang&api_key=$TMDB_KEY" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    else
+        tmdb_data=$(curl -s -X GET \
+        --url "https://api.themoviedb.org/3/tv/$tmdb_id/season/$season_number?language=$lang&api_key=$TMDB_KEY" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    fi
+    echo $tmdb_data
+}
+
+# tmdb-season-episodes 94997 1
+
+### Функция для отправки списка серий указанного сезона в Telegram
+function tmdb-tg-season-episodes {
+    tmdb_id=$1
+    season_number=$2
+    tmdb_data=$(tmdb-season-episodes $tmdb_id $season_number)
+    episodes_count=$(echo $tmdb_data | jq .episodes[].id | wc -w)
+    # Массив из количества серий
+    declare -a episodes_array
+    for ((i = 1; i <= episodes_count; i++)); do
+        episodes_array+=($i)
+    done
+    keyboard='{"inline_keyboard":['
+    for e in ${episodes_array[@]}; do
+        episode_select=$(echo $tmdb_data | jq ".episodes[] | select(.episode_number == $e)")
+        episode_name=$(echo $episode_select | jq -r .name)
+        episode_date=$(echo $episode_select | jq -r .air_date | awk -F - '{print $3"."$2"."$1}')
+        keyboard+="[{\"text\":\"Серия $e: $episode_name ($episode_date)\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $s\"}],"
+    done
+    # ! Кинозал id берется из "глобальной" переменной за рамками текущей функции
+    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/tmdb_info $kz_id\"},"
+    keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+    keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
+    keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}]]}"
+    data="Список серий в $season_number сезоне:"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$data" "$CHAT" "$keyboard"
+    fi
+}
+
+### Получить список серий во всех сезонах по IMDb id
+function tmdb-all-episodes {
+    TMDB_TOKEN=$TMDB_TOKEN
+    TMDB_KEY=$TMDB_KEY
+    id=$1
+    type=$2
+    lang=$3
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    tmdb_data=$(tmdb-find imdb $id)
+    tmdb_id=$(echo $tmdb_data | jq .id)
+    tmdb_seasons=$(echo $tmdb_data | jq .number_of_seasons)
+    # Массив из количества сезонов (начиная с 1 и по указанный включительно)
+    declare -a seasons_array
+    for ((i = 1; i <= tmdb_seasons; i++)); do
+        seasons_array+=($i)
+    done
+    # echo ${seasons_array[@]}
+    # Массив JSON [] из всех сезонов
+    tmdb_episodes="["
+    for tmdb_season in ${seasons_array[@]}; do
+        if [[ $PROXY == "True" ]]; then
+            tmdb_episodes+=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id/season/$tmdb_season?language=ru&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_episodes+=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id/season/$tmdb_season?language=ru&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+        if [[ $tmdb_season != ${seasons_array[-1]} ]]; then
+            tmdb_episodes+=","
+        fi
+    done
+    tmdb_episodes+="]"
+    if [[ $type = "all" ]]; then
+        echo $tmdb_episodes | jq .
+    else
+        echo $tmdb_episodes | jq ".[] | {
+            season: .season_number,
+            name: .name,
+            date: .air_date,
+            episodes: .episodes | map({
+                episode: .episode_number,
+                name: .name,
+                date: .air_date,
+                runtime: .runtime
+            })
+        }"
+    fi
+}
+
+# tmdb-all-episodes tt7587890
+# tmdb-all-episodes tt11198330
+# tmdb-all-episodes tt11198330 all
 
 ##################################### 🔵 Telegram menu 📚📝📄 #######################################
 
@@ -3535,9 +3797,9 @@ while :
                 encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                 keyboard="{
                     \"inline_keyboard\":[
+                        [{\"text\":\"⬆️ Получить торрент файл в Telegram\",\"callback_data\":\"\/send_torrent_file_$down_id\"}],
                         [{\"text\":\"🐸 Загрузить в qBittorrent\",\"callback_data\":\"\/download_video_$down_id\"}],
                         [{\"text\":\"➕ Загрузить в Transmission\",\"callback_data\":\"\/download_trans_$down_id\"}],
-                        [{\"text\":\"⬆️ Получить торрент файл в Telegram\",\"callback_data\":\"\/send_torrent_file_$down_id\"}],
                         [{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},
                         {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
                     ]
@@ -3618,7 +3880,7 @@ while :
                     send-keyboard "Торрент файл (id: $id_find) не найден в базе Кинозала (возможна проблема соединения)." "$CHAT" "$keyboard"
                 fi
             fi
-        ### Request: /kinozal_description 🟣🟣🟣
+        ### Request: /kinozal_description 💬💬💬🟣🟣🟣
         elif [[ $command == /kinozal_description* ]]; then
             id_find=$(echo $command | sed "s/\/kinozal_description //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinozal_description for $id_find" >> $path_log
@@ -3737,14 +3999,33 @@ while :
                 send-file "$send_file_path"
             done
         ###### 🟡 🟡 🟡 Kinopoisk 🟡 🟡 🟡
-        ### Request: /kinopoisk_movie 🟡
+        ### Поиск в Kinopoisk API по Kinozal id (/kinopoisk_movie 2026484)
+        ### Request: /kinopoisk_movie
         elif [[ $command == /kinopoisk_movie* ]]; then
             id_kz_search=$(echo $command | sed "s/\/kinopoisk_movie //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinopoisk_movie" >> $path_log
             echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinozal: $id_kz_search" >> $path_log
+            # Получить Kinopoisk id по Kinozal id
             id_kp=$(get-kp-id "$id_kz_search")
             echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinopoisk: $id_kp" >> $path_log
             get-movie-kinopoisk-id "$id_kp"
+        ###### 🔷 🔷 🔷 TMDB 🔷 🔷 🔷
+        ### Request: /tmdb_info
+        elif [[ $command == /tmdb_info* ]]; then
+            kz_id=$(echo $command | sed "s/\/tmdb_info //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_info" >> $path_log
+            echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinozal: $kz_id" >> $path_log
+            # Получить IMDb id по Kinozal id
+            imdb_id=$(get-imdb-id "$kz_id")
+            echo "[OK]   $(date '+%H:%M:%S'): Search on id IMDb: $imdb_id to TMDB" >> $path_log
+            tmdb-tg-find "$imdb_id" "$kz_id"
+        ### Request: /tmdb_season_episodes
+        elif [[ $command == /tmdb_season_episodes* ]]; then
+            tmdb_param=$(echo $command | sed "s/\/tmdb_season_episodes //")
+            tmdb_id=$(echo $tmdb_param | awk '{print $1}')
+            season_number=$(echo $tmdb_param | awk '{print $2}')
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_season_episodes for tmdb id: $tmdb_id and season number: $season_number" >> $path_log
+            tmdb-tg-season-episodes $tmdb_id $season_number
         ###### Kinozal hash and file list 📖🟣
         ### Request: /file_list
         elif [[ $command == /file_list ]]; then
