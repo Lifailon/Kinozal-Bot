@@ -134,8 +134,6 @@
 ### 0.4.5:
 # /search_actor <name> - Поиск актеров в базе Кинозал (возвращает список найденных актеров)
 # /actor <search/list> <name> - Первый параметр принимает тип возврата (/kinozal_actors или /search_actor)
-# /tmdb_info <kinozal_id> - Получить информацию о фильме или сериале через TMDB API
-# /tmdb_season_episodes <tmdb_id> <season_number> - Список серий в указанном сезоне
 # /trans_status - Список и статус всез торрент в клиенте Transmission
 # /trans_info <id> - Получить подробную информацию о торренте
 # /trans_file_all <id> <skip/resume> - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет)
@@ -147,6 +145,10 @@
 # /add_url <url> - Добавить торрент по url-адресу с выбором клиента через меню
 # /add_trans_url <url> - Добавить торрент по url-адресу в Transmission клиент
 # /add_qbit_url <url> - Добавить торрент по url-адресу в qBittorrent клиент
+# /tmdb_info <kinozal_id> - Получить информацию о фильме или сериале через TMDB API
+# /tmdb_season_episodes <tmdb_id> <season_number> - Список серий в указанном сезоне
+# /tmdb_select_episode <tmdb_id> <season_number> <episode_number> - Информация по выбранной серии и список актеров
+# /tmdb_person <person_id> - Информация по актеру и ссылки на TMDB и IMDb
 
 ###############################################################################
 
@@ -285,10 +287,8 @@ path_log="$path/kinozal-bot.log"
 path_qb_cookies="$path/qbittorrent.cookies"
 path_kz_cookies="$path/kinozal.cookies"
 
-### (Debug) Забираем первый id из массива для отправки сообщений в Telegram через консоли
+### (Debug) Забираем первый id из массива для отправки сообщений в Telegram через консоли и формируем URL Proxy-сервера
 # CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
-
-### (Debug) Формируем URL Proxy-сервера
 # URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
 
 ### (Debug) Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
@@ -2684,6 +2684,9 @@ function tmdb-find {
 # tmdb-find imdb tt7587890
 # tmdb-find imdb tt11198330
 
+##### data+="*Сайт:* $(echo $tmdb_data | jq -r .homepage) \n"
+
+### (1) /tmdb_info
 ### Функция для отправки описания и списка сезонов в Telegram
 function tmdb-tg-find {
     imdb_id=$1
@@ -2729,7 +2732,7 @@ function tmdb-tg-find {
             tmdb_id=$(echo $tmdb_data | jq -r .id)
             data+="*TMDB:* https://www.themoviedb.org/movie/$tmdb_id?language=ru-RU \n"
             data+="*Описание:* $(echo $tmdb_data | jq -r .overview)"
-            ### Не формируем keyboard (подтягивает предыдущий)
+            ### ! Не формируем keyboard, при отправке сообщения в Telegram содержимое берется из предыдущей функции
         else
             data="Фильм или сериал не найден в базе TMDB \n"
             search_name_temp=$(echo $GLOBAL_SEARCH_NAME | sed -r "s/ /+/g")
@@ -2773,6 +2776,7 @@ function tmdb-season-episodes {
 
 # tmdb-season-episodes 94997 1
 
+### (2) /tmdb_season_episodes
 ### Функция для отправки списка серий указанного сезона в Telegram
 function tmdb-tg-season-episodes {
     tmdb_id=$1
@@ -2789,7 +2793,7 @@ function tmdb-tg-season-episodes {
         episode_select=$(echo $tmdb_data | jq ".episodes[] | select(.episode_number == $e)")
         episode_name=$(echo $episode_select | jq -r .name)
         episode_date=$(echo $episode_select | jq -r .air_date | awk -F - '{print $3"."$2"."$1}')
-        keyboard+="[{\"text\":\"Серия $e: $episode_name ($episode_date)\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $s\"}],"
+        keyboard+="[{\"text\":\"Серия $e: $episode_name ($episode_date)\",\"callback_data\":\"\/tmdb_select_episode $tmdb_id $season_number $e\"}],"
     done
     # ! Кинозал id берется из "глобальной" переменной за рамками текущей функции
     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/tmdb_info $kz_id\"},"
@@ -2801,6 +2805,117 @@ function tmdb-tg-season-episodes {
         edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
     else
         send-keyboard "$data" "$CHAT" "$keyboard"
+    fi
+}
+
+### Получить информацию по выбранному эпизоду в сезоне
+function tmdb-select-episode {
+    tmdb_id=$1
+    season_number=$2
+    episode_number=$3
+    lang=$4
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    if [[ $PROXY == "True" ]]; then
+        tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+        --url "https://api.themoviedb.org/3/tv/$tmdb_id/season/$season_number/episode/$episode_number?language=$lang&api_key=$TMDB_KEY" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    else
+        tmdb_data=$(curl -s -X GET \
+        --url "https://api.themoviedb.org/3/tv/$tmdb_id/season/$season_number/episode/$episode_number?language=$lang&api_key=$TMDB_KEY" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    fi
+    echo $tmdb_data
+}
+
+# tmdb-select-episode 94997 1 1
+
+### (3) /tmdb_select_episode
+### Функция для отправки информации по указанной серии в Telegram
+function tmdb-tg-select-episode {
+    tmdb_id=$1
+    season_number=$2
+    episode_number=$3
+    tmdb_data=$(tmdb-select-episode $tmdb_id $season_number $episode_number)
+    data="*Серия:* $(echo $tmdb_data | jq -r .episode_number) \n"
+    data+="*Название:* $(echo $tmdb_data | jq -r .name) \n"
+    data+="*Дата выхода:* $(echo $tmdb_data | jq -r .air_date | awk -F - '{print $3"."$2"."$1}') \n"
+    data+="*Продолжительность:* $(echo $tmdb_data | jq -r .runtime) \n"
+    data+="*Оценка (голосов):* $(echo $tmdb_data | jq -r .vote_average) ($(echo $tmdb_data | jq -r .vote_count)) \n"
+    data+="*Описание:* $(echo $tmdb_data | jq -r .overview)"
+    actor_id_array=$(echo $tmdb_data | jq .guest_stars[].id)
+    keyboard='{"inline_keyboard":['
+    for a in ${actor_id_array[@]}; do
+        episode_select=$(echo $tmdb_data | jq ".guest_stars[] | select(.id == $a)")
+        tmdb_actor_name=$(echo $episode_select | jq -r .name)
+        tmdb_person_name=$(echo $episode_select | jq -r .character)
+        keyboard+="[{\"text\":\"$tmdb_person_name ($tmdb_actor_name)\",\"callback_data\":\"\/tmdb_person $a\"}],"
+    done
+    keyboard+="[{\"text\":\"⬅️ Список серий\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $season_number\"}],"
+    keyboard+="[{\"text\":\"🩵 Список сезонов\",\"callback_data\":\"\/tmdb_info $kz_id\"}]]}"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
+### Получить информацию по указанному TMDB id актера
+function tmdb-person {
+    person_id=$1
+    lang=$2
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    if [[ $PROXY == "True" ]]; then
+        tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+        --url "https://api.themoviedb.org/3/person/$person_id" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    else
+        tmdb_data=$(curl -s -X GET \
+        --url "https://api.themoviedb.org/3/person/$person_id" \
+        --header "Authorization: Bearer $TMDB_TOKEN" \
+        --header "accept: application/json")
+    fi
+    echo $tmdb_data
+}
+
+# tmdb-person 2121005
+
+function date-diff {
+    date=$1
+    current_date=$(date +%Y-%m-%d)
+    date2=$(echo $date | awk -F. '{print $3"-"$2"-"$1}')
+    sec1=$(date -d"$current_date" +%s)
+    sec2=$(date -d"$date2" +%s)
+    # Вычисляем разницу в секундах и преобразуем в годы
+    diff=$(( (sec1 - sec2) / (86400 * 365) ))
+    echo $diff
+}
+
+# date-diff 27.06.1992
+
+### (4) /tmdb_person
+### Функция для отправки информации по актеру в Telegram
+function tmdb-tg-person {
+    person_id=$1
+    tmdb_data=$(tmdb-person $person_id)
+    data="*Имя:* $(echo $tmdb_data | jq -r .name) \n"
+    birthday=$(echo $tmdb_data | jq -r .birthday | awk -F - '{print $3"."$2"."$1}')
+    data+="*Дата рождения:* $birthday \n"
+    data+="*Возраст:* $(date-diff $birthday) \n"
+    data+="*Биография:* $(echo $tmdb_data | jq -r .biography) \n"
+    data+="*TMDB:* https://www.themoviedb.org/person/$person_id?language=ru-RU \n"
+    person_imdb_id=$(echo $tmdb_data | jq -r .imdb_id)
+    data+="*IMDb:* https://www.imdb.com/name/$person_imdb_id"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
     fi
 }
 
@@ -4026,6 +4141,19 @@ while :
             season_number=$(echo $tmdb_param | awk '{print $2}')
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_season_episodes for tmdb id: $tmdb_id and season number: $season_number" >> $path_log
             tmdb-tg-season-episodes $tmdb_id $season_number
+        ### Request: /tmdb_select_episode
+        elif [[ $command == /tmdb_select_episode* ]]; then
+            tmdb_param=$(echo $command | sed "s/\/tmdb_select_episode //")
+            tmdb_id=$(echo $tmdb_param | awk '{print $1}')
+            season_number=$(echo $tmdb_param | awk '{print $2}')
+            episode_number=$(echo $tmdb_param | awk '{print $3}')
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_select_episode for tmdb id: $tmdb_id, season nubmer: $season_number and episode number: $episode_number" >> $path_log
+            tmdb-tg-select-episode $tmdb_id $season_number $episode_number
+        ### Request: /tmdb_person
+        elif [[ $command == /tmdb_person* ]]; then
+            person_id=$(echo $command | sed "s/\/tmdb_person //")
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_person for id: $person_id" >> $path_log
+            tmdb-tg-person $person_id
         ###### Kinozal hash and file list 📖🟣
         ### Request: /file_list
         elif [[ $command == /file_list ]]; then
