@@ -2179,7 +2179,7 @@ function get-links {
     # elif [[ $type == "description" ]]; then
     #     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $id_find\"},"
     # fi
-    keyboard+="{\"text\":\"🩵 Описание TMDB\",\"callback_data\":\"/tmdb_info $id_find\"}],"
+    keyboard+="{\"text\":\"🩵 TMDB\",\"callback_data\":\"/tmdb_info $id_find\"}],"
     # keyboard+="{\"text\":\"🟡 Описание Кинопоиск\",\"callback_data\":\"/kinopoisk_movie $id_find\"}],"
     keyboard+="[{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/kinozal_actors $id_find\"},"
     keyboard+="{\"text\":\"📄 Содержимое раздачи\",\"callback_data\":\"\/file_list\"}],"
@@ -2690,45 +2690,6 @@ function tmdb-find {
 # tmdb-find imdb tt7587890
 # tmdb-find imdb tt11198330
 
-### Получить список актеров выбранного сериала
-function tmdb-select-episode {
-    tmdb_id=$1
-    tmdb_type=$2
-    lang=$3
-    if [[ -z $lang ]]; then
-        lang="ru"
-    fi
-    if [[ $tmdb_type == "tv" ]]; then
-        if [[ $PROXY == "True" ]]; then
-            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
-            --url "https://api.themoviedb.org/3/tv/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
-            --header "Authorization: Bearer $TMDB_TOKEN" \
-            --header "accept: application/json")
-        else
-            tmdb_data=$(curl -s -X GET \
-            --url "https://api.themoviedb.org/3/tv/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
-            --header "Authorization: Bearer $TMDB_TOKEN" \
-            --header "accept: application/json")
-        fi
-    else
-        if [[ $PROXY == "True" ]]; then
-            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
-            --url "https://api.themoviedb.org/3/movie/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
-            --header "Authorization: Bearer $TMDB_TOKEN" \
-            --header "accept: application/json")
-        else
-            tmdb_data=$(curl -s -X GET \
-            --url "https://api.themoviedb.org/3/movie/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
-            --header "Authorization: Bearer $TMDB_TOKEN" \
-            --header "accept: application/json")
-        fi
-    fi
-    echo $tmdb_data | jq .cast[]
-}
-
-# tmdb-select-episode 94997 tv
-# tmdb-select-episode 1366 movie
-
 ### (1) /tmdb_info
 ### Функция для отправки описания и списка сезонов в Telegram
 function tmdb-tg-find {
@@ -2767,9 +2728,10 @@ function tmdb-tg-find {
                 keyboard+="[{\"text\":\"$season_number: $season_episode_count серий ($season_date)\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $s\"}],"
             done
             keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $kz_id\"},"
-            keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
-            keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
-            keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}]]}"
+            keyboard+="{\"text\":\"👥 Список актеров\",\"callback_data\":\"\/tmdb_actor $tmdb_id tv\"}],"
+            keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
+            keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
+            keyboard+="[{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
         elif [[ $original_title != "null" ]]; then
             data="*Оригинальное название:* $original_title \n"
             data+="*Оценка (голосов):* $(echo $tmdb_data | jq -r .vote_average) ($(echo $tmdb_data | jq -r .vote_count)) \n"
@@ -2793,6 +2755,73 @@ function tmdb-tg-find {
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
     else
         send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
+### Получить список актеров выбранного сериала
+function tmdb-actor {
+    tmdb_id=$1
+    tmdb_type=$2
+    lang=$3
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    if [[ $tmdb_type == "tv" ]]; then
+        if [[ $PROXY == "True" ]]; then
+            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_data=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+    else
+        if [[ $PROXY == "True" ]]; then
+            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/movie/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_data=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/movie/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+    fi
+    echo $tmdb_data | jq .cast[]
+}
+
+# tmdb-select-episode 94997 tv
+# tmdb-select-episode 1366 movie
+
+### (1.1) /tmdb_actor
+### Функция для отправки списка актеров указанного фильма или сериала
+function tmdb-tg-actor {
+    tmdb_id=$1
+    tmdb_type=$2
+    tmdb_data=$(tmdb-actor $tmdb_id $tmdb_type)
+    actor_array=$(echo $tmdb_data | jq .id)
+    actor_count=$(echo $actor_array | wc -w)
+    keyboard='{"inline_keyboard":['
+    for a in ${actor_array[@]}; do
+        actor_select=$(echo $tmdb_data | jq ". | select(.id == $a)")
+        tmdb_actor_name=$(echo $actor_select | jq -r .name)
+        tmdb_person_name=$(echo $actor_select | jq -r .character)
+        keyboard+="[{\"text\":\"$tmdb_person_name ($tmdb_actor_name)\",\"callback_data\":\"\/tmdb_person $a\"}],"
+    done
+    # ! Кинозал id берется из "глобальной" переменной за рамками текущей функции
+    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/tmdb_info $kz_id\"},"
+    keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+    keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+    data="Количество найденных актеров в базе TMDB: $actor_count"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$data" "$CHAT" "$keyboard"
     fi
 }
 
@@ -2843,7 +2872,7 @@ function tmdb-tg-season-episodes {
     keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/tmdb_info $kz_id\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
-    keyboard+="{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"}]]}"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     data="Список серий в $season_number сезоне:"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
@@ -2898,8 +2927,9 @@ function tmdb-tg-select-episode {
         tmdb_person_name=$(echo $episode_select | jq -r .character)
         keyboard+="[{\"text\":\"$tmdb_person_name ($tmdb_actor_name)\",\"callback_data\":\"\/tmdb_person $a\"}],"
     done
-    keyboard+="[{\"text\":\"⬅️ Список серий\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $season_number\"}],"
-    keyboard+="[{\"text\":\"🩵 Список сезонов\",\"callback_data\":\"\/tmdb_info $kz_id\"}]]}"
+    keyboard+="[{\"text\":\"⬅️ Список серий\",\"callback_data\":\"\/tmdb_season_episodes $tmdb_id $season_number\"},"
+    keyboard+="{\"text\":\"🩵 Список сезонов\",\"callback_data\":\"\/tmdb_info $kz_id\"}],"
+    keyboard+="[{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -2956,6 +2986,11 @@ function tmdb-tg-person {
     data+="*TMDB:* https://www.themoviedb.org/person/$person_id?language=ru-RU \n"
     person_imdb_id=$(echo $tmdb_data | jq -r .imdb_id)
     data+="*IMDb:* https://www.imdb.com/name/$person_imdb_id"
+    # Ссылка поиска по имени актера в Кинопоиск
+    # tmdb_actor_name+=$(echo $tmdb_data | jq -r .name | sed -r "s/\s/+/g")
+    # tmdb_actor_name_percent=$(percent-encode $tmdb_actor_name)
+    # ! Символ вопросительного знака (?) вызывает ошибку при отправке тела сообщения
+    # data+="*Кинопоиск:* https://www.kinopoisk.ru/kp_query=$tmdb_actor_name_percent"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
     else
@@ -4178,6 +4213,13 @@ while :
             imdb_id=$(get-imdb-id "$kz_id")
             echo "[OK]   $(date '+%H:%M:%S'): Search on id IMDb: $imdb_id to TMDB" >> $path_log
             tmdb-tg-find "$imdb_id" "$kz_id"
+        ### Request: /tmdb_actor
+        elif [[ $command == /tmdb_actor* ]]; then
+            tmdb_param=$(echo $command | sed "s/\/tmdb_actor //")
+            tmdb_id=$(echo $tmdb_param | awk '{print $1}')
+            tmdb_type=$(echo $tmdb_param | awk '{print $2}')
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_actor for tmdb id: $tmdb_id and type: $tmdb_type" >> $path_log
+            tmdb-tg-actor $tmdb_id $tmdb_type
         ### Request: /tmdb_season_episodes
         elif [[ $command == /tmdb_season_episodes* ]]; then
             tmdb_param=$(echo $command | sed "s/\/tmdb_season_episodes //")
