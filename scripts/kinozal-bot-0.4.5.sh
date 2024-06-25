@@ -14,11 +14,11 @@
 # qBittorrent WebUI api: добавление торрентов из торрент файла или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
 # Transmission RPC api: добавление торрентов из торрент файла, инфо хеш или url-адреса и управление данными (пауза, удаление и изменение приоритета)
 # Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
-# TMDB api: получение дополнительной информации о фильме или сериале, список сезонов и даты выхода серий
+# TMDB api: получение дополнительной информации о фильме и сериале, список и даты выхода сезонов и серий, информация об актерах
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
 ### Опционально:
-# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер для доступа в Кинозал
+# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер для доступа в Кинозал (например, ReverseProxyNET)
 
 ###############################################################################
 
@@ -26,7 +26,13 @@
 # KZ_ADDR="https://kinozal.tv"
 # KZ_ADDR="https://kinozal.me"
 
-### Reverse Proxy (авторизация не поддерживается):
+### Proxy:
+# PROXY="True"
+# PROXY_ADDR="http://192.168.3.100:9090"
+# PROXY_USER="kinozal"
+# PROXY_PASS="proxy"
+
+### Reverse Proxy:
 ### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
 # rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
 ### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на обратный прокси сервер
@@ -71,7 +77,7 @@
 # ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title;
 # ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>;
 # ~ Переработан парсинг списка фильмографии актера;
-# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id;
+# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id через Kinozal id;
 # + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS);
 # + Добавлен размер свободного места на диске в статус qBittorrent;
 # + Добавлен параметр управления version для проверки доступности всех сервисов и получения текущей версии;
@@ -80,7 +86,7 @@
 
 ###############################################################################
 
-### Bot commands (endpoint):
+### Bot commands (endpoints):
 # /search_title - Поиск в Кинозал по названию (вначале запроса принимает год выхода для фильтрации)
 # /profile - Профиль Кинозал (количество доступных для загрузки торрент файлов, статистика загрузки и отдачи, время сид и пир)
 # /torrent_files - Список загруженных торрент файлов с возможностью удаления
@@ -2684,7 +2690,44 @@ function tmdb-find {
 # tmdb-find imdb tt7587890
 # tmdb-find imdb tt11198330
 
-##### data+="*Сайт:* $(echo $tmdb_data | jq -r .homepage) \n"
+### Получить список актеров выбранного сериала
+function tmdb-select-episode {
+    tmdb_id=$1
+    tmdb_type=$2
+    lang=$3
+    if [[ -z $lang ]]; then
+        lang="ru"
+    fi
+    if [[ $tmdb_type == "tv" ]]; then
+        if [[ $PROXY == "True" ]]; then
+            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_data=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/tv/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+    else
+        if [[ $PROXY == "True" ]]; then
+            tmdb_data=$(curl -s -X GET -x $URL_PROXY \
+            --url "https://api.themoviedb.org/3/movie/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        else
+            tmdb_data=$(curl -s -X GET \
+            --url "https://api.themoviedb.org/3/movie/$tmdb_id/credits?language=$lang&api_key=$TMDB_KEY" \
+            --header "Authorization: Bearer $TMDB_TOKEN" \
+            --header "accept: application/json")
+        fi
+    fi
+    echo $tmdb_data | jq .cast[]
+}
+
+# tmdb-select-episode 94997 tv
+# tmdb-select-episode 1366 movie
 
 ### (1) /tmdb_info
 ### Функция для отправки описания и списка сезонов в Telegram
@@ -2711,6 +2754,7 @@ function tmdb-tg-find {
             data+="*Компании:* $(echo $tmdb_data | jq -r .production_companies[].name | paste -sd "," - | sed -r "s/,/, /g") \n"
             tmdb_id=$(echo $tmdb_data | jq -r .id)
             data+="*TMDB:* https://www.themoviedb.org/tv/$tmdb_id?language=ru-RU \n"
+            data+="*Сайт:* $(echo $tmdb_data | jq -r .homepage) \n"
             data+="*Описание:* $(echo $tmdb_data | jq -r .overview)"
             seasons_array=$(echo $tmdb_data | jq .seasons[].season_number)
             IFS=$'\n'
@@ -2771,7 +2815,7 @@ function tmdb-season-episodes {
         --header "Authorization: Bearer $TMDB_TOKEN" \
         --header "accept: application/json")
     fi
-    echo $tmdb_data
+    echo $tmdb_data | jq .
 }
 
 # tmdb-season-episodes 94997 1
@@ -2808,7 +2852,7 @@ function tmdb-tg-season-episodes {
     fi
 }
 
-### Получить информацию по выбранному эпизоду в сезоне
+### Получить информацию по выбранному эпизоду в сезоне и список приглашенных гостей
 function tmdb-select-episode {
     tmdb_id=$1
     season_number=$2
@@ -2828,7 +2872,7 @@ function tmdb-select-episode {
         --header "Authorization: Bearer $TMDB_TOKEN" \
         --header "accept: application/json")
     fi
-    echo $tmdb_data
+    echo $tmdb_data | jq .
 }
 
 # tmdb-select-episode 94997 1 1
@@ -2881,7 +2925,7 @@ function tmdb-person {
         --header "Authorization: Bearer $TMDB_TOKEN" \
         --header "accept: application/json")
     fi
-    echo $tmdb_data
+    echo $tmdb_data | jq .
 }
 
 # tmdb-person 2121005
