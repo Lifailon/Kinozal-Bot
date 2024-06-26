@@ -258,11 +258,12 @@ TMDB_TOKEN="XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX"
 
 #### Зависимости
 
-Проверьте, что у вас установлен **[jq](https://github.com/jqlang/jq)**:
+Установите **[jq](https://github.com/jqlang/jq)**:
 
 ```bash
 apt install jq
 jq --version
+
 jq-1.6
 ```
 
@@ -299,7 +300,8 @@ bash kinozal-bot-0.4.5.sh start bot
 
 ```bash
 bash kinozal-bot-0.4.5.sh status
-bash kinozal-bot-0.4.5.sh status proc
+
+[INFO] 14:38:46: Server running. Count running process: 4
 ```
 
 - Проверка подключения к qBittorrent:
@@ -332,6 +334,8 @@ bash kinozal-bot-0.4.5.sh log bot 50
 ```bash
 bash kinozal-bot-0.4.5.sh stop
 bash kinozal-bot-0.4.5.sh status
+
+[INFO] 14:40:16: Server not running. Count running process: 0
 ```
 
 ## 🚀 Служба
@@ -345,7 +349,7 @@ touch /etc/systemd/system/kinozal-bot.service
 nano /etc/systemd/system/kinozal-bot.service
 ```
 
-- Скопируйте туда следующее [содержимое](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/service/kinozal-bot.service):
+- Скопируйте в файл следующее [содержимое](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/service/kinozal-bot.service):
 
 ```
 [Unit]
@@ -421,7 +425,7 @@ journalctl -fu kinozal-bot
 `/actor <id>` - Описание, поиск актера и его фильмографии из Кинозала и ссылка на Кинопоиск (передать параметр: имя актера) \
 `/kinopoisk_movie <id>` - Информация о фильме из Кинопоиск по id kinopoisk (передать параметр: id kinozal)
 
-### Добавлено в версии 0.4.5:
+### Добавлено в версии 0.4.4:
 
 `/search <year*> <format*> <title>` - Поиск с фильтрацией по году выхода и формату разрешения \
 `/research` - Повторить последний поиск (id не требуется) \
@@ -435,6 +439,27 @@ journalctl -fu kinozal-bot
 `/get_torrent <hash>` - Выгрузить торрент файл на сервер по инфо хэш и отправить в телеграмм \
 `/torrent_recheck <hash>` - Проверить торрент файл \
 `/torrent_limit` - Переключить альтернативные лимиты скорости загрузки и отдачи
+
+### Добавлено в версии 0.4.5:
+
+`/search_actor <name>` - Поиск актеров в базе Кинозал (возвращает список найденных актеров) \
+`/actor <search/list> <name>` - Первый параметр принимает тип возврата (`/kinozal_actors` или `/search_actor`) \
+`/trans_status` - Список и статус всез торрент в клиенте Transmission \
+`/trans_info <id>` - Получить подробную информацию о торренте \
+`/trans_file_all <id> <skip/resume>` - Изменить приоритет загрузки всех торрент файлов выбранной раздачи по id (пропустить или возобновить загрузку и выставить нормальный приоритет) \
+`/trans_file_select <id> <file_index>` - Переключить приоритет выбранного файла (пропустить или высокий приоритет) \
+`/trans_pause <id> <start/stop>` - установить на паузу или возобновить \
+`/trans_remove <id> <false/true>` - удалить торрент и данные \
+`/add_hash <qbit/trans> <hash>` - Добавить торрент по инфо хеш в указанный клиент \
+`/download_trans_<id>` - Добавить торрент файла на загрузку в Transmission клиент \
+`/add_url <url>` - Добавить торрент по url-адресу с выбором клиента через меню \
+`/add_trans_url <url>` - Добавить торрент по url-адресу в Transmission клиент \
+`/add_qbit_url <url>` - Добавить торрент по url-адресу в qBittorrent клиент \
+`/tmdb_info <kinozal_id>` - Получить информацию о фильме или сериале через TMDB API \
+`/tmdb_actor <tmdb_id> <type>` - Получить список актеров \
+`/tmdb_season_episodes <tmdb_id> <season_number>` - Список серий в указанном сезоне \
+`/tmdb_select_episode <tmdb_id> <season_number> <episode_number>` - Информация по выбранной серии и список приглашенных актеров \
+`/tmdb_person <person_id>` - Информация по актеру и ссылки на TMDB и IMDb
 
 ## 🔍 Примеры команд поиска
 
