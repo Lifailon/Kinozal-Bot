@@ -37,7 +37,7 @@ Telegram бот, который позволяет автоматизирова�
 - ✅ Интерфейс удаленного управления торрент клиентом [qBittorrent](https://github.com/qbittorrent/qBittorrent). Добавление раздач на загрузку из торрент файла, [инфо хеш](https://en.wikipedia.org/wiki/Magnet_URI_scheme) (передается в каждой публикации новостного канала и при поиске раздач в боте) а также через url торрент файла, получение подробной информации о загрузке (скорость загрузки, статус, пиры, сиды и т.д.), пауза и возобновление загрузки, проверка на целостность, переключение лимитов скорости, управление приоритетом отдельных файлов, удаление торрента и содержимого раздачи в системе.
 - ✅ Интерфейс управлени торрент клиентом [Transmission](https://github.com/transmission/transmission). Добавление раздач на загрузку из торрент файла, инфо хеш и url, получение подробной информации о загрузке, пауза и возобновление загрузки, управление приоритетом отдельных файлов, удаление торрента и содержимого раздачи в системе.
 - ✅ Синхронизация контента с [Plex Media Server](https://www.plex.tv), а также просмотр содержимого директорий и дочерних файлов.
-- ✅ Получение подробной информации о фильме и сериале из [The Movie Database](https://www.themoviedb.org/?language=ru) (TMDB). Список актеров и сезонов для каждого сериала, список серий в каждом сезоне, дата выхода серий, а также получение подробной информации о каждой серии и список приглашенных актеров.
+- ✅ Получение дополнительной информации о фильме и сериале из [The Movie Database](https://www.themoviedb.org/?language=ru) (TMDB). Список актеров и сезонов для каждого сериала, список серий в каждом сезоне, дата выхода серий, а также получение подробной информации о каждой серии и список приглашенных актеров.
 
 Добавление торрента по 🧲 hash-сумме и 🌐 url-адресу торрент файла (без загрузки самого файла) возможно из любого источника (торрент трекера). По мимо загрузки, это также дает возможность сформировать и сохранить торрент файл на сервере с полученными метаданными через торрент клиент qBittorrent или Transmission, который можно выгрузкой в Telegram, для дальнейшей загрузки через ваш торрент клиент на телефоне.
 
@@ -74,7 +74,7 @@ Telegram бот, который позволяет автоматизирова�
 <img src="image/examples/kinozal-news-webtorrent.jpg"/></a>
 </h1>
 
-- Демонстрация работы поиска и добавление на загрузку в qBittorrent (версия 0.4.4):
+- Демонстрация работы поиска и добавление на загрузку в qBittorrent (версия 0.4.5):
 
 <h1 align="center">
 <img src="image/examples/search-and-download.gif"/></a>
@@ -122,35 +122,68 @@ Telegram бот, который позволяет автоматизирова�
 
 ## ⚙️ Настройка
 
-Для работы бота, необходимо подготовить свою среду, все настройки подключения задаются в конфигурационном файле: 📑 **[kinozal-bot.conf](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/scripts/kinozal-bot.conf)**.
+Для работы бота, необходимо подготовить свою домашнюю среду, все настройки подключения задаются в конфигурационном файле: 📑 **[kinozal-bot.conf](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/scripts/kinozal-bot.conf)**.
 
 1. Зарегистрируйте аккаунт на сайте [Кинозал](https://kinozal.tv) и заполнить параметры конфигурации:
 
-`KZ_PROFILE="id_you_profile"` - используется для получения информации из профиля Кинозал \
-`KZ_USER="LOGIN"` - используется на этапе получения инфо хэш из раздачи и загрузки торрент-файлов \
-`KZ_PASS="PASSWORD"`
+`KZ_PROFILE="id_you_profile"` - идентификатор вашего профиля, используется для получения информации из профиля Кинозал \
+`KZ_USER="LOGIN"` - логин, используется на этапе получения инфо хэш из раздачи и загрузки торрент-файлов \
+`KZ_PASS="PASSWORD"` - пароль
 
-2. Если у вас заблокирован доступ в Кинозал, вы можете воспользоваться VPN или Proxy, через который бот сможет проксировать свои запросы.
+2. Если у вас заблокирован доступ в Кинозал, вы можете воспользоваться VPN или Proxy сервером, через который бот сможет проксировать свои запросы.
 
 > Я использую **HandyCache** на системе Windows, рядом с которым запущена бесплатная версия **VPN Hotspot Shield** в режиме раздельного туннелирования (Split Tunneling) до сайта Кинозал.
+
+- 2.1. Настройка Proxy-сервера:
 
 `PROXY="True"` - включить использование прокси сервера в curl-запросах при обращении к Кинозал \
 `PROXY_ADDR="http://192.168.3.100:9090"` - адрес сервера и порт, на котором слушает запросы Proxy-сервер \
 `PROXY_USER="LOGIN"` \
 `PROXY_PASS="PASSWORD"`
 
-3. Создать своего Telegram бота через **[@botfather](https://t.me/BotFather)** используя интуитивно понятный интерфейс и получите API-токен доступа. Что бы получить ваш **чат id**, напишите любое сообщение вашему боту и перешлите его **[Get My ID](https://t.me/getmyid_arel_bot)**, после чего заполните параметры:
+- 2.2. Вы можете указать любой из адресов для доступа к Кинозал, используя зеркало:
+
+```
+KZ_ADDR="https://kinozal.tv"
+```
+
+или
+
+```
+KZ_ADDR="https://kinozal.me"
+```
+
+- 2.3. Возможен вариант использования обратного прокси сервер, у которого есть прямой доступ к трекеру, например, через [rpnet](https://github.com/Lifailon/ReverseProxyNET):
+
+Скачайте [исполняемый файл](https://github.com/Lifailon/ReverseProxyNET/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal:
+
+```
+rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
+```
+
+Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
+
+```
+PROXY="False"
+KZ_ADDR="http://192.168.3.100:8443"
+```
+
+> ⚠️ **rpnet** не поддерживает авторизацию.
+
+3. Создайте своего Telegram бота через **[@botfather](https://t.me/BotFather)** используя интуитивно понятный интерфейс и получите API-токен доступа. Что бы получить ваш **чат id**, напишите любое сообщение вашему боту и перешлите его **[Get My ID](https://t.me/getmyid_arel_bot)**, после чего заполните параметры:
 
 `TG_TOKEN="6873341222:AAFnVgfavenjwbKutRwROQQBya_XXXXXXXX"` - используется для чтения и отправки сообщений ботом \
 `TG_CHAT="8888888888,999999999"` - id всех чатов, которые будут иметь доступа к боту. 
 
 > В дальнейшем id можно получить в логе из запросов новых клиентов, которые вы сможете добавить в конфигурацию через запятую.
 
-4. Установите и настройте торрент клиент [qBittorrent](https://www.qbittorrent.org/download).
+4. [Установите](https://www.qbittorrent.org/download) и настройте торрент клиент qBittorrent.
 
 - 4.1. Включите **Веб-интерфейс** в настройках приложения:
 
-![Image alt](image/settings/qbittorrent-settings.jpg)
+<h1 align="center">
+<img src="image/settings/qbittorrent-settings.jpg" width="800"/></a>
+</h1>
 
 Укажите параметры подключения к клиенту:
 
@@ -162,36 +195,68 @@ Telegram бот, который позволяет автоматизирова�
 
 💡 Это должна быть директория, которая будет добавлена на сервер Plex, что бы в дальнейшем можно было синхронизировать загруженный контент, используя бот.
 
-![Image alt](image/settings/qbittorrent-default-directory.jpg)
+<h1 align="center">
+<img src="image/settings/qbittorrent-default-directory.jpg" width="800"/></a>
+</h1>
 
-5. Установить [Plex Media Server](https://www.plex.tv/ru/media-server-downloads/?cat=computer&plat=windows) и [получить токен доступа](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token).
+5. [Установите](https://transmissionbt.com/download) и настройте Transmission для управления клиентом с помощью бота:
 
-Так как нет возможности напрямую получить токент доступа в веб-интерфейсе, можно воспользоваться панелью разработчика ([Development Tools](https://developer.chrome.com/docs/devtools?hl=ru)) в браузере. Перейдите на вкладку **сеть (network)** и обновите страницу интерфейса вашего сервера Plex, после чего вы сможете увидеть токен в любом из url-запросов (X-Plex-Token=**ваш_токена**). Передайте адрес сервера (по умолчанию, порт **32400**) и содержимое токена в параметры:
+<h1 align="center">
+<img src="image/settings/transmission-settings.jpg" width="800"/></a>
+</h1>
+
+Укажите параметры подключения к клиенту:
+
+```
+TRANS_ADDR="http://192.168.3.100:9091"
+TRANS_USER="LOGIN"
+TRANS_PASS="PASSWORD"
+```
+
+💡☁️ Возможно использовать один (или оба) из поддерживаемых клиентов для синхронизации с сервером Plex, или, например, настроить **второй клиент для синхронизации с любым облачным хранилищем**, что бы иметь удаленный доступ к файлам, например, с телефона, т.к. для удаленной загрузки контента с сервера Plex требуется подписка [Plex Pass](https://www.plex.tv/plex-pass). Для этого укажите любую дочернюю директорию внутри вашего облачного хранилища (необходимо, что бы было настроено подключения облачного хранилища к вашей файловой системе) для загрузки контента в Transmission клиенте по умолчанию.
+
+6. Установите [Plex Media Server](https://www.plex.tv/ru/media-server-downloads/?cat=computer&plat=windows) и [получите токен доступа](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token).
+
+Так как нет возможности напрямую получить токент доступа в веб-интерфейсе, можно воспользоваться панелью разработчика [Development Tools](https://developer.chrome.com/docs/devtools?hl=ru) в браузере. Перейдите на вкладку **сеть (network)**, обновите страницу интерфейса вашего сервера Plex, после чего вы сможете увидеть токен в любом из url-запросов (X-Plex-Token=**ваш_токена**). Передайте адрес сервера (по умолчанию, порт **32400**) и содержимое токена в параметры:
 
 ```
 PLEX_ADDR="http://192.168.3.100:32400"
 PLEX_TOKEN="ваш_токена"
 ```
 
-![Image alt](image/settings/plex-token.jpg)
+<h1 align="center">
+<img src="image/settings/plex-token.jpg" width="800"/></a>
+</h1>
 
 💡 Создайте новую секцию на сервере Plex и укажите путь к директории хранения вашего контента, на которую уже **настроен клиент qBittorrent по умолчанию**:
 
-![Image alt](image/settings/plex-add-directory.jpg)
+<h1 align="center">
+<img src="image/settings/plex-add-directory.jpg" width="800"/></a>
+</h1>
 
-6. Пути для сохранения торрент файлов, cookie (временные файлы, для авторизации в qBittorrent и Кинозал), а также лог-файлов **задаются в конфигурации**.
+7. Пути хранения торрент файлов, cookie (временные файлы, для авторизации в qBittorrent и Кинозал), а также лог-файлов и размер (поддерживается ротация) **задаются в конфигурации**:
+
+💡 Все запросы к боту, а также его ответы логируются
 
 ```
-path="/home/lifailon/kinozal-torrent"
-path_qb_cookies="/home/lifailon/kinozal-torrent/qbittorrent.cookies"
-path_kz_cookies="/home/lifailon/kinozal-torrent/kinozal.cookies"
-path_log="/home/lifailon/kinozal-torrent/kinozal-bot.log"
+path="/home/lifailon/kinozal-bot"
 log_size_mbyte=10
 ```
 
-Все запросы к боту, а также его ответы логируются.
+8. Настройка подключения к TMDB api:
+
+💡 Как и в случае со вторым торрент клиентом, данный пункт является *опциональным*.
+
+[Зарегестрируйте аккаунт](https://www.themoviedb.org/signup) на сайте **The Movie Database** и [выпустите ключ доступа](https://www.themoviedb.org/settings/api) к api, после чего заполните параметры конфигурации (возможно указать ключ или токен на выбор):
+
+```
+TMDB_KEY="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+TMDB_TOKEN="XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX"
+```
 
 ## 🐧 Запуск
+
+#### Зависимости
 
 Проверьте, что у вас установлен **[jq](https://github.com/jqlang/jq)**:
 
@@ -203,22 +268,38 @@ jq-1.6
 
 Для запуска бота [загрузите](https://github.com/Lifailon/Kinozal-Bot/tree/rsa/scripts) скрипт `kinozal-bot-*.sh` последней версии, и расположите предварительно настроенный конфигурационный файл **kinozal-bot.conf** рядом со скриптом.
 
-Я использую директорию `kinozal-bot` в корне домашнего каталога текущего пользователя, вот пример состава файлов:
+В примере используется директория `kinozal-bot` в корне домашнего каталога текущего пользователя, так выглядит состав файлов на рабочем экземпляре:
 
-![Image alt](image/settings/kinozal-bot-files.jpg)
+<h1 align="center">
+<img src="image/settings/kinozal-bot-files.jpg" width="800"/></a>
+</h1>
+
+#### Проверка подключения
+
+Перед запуском, вы можете проверить подключение к сервисам, в случае успеха, вы получите текущую версию:
+
+```bash
+bash kinozal-bot/kinozal-bot-0.4.5.sh version
+
+qBittorrent Client:  4.6.5 (api: 2.9.3)
+Transmission Client: 4.0.6 (38c164933e)
+Plex Media Server:   1.40.0.7998-c29d4c0c8
+```
+
+#### Управление
 
 - Используйте интерпретатор 🐧 **Bash** для запуска (**root** права не требуются):
 
 ```bash
-cd ~/kinozal-torrent
-bash kinozal-bot-0.4.4.sh start bot
+cd ~/kinozal-bot
+bash kinozal-bot-0.4.5.sh start bot
 ```
 
 - Узнать статус работы и количество активных процессов:
 
 ```bash
-bash kinozal-bot-0.4.4.sh status
-bash kinozal-bot-0.4.4.sh status proc
+bash kinozal-bot-0.4.5.sh status
+bash kinozal-bot-0.4.5.sh status proc
 ```
 
 - Проверка подключения к qBittorrent:
@@ -226,31 +307,31 @@ bash kinozal-bot-0.4.4.sh status proc
 Если настройки заданы правильно, вы можете отобразить журнал работы qBittorrent клиента и сервера Plex в своей консоли.
 
 ```bash
-bash kinozal-bot-0.4.4.sh log qb
-bash kinozal-bot-0.4.4.sh log qb all
+bash kinozal-bot-0.4.5.sh log qb
+bash kinozal-bot-0.4.5.sh log qb all
 ```
 
 - Отобразить журнал работы системы и сервера Plex:
 
 ```bash
-bash kinozal-bot-0.4.4.sh log plex system
-bash kinozal-bot-0.4.4.sh log plex system all
-bash kinozal-bot-0.4.4.sh log plex server
-bash kinozal-bot-0.4.4.sh log plex server all
+bash kinozal-bot-0.4.5.sh log plex system
+bash kinozal-bot-0.4.5.sh log plex system all
+bash kinozal-bot-0.4.5.sh log plex server
+bash kinozal-bot-0.4.5.sh log plex server all
 ```
 
 - Вывести журнал работы бота:
 
 ```bash
-bash kinozal-bot-0.4.4.sh log bot   
-bash kinozal-bot-0.4.4.sh log bot 50
+bash kinozal-bot-0.4.5.sh log bot   
+bash kinozal-bot-0.4.5.sh log bot 50
 ```
 
-- Остановить бота и все его дочерние процессы:
+- Остановка бота и всех его дочерних процессов:
 
 ```bash
-bash kinozal-bot-0.4.4.sh stop
-bash kinozal-bot-0.4.4.sh status
+bash kinozal-bot-0.4.5.sh stop
+bash kinozal-bot-0.4.5.sh status
 ```
 
 ## 🚀 Служба
@@ -272,7 +353,7 @@ Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBitto
 After=network.target
 
 [Service]
-ExecStart=/bin/bash "/home/lifailon/kinozal-torrent/kinozal-bot-0.4.4.sh" start bot log
+ExecStart=/bin/bash "/home/lifailon/kinozal-bot/kinozal-bot-0.4.5.sh" start bot log
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 Type=forking
@@ -340,7 +421,7 @@ journalctl -fu kinozal-bot
 `/actor <id>` - Описание, поиск актера и его фильмографии из Кинозала и ссылка на Кинопоиск (передать параметр: имя актера) \
 `/kinopoisk_movie <id>` - Информация о фильме из Кинопоиск по id kinopoisk (передать параметр: id kinozal)
 
-### Добавлено в версии 0.4.4:
+### Добавлено в версии 0.4.5:
 
 `/search <year*> <format*> <title>` - Поиск с фильтрацией по году выхода и формату разрешения \
 `/research` - Повторить последний поиск (id не требуется) \
@@ -421,7 +502,7 @@ journalctl -fu kinozal-bot
 
 ## Change log
 
-### 12.06.2024 (0.4.4):
+### 12.06.2024 (0.4.5):
 
 - Изменены параметры управления запуска (2 режима) и возможность настройки управления чере службу systemd;
 - Добавлены параметры вывода логов бота, журнала работы клиента qBittorrent и сервера Plex;
