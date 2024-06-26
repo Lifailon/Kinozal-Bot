@@ -75,7 +75,7 @@
 # + Добавление торрента в qBittorrent и Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации);
 # ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash);
 # ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title;
-# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name>;
+# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name> и фото актера;
 # ~ Переработан парсинг списка фильмографии актера;
 # + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id через Kinozal id;
 # + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS);
@@ -2462,14 +2462,27 @@ function get-actor {
         data+=$(echo "*Кинозал:* $kinozal_actor_url\n")
     else
         actor_name=$(printf "%s\n" "${html[@]}" | grep "Имя:" | sed -r "s/.+Имя://; s/<\/b> //; s/<br.+>//")
-        #actor_country=$(printf "%s\n" "${html[@]}" | grep "Место рождения:" | sed -r "s/.+Место рождения://; s/<\/b> //; s/<br.+>//")
+        actor_country=$(printf "%s\n" "${html[@]}" | grep "Место рождения:" | sed -r "s/.+Место рождения://; s/<\/b> //; s/<br.+>//")
         actor_date=$(printf "%s\n" "${html[@]}" | grep "Дата рождения:" | sed -r "s/.+Дата рождения://; s/<\/b> //; s/<br.+>//")
         sum_age=$(( $(date "+%Y") - $(echo $actor_date | grep -Eo "[0-9]{4}") ))
         data=$(echo "*Имя:* $actor ($actor_name) \n")
-        #data+=$(echo "*Место рождения:* $actor_country\n")
-        data+=$(echo "*Дата рождения:* $actor_date\n")
-        data+=$(echo "*Возраст:* $sum_age\n")
-        data+=$(echo "*Кинозал:* $kinozal_actor_url\n")
+        data+=$(echo "*Место рождения:* $actor_country \n")
+        data+=$(echo "*Дата рождения:* $actor_date \n")
+        data+=$(echo "*Возраст:* $sum_age \n")
+        # Получить массив из изображений актера
+        actor_photo_array=$(echo $html | grep -o 'https://i[0-9]\.imageban\.ru[^"]*\.jpg')
+        if [[ -z $actor_photo_array ]]; then
+            actor_photo_array=$(echo $html | grep -o 'https://i[0-9]\{1,5\}\.fastpic\.org[^"]*\.jpg')
+        fi
+        if [[ -n $actor_photo_array ]]; then
+            data+=$(echo "\n")
+            data+=$(echo "Фото актера: \n")
+            for photo in $actor_photo_array; do
+                data+=$(echo "$photo \n")
+            done
+            data+=$(echo "\n")
+        fi
+        data+=$(echo "*Кинозал:* $kinozal_actor_url")
     fi
     encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
     ### Отфильтровать все описание до фильмографии и забрать только строки с годом выхода
