@@ -9,16 +9,15 @@
 ###############################################################################
 
 ### Stack:
-# Kinozal: чтение RSS ленты, получение данных из HTML, поиск с фильтрацией контента и загрузка торрент файлов
-# Telegram api: чтение команд и отправка ответных сообщений в формате меню (keyboard), торрент файлов и постов в канал
-# qBittorrent WebUI api: добавление торрентов из торрент файла или инфо хеш и управление данными (пауза, удаление и изменение приоритета)
-# Transmission RPC api: добавление торрентов из торрент файла, инфо хеш или url-адреса и управление данными (пауза, удаление и изменение приоритета)
-# Plex Media Server api: синхронизация данных и получение информации о содержимом секций и дочерних файлах
-# TMDB api: получение дополнительной информации о фильме и сериале, список и даты выхода сезонов и серий, информация об актерах
+# Kinozal.tv (only HTML)
+# Telegram api (https://core.telegram.org/bots/api)
+# qBittorrent WebUI api (https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1))
+# Transmission RPC api (https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md)
+# Plex Media Server api (no official api documentation)
+# TMDB api (https://developer.themoviedb.org/reference/intro/getting-started)
 ### Зависимости:
 # jq 1.6 (https://github.com/jqlang/jq)
-### Опционально:
-# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер для доступа в Кинозал (например, ReverseProxyNET)
+# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер (например, ReverseProxyNET) для доступа в Кинозал
 
 ###############################################################################
 
@@ -35,7 +34,7 @@
 ### Reverse Proxy:
 ### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
 # rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
-### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на обратный прокси сервер
+### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
 # PROXY="False"
 # KZ_ADDR="http://192.168.3.100:8443"
 
@@ -77,12 +76,13 @@
 # ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title;
 # ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name> и фото актера;
 # ~ Переработан парсинг списка фильмографии актера;
-# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id через Kinozal id;
+# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id через Kinozal id (список актеров, сезонов и серий с датами выхода);
 # + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS);
-# + Добавлен размер свободного места на диске в статус qBittorrent;
+# + Добавлен размер свободного места на диске в статус qBittorrent и возможность принудительно повторно анонсировать выбранный торрент;
 # + Добавлен параметр управления version для проверки доступности всех сервисов и получения текущей версии;
 # + Добавлена поддержка использования зеркала и обратного прокси сервера;
-# - Отключен функционал Kinopoisk api (/kinopoisk_movie) и описание из Кинозал (/kinozal_description).
+# - Отключен функционал Kinopoisk api (/kinopoisk_movie) и описание из Кинозал (/kinozal_description);
+# ~ Добавлены функции для взаимодействия с файловой системой Windows через Everything api (не поддерживается отправка файлов в Telegram свыше 50мб).
 
 ###############################################################################
 
@@ -151,9 +151,11 @@
 # /add_url <url> - Добавить торрент по url-адресу с выбором клиента через меню
 # /add_trans_url <url> - Добавить торрент по url-адресу в Transmission клиент
 # /add_qbit_url <url> - Добавить торрент по url-адресу в qBittorrent клиент
+# /torrent_reannounce <hash/all> - Принудительно повторно анонсировать (запросить у трекера больше участников) для выбранного торрента в qBittorrent клиенте
 # /tmdb_info <kinozal_id> - Получить информацию о фильме или сериале через TMDB API
+# /tmdb_actor <tmdb_id> <type> - Получить список актеров
 # /tmdb_season_episodes <tmdb_id> <season_number> - Список серий в указанном сезоне
-# /tmdb_select_episode <tmdb_id> <season_number> <episode_number> - Информация по выбранной серии и список актеров
+# /tmdb_select_episode <tmdb_id> <season_number> <episode_number> - Информация по выбранной серии и список приглашенных актеров
 # /tmdb_person <person_id> - Информация по актеру и ссылки на TMDB и IMDb
 
 ###############################################################################
@@ -193,11 +195,11 @@
 # /search_title 1985 (2160) Рокки
 # /search_title (2160) 1985 Рокки
 
-### Вывести список актеров в базе Кинозал по имени
+### Поиск актера в базе Кинозал по имени:
 # /search_actor "Алан"
 # /search_actor "Сильвестр"
 
-### Получить краткую биографию и фильмографию указанного актера (и ссылка на Кинопоиск через Kinopoisk API):
+### Получить биографию и фильмографию указанного актера:
 # /actor search Алан Тьюдик
 # /actor list Сильвестр Сталлоне
 
@@ -301,7 +303,6 @@ path_kz_cookies="$path/kinozal.cookies"
 CHECK_TG_AND_INTERNET="False"
 
 ################################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ####################################
-### API documentation: https://core.telegram.org/bots/api
 
 function test-telegram {
     endpoint="getMe"
@@ -426,7 +427,6 @@ function read-telegram {
 }
 
 ################################## 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ##################################
-### WebUI API documentation: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
 ### Latest API documentation: 2.8.3
 ### Tested application on version 4.6.0 and 4.6.5 (api: 2.9.3)
 
@@ -786,10 +786,10 @@ function qbittorrent-delete {
 # qbittorrent-delete "a72bd27a0ce265a3c7965392bc06c25edd759214" "false"
 # qbittorrent-delete "a72bd27a0ce265a3c7965392bc06c25edd759214" "true"
 
-### Проверить торрент файл (пересканировать на целостность)
+### ♻️ Проверить торрент файл (пересканировать на целостность)
 function qbittorrent-recheck {
     hash=$1
-     qbittorrent-auth
+    qbittorrent-auth
     endpoint_delete="api/v2/torrents/recheck"
     curl -s "$QB_ADDR/$endpoint_delete" \
         -b $path_qb_cookies \
@@ -798,6 +798,20 @@ function qbittorrent-recheck {
 }
 
 # qbittorrent-recheck "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+### 📢 Принудительно повторно анонсировать (запросить у трекера больше участников)
+function qbittorrent-reannounce {
+    hash=$1
+    qbittorrent-auth
+    endpoint_delete="api/v2/torrents/reannounce"
+    curl -s "$QB_ADDR/$endpoint_delete" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hashes=$hash"
+}
+
+# qbittorrent-reannounce "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+# qbittorrent-reannounce "all"
 
 ##################################### 🧲🧲🧲 Info hash 🧲🧲🧲 #####################################
 
@@ -865,7 +879,7 @@ function qbittorrent-rename-torrent {
 
 # qbittorrent-rename-torrent "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick"
 
-### Переименовать торрент файл или директорию
+### Переименовать торрент файл или директорию (POST)
 function qbittorrent-rename-file {
     torrent_hash=$1
     new_name_file=$2
@@ -891,6 +905,21 @@ function qbittorrent-rename-file {
 
 # qbittorrent-rename-file "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick" "File"
 # qbittorrent-rename-file "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick" "Folder"
+
+### Изменить путь загрузки (хранения) для выбранного торрента (POST)
+function qbittorrent-relocation {
+    torrent_hash=$1
+    new_torrent_path=$2
+    qbittorrent-auth
+    endpoint="api/v2/torrents/setLocation"
+    curl -X POST "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hashes=$torrent_hash" \
+        --data "location=$new_torrent_path"
+}
+
+# qbittorrent-relocation "A72BD27A0CE265A3C7965392BC06C25EDD759214" "E:/Transmission"
 
 ### Список всех уникальных трекеров используемых торрентами
 function qbittorrent-tracker-list {
@@ -1078,7 +1107,6 @@ function magnet-uri {
 #-----------------------------------------------------------------------------------------------------
 
 ################################# 🔲 🔲 🔲 Transmission 🔲 🔲 🔲 ##################################
-# RPC API documentation: https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md
 # Tested on version 4.0.6 (38c164933e)
 
 ### Проверка доступности Transmission
@@ -1624,7 +1652,6 @@ function transmission-add-file {
 # transmission-add-file "$path/1904445-Полиция_Токио_(1_сезон:_1-8_серии_из_8).torrent"
 
 ############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
-### No official API documentation
 ### Tested on version 1.40.0.7998-c29d4c0c8
 ### Token: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token
 ### Endpoint list:
@@ -2554,7 +2581,8 @@ function kinobox-players {
 # kinobox-players kinopoisk 1142153
 # kinobox-players imdb tt7587890
 
-################################ 🟡 🟡 🟡 Kinopoisk API 🟡 🟡 🟡 ##################################
+################################## 🟡 🟡 🟡 Kinopoisk 🟡 🟡 🟡 ####################################
+### Kinopoisk unofficial api
 ### API documentation: https://api.kinopoisk.dev/documentation
 
 ### Функции кодирования для передачи в параметр функции get-actor-kinopoisk
@@ -2641,8 +2669,7 @@ function get-movie-kinopoisk-id {
     fi
 }
 
-##################################### 🔷🔷🔷 TMDB API 🔷🔷🔷 ######################################
-### API documentation: https://developer.themoviedb.org/reference/intro/getting-started
+####################################### 🔷🔷🔷 TMDB 🔷🔷🔷 ########################################
 
 ### Поиск по IMDb id
 function tmdb-find {
@@ -3103,8 +3130,8 @@ function menu-files {
 }
 
 ### State:
-# 📶 stalledDL           Торрент скачивается, но соединение не установлено
-# 📶 stalledUP           Торрент загружается, но соединение не установлено
+# 📶 stalledDL           Торрент скачивается, но соединение не установлено (может находится в режиме анонсирования 📢)
+# 📶 stalledUP           Торрент загружается, но соединение не установлено (может находится в режиме анонсирования 📢)
 # ⏸ pausedDL            Торрент приостановлен и загрузка НЕ ​​завершена
 # ⏸🆗 pausedUP         Торрент приостановлен и загрузка завершена
 # ⬇️ downloading         Торрент скачивается и данные передаются
@@ -3253,18 +3280,18 @@ function menu-info {
     qb_name_replace=$(echo $qb_name | sed -r "s/\.mkv$|\.avi$|\.mp4$//g")
     keyboard="{
         \"inline_keyboard\":[
-            [{\"text\":\"🔄 Обновить\",\"callback_data\":\"\/info $qb_hash\"},
-            {\"text\":\"📖 Список файлов\",\"callback_data\":\"/torrent_content $qb_hash\"}],
+            [{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/status\"},
+            {\"text\":\"🔄 Обновить\",\"callback_data\":\"\/info $qb_hash\"}],
             [{\"text\":\"⏸ Пауза\",\"callback_data\":\"\/pause $qb_hash\"},
             {\"text\":\"▶️ Возобновить\",\"callback_data\":\"\/resume $qb_hash\"}],
-            [{\"text\":\"⬆️ Получить торрент\",\"callback_data\":\"\/get_torrent $qb_hash\"},
-            {\"text\":\"♻️ Проверить\",\"callback_data\":\"\/torrent_recheck $qb_hash\"}],
+            [{\"text\":\"📖 Список файлов\",\"callback_data\":\"/torrent_content $qb_hash\"},
+            {\"text\":\"⬆️ Получить торрент\",\"callback_data\":\"\/get_torrent $qb_hash\"}],
+            [{\"text\":\"♻️ Проверить\",\"callback_data\":\"\/torrent_recheck $qb_hash\"},
+            {\"text\":\"📢 Анонсировать\",\"callback_data\":\"\/torrent_reannounce $qb_hash\"}],
             [{\"text\":\"🗑 Удалить торрент\",\"callback_data\":\"\/delete_torrent $qb_hash\"},
             {\"text\":\"❌ Удалить данные\",\"callback_data\":\"\/delete_video $qb_hash\"}],
             [{\"text\":\"🔎 Кинозал\",\"callback_data\":\"/search_id $kinozal_id\"},
-            {\"text\":\"🟠 Plex 🔎 \",\"callback_data\":\"\/find $qb_name_replace\"}],
-            [{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/status\"},
-            {\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]
+            {\"text\":\"🟠 Plex 🔎 \",\"callback_data\":\"\/find $qb_name_replace\"}]
         ]
     }"
     if [[ $message_id_temp != "null" ]]; then
@@ -4495,6 +4522,14 @@ while :
             qbittorrent-recheck "$qb_hash"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_recheck" >> $path_log
+            menu-info $qb_hash
+        ### Request: /torrent_reannounce hash 📢📢📢
+        elif [[ $command == /torrent_reannounce* ]]; then
+            qb_hash=$(echo $command | sed -r "s/\/torrent_reannounce //")
+            echo "[INFO] $(date '+%H:%M:%S'): Reannounce torrent: $qb_hash" >> $path_log
+            qbittorrent-reannounce "$qb_hash"
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_reannounce" >> $path_log
             menu-info $qb_hash
         ### Request: /torrent_limit 📶📶📶
         elif [[ $command == /torrent_limit ]]; then
