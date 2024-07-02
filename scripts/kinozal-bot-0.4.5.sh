@@ -16,8 +16,8 @@
 # Plex Media Server api (no official api documentation)
 # TMDB api (https://developer.themoviedb.org/reference/intro/getting-started)
 ### Зависимости:
-# jq 1.6 (https://github.com/jqlang/jq)
-# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер (например, ReverseProxyNET) для доступа в Кинозал
+# jqlang 1.6 (https://github.com/jqlang/jq)
+# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер (например, rpnet) для доступа в Кинозал и TMDB
 
 ###############################################################################
 
@@ -32,7 +32,7 @@
 # PROXY_PASS="proxy"
 
 ### Reverse Proxy:
-### Скачайте исполняемый файл (https://github.com/Lifailon/ReverseProxyNET) и запустите обратный прокси сервер на машине с доступом к Kinozal (например, через VPN)
+### Скачайте исполняемый файл Reverse Proxy .NET (https://github.com/Lifailon/rpnet/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal
 # rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
 ### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
 # PROXY="False"
@@ -146,6 +146,7 @@
 # /trans_file_select <id> <file_index> - Переключить приоритет выбранного файла (пропустить или высокий приоритет)
 # /trans_pause <id> <start/stop> - установить на паузу или возобновить
 # /trans_remove <id> <false/true> - удалить торрент и данные
+# /trans_set_alt_speed - переключить лимит альтернативной скорости
 # /add_hash <qbit/trans> <hash> - Добавить торрент по инфо хеш в указанный клиент
 # /download_trans_<id> - Добавить торрент файла на загрузку в Transmission клиент
 # /add_url <url> - Добавить торрент по url-адресу с выбором клиента через меню
@@ -536,7 +537,7 @@ function qbittorrent-get-limit {
 # qbittorrent-get-limit downloadLimit
 # qbittorrent-get-limit uploadLimit
 
-### Переключить на альтернативные ограничения скорости (POST) 📶📶📶
+### Переключить на альтернативные ограничения скорости (POST) 🐢🐢🐢
 function qbittorrent-switch-limit {
     qbittorrent-auth
     endpoint="api/v2/transfer/toggleSpeedLimitsMode"
@@ -592,7 +593,7 @@ function qbittorrent-data {
     data+="*Свободного места на диске*: $free_space_disk Гб \n"
     data+="*Путь сохранения (по умолчанию):* $save_path_default \n"
     data+="*Лимит скорости:* $qb_limit_down_mb ⬇️ $qb_limit_upload_mb ⬆️ МБайт/c \n"
-    data+="*Альтернативные ограничения скорости:* $qb_limit_mode_text \n"
+    data+="🐢 *Ограничения скорости:* $qb_limit_mode_text \n"
     data+="*Обновлено:* $(date '+%H:%M:%S')"
     echo -e "$data"
 }
@@ -813,6 +814,35 @@ function qbittorrent-reannounce {
 # qbittorrent-reannounce "A72BD27A0CE265A3C7965392BC06C25EDD759214"
 # qbittorrent-reannounce "all"
 
+##################################### 🧲🧲🧲 Info hash 🧲🧲🧲 #####################################
+
+### Добавить торрент файл по хэш сумме
+function qbittorrent-add-torrent-from-hash {
+    hash=$1
+    magnet_link="magnet:?xt=urn:btih:$hash"
+    qbittorrent-auth
+    curl -s "$QB_ADDR/api/v2/torrents/add" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data-urlencode "urls=$magnet_link"
+}
+
+# qbittorrent-add-torrent-from-hash "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+### Экспортировать из раздачи с полученными метаданными на клиенте в торрент файл
+function qbittorrent-export-torrent-file {
+    hash=$1
+    qbittorrent-auth
+    endpoint="api/v2/torrents/export"
+    curl -s "$QB_ADDR/$endpoint" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$hash" \
+        -o "$path/$hash.torrent"
+}
+
+# qbittorrent-export-torrent-file "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
 ###################################### 📄📄📄 Trackers 📝📝📝 ######################################
 
 ### 📄 Список трекеров используемых выбранным торрентом
@@ -884,7 +914,8 @@ trackers_web_array=(
 
 # qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "$(tracker-list "${trackers_web_array[@]}")"
 
-trackers_ru_array=(
+# Список трекеров Kinozal
+trackers_kz_array=(
     "http://retracker.local/announce"
     "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00"
     "http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
@@ -906,7 +937,30 @@ trackers_ru_array=(
     "http://tr5.tor2me.info/ann?uk=kCm7WcIM00"
 )
 
+# qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "$(tracker-list "${trackers_kz_array[@]}")"
+
+# Список трекеров RuTracker, NoNameClub и RuTor
+trackers_ru_array=(
+    "http://bt.t-ru.org/ann"
+    "http://bt2.t-ru.org/ann"
+    "http://bt3.t-ru.org/ann"
+    "http://bt4.t-ru.org/ann"
+    "http://bt01.nnm-club.info:2710/announce"
+    "http://bt02.nnm-club.info:2710/announce"
+    "http://bt01.nnm-club.cc:2710/announce"
+    "http://bt02.nnm-club.cc:2710/announce"
+    "udp://opentor.net:6969"
+    "http://tracker.grepler.com:6969/announce"
+    "udp://tracker.dler.com:6969/announce"
+    "http://h4.trakx.nibba.trade:80/announce"
+    "udp://open.stealth.si:80/announce"
+    "udp://tracker.bitsearch.to:1337/announce"
+    "udp://exodus.desync.com:6969/announce"
+)
+
 # qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "$(tracker-list "${trackers_ru_array[@]}")"
+
+#-----------------------------------------------------------------------------------------------------
 
 ### ✂️ Удалить торрент трекеры
 function qbittorrent-remove-tracker {
@@ -925,58 +979,24 @@ function qbittorrent-remove-tracker {
 # qbittorrent-remove-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "wss://tracker.openwebtorrent.com"
 # qbittorrent-remove-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00|http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
 
-##################################### 🧲🧲🧲 Info hash 🧲🧲🧲 #####################################
-
-### Добавить торрент файл по хэш сумме
-function qbittorrent-add-torrent-from-hash {
-    hash=$1
-    magnet_link="magnet:?xt=urn:btih:$hash"
-    qbittorrent-auth
-    curl -s "$QB_ADDR/api/v2/torrents/add" \
-        -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" \
-        --data-urlencode "urls=$magnet_link"
-}
-
-# qbittorrent-add-torrent-from-hash "A72BD27A0CE265A3C7965392BC06C25EDD759214"
-
-### Экспортировать из раздачи с полученными метаданными на клиенте в торрент файл
-function qbittorrent-export-torrent-file {
-    hash=$1
-    qbittorrent-auth
-    endpoint="api/v2/torrents/export"
-    curl -s "$QB_ADDR/$endpoint" \
-        -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" \
-        --data "hash=$hash" \
-        -o "$path/$hash.torrent"
-}
-
-# qbittorrent-export-torrent-file "A72BD27A0CE265A3C7965392BC06C25EDD759214"
-
-#-----------------------------------------------------------------------------------------------------
-
-### Функция проверки статуса загрузки метаданных
-function qbittorrent-metadata-status {
-    hash=$1
+### Список всех уникальных трекеров используемых торрентами
+function qbittorrent-all-trackers {
     qbittorrent-auth
     endpoint="api/v2/torrents/info"
-    status=$(curl -s "$QB_ADDR/$endpoint?hashes=$hash" \
+    hash_list=$(curl -s "$QB_ADDR/$endpoint" \
         -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" | jq -r '.[0].state')
-    if [[ $status == "null" ]]; then
-        # Торрент не найден (не добавлен)
-        echo null
-    elif [[ $status != "metaDL" ]]; then
-        # Метаданные получены
-        echo true
-    else
-        # Загрузка метаданных
-        echo false
-    fi
+        --header "Referer: $QB_ADDR" | jq -r .[].hash)
+    endpoint="api/v2/torrents/trackers"
+    tracker_list=""
+    for hash in $hashes; do
+        trackers=$(curl -s "$QB_ADDR/$endpoint?hash=$hash" -b $path_qb_cookies --header "Referer: $QB_ADDR")
+        tracker_list+="$(echo "$trackers" | jq -r .[].url)"
+        tracker_list+=$'\n'
+    done
+    echo "$tracker_list" | grep . | sort | uniq
 }
 
-# qbittorrent-metadata-status "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+# qbittorrent-all-trackers
 
 ### Переименовать торрент раздачу (которая отображается в клиенте)
 function qbittorrent-rename-torrent {
@@ -1034,25 +1054,6 @@ function qbittorrent-relocation {
 }
 
 # qbittorrent-relocation "A72BD27A0CE265A3C7965392BC06C25EDD759214" "E:/Transmission"
-
-### Список всех уникальных трекеров используемых торрентами
-function qbittorrent-all-trackers {
-    qbittorrent-auth
-    endpoint="api/v2/torrents/info"
-    hash_list=$(curl -s "$QB_ADDR/$endpoint" \
-        -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" | jq -r .[].hash)
-    endpoint="api/v2/torrents/trackers"
-    tracker_list=""
-    for hash in $hashes; do
-        trackers=$(curl -s "$QB_ADDR/$endpoint?hash=$hash" -b $path_qb_cookies --header "Referer: $QB_ADDR")
-        tracker_list+="$(echo "$trackers" | jq -r .[].url)"
-        tracker_list+=$'\n'
-    done
-    echo "$tracker_list" | grep . | sort | uniq
-}
-
-# qbittorrent-all-trackers
 
 ### RSS
 ### Получить список добавленных новостных лент и их содержимое (true), которые слушает клиент
@@ -1551,11 +1552,19 @@ function transmission-tg-status {
         fi
         keyboard+="[{\"text\":\"$tr_status\",\"callback_data\":\"/trans_info $id\"}],"
     done
-    keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/trans_status\"},"
+    keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/trans_status\"}],"
+    keyboard+="[{\"text\":\"🐢 Переключить лимит\",\"callback_data\":\"\/trans_set_alt_speed\"},"
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     data="🔲 Список добавленных торрентов \n"
+    tans_alt_speed=$(transmission-get-alt-speed)
+    if [[ $tans_alt_speed == true ]]; then
+        tans_alt_speed_text="Включены"
+    else
+        tans_alt_speed_text="Отключены"
+    fi
+    data+="🐢 *Ограничения скорости:* $tans_alt_speed_text \n"
     data+="*Обновлено:* $(date '+%H:%M:%S')"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -1769,6 +1778,47 @@ function transmission-add-file {
 }
 
 # transmission-add-file "$path/1904445-Полиция_Токио_(1_сезон:_1-8_серии_из_8).torrent"
+
+function transmission-get-alt-speed {
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    curl -s "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "method": "session-get"
+        }' | jq '.arguments."alt-speed-enabled"'
+}
+
+# transmission-get-alt-speed
+
+function transmission-set-alt-speed {
+    endpoint="transmission/rpc"
+    request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
+    session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
+    # Забрать текущий статус
+    current_alt_speed=$(transmission-get-alt-speed)
+    # Поменять статус
+    if [[ $current_alt_speed == "true" ]]; then
+        status_alt_speed="false"
+    else
+        status_alt_speed="true"
+    fi
+    curl -s "$TRANS_ADDR/$endpoint" \
+        -u "$TRANS_USER:$TRANS_PASS" \
+        -H "X-Transmission-Session-Id: $session_id" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "method": "session-set",
+            "arguments": {
+                "alt-speed-enabled": '"$status_alt_speed"'
+            }
+        }'
+}
+
+# transmission-set-alt-speed
 
 ############################### 🟠 🟠 🟠 Plex Media Server 🟠 🟠 🟠 ###############################
 ### Tested on version 1.40.0.7998-c29d4c0c8
@@ -3310,7 +3360,7 @@ function menu-status {
     done
     app_name="qbittorrent"
     keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/status\"}],"
-    keyboard+="[{\"text\":\"📶 Переключить лимит\",\"callback_data\":\"\/torrent_limit\"},"
+    keyboard+="[{\"text\":\"🐢 Переключить лимит\",\"callback_data\":\"\/torrent_limit\"},"
     keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     #keyboard+="{\"text\":\"🟢 Управление\",\"callback_data\":\"\/app_status $app_name\"}],"
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
@@ -4650,7 +4700,7 @@ while :
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_reannounce" >> $path_log
             menu-info $qb_hash
-        ### Request: /torrent_limit 📶📶📶
+        ### Request: /torrent_limit 🐢🐢🐢
         elif [[ $command == /torrent_limit ]]; then
             echo "[INFO] $(date '+%H:%M:%S'): Switch torrent limit" >> $path_log
             qbittorrent-switch-limit
@@ -4774,6 +4824,12 @@ while :
             tr_url=$(echo $command | sed "s/\/add_trans_url //")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_trans_url. Add torrent to Transmission from url $tr_url" >> $path_log
             transmission-add-url $tr_url
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            transmission-tg-status
+        ### Request: /trans_set_alt_speed 🐢🐢🐢
+        elif [[ $command == /trans_set_alt_speed ]]; then
+            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_set_alt_speed for Transmission" >> $path_log
+            transmission-set-alt-speed
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-status
         ###### 🟠 🟠 🟠 PLEX 🟠 🟠 🟠
