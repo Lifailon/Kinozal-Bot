@@ -813,6 +813,118 @@ function qbittorrent-reannounce {
 # qbittorrent-reannounce "A72BD27A0CE265A3C7965392BC06C25EDD759214"
 # qbittorrent-reannounce "all"
 
+###################################### 📄📄📄 Trackers 📝📝📝 ######################################
+
+### 📄 Список трекеров используемых выбранным торрентом
+function qbittorrent-trackers {
+    hash=$1
+    qbittorrent-auth
+    endpoint_delete="api/v2/torrents/trackers"
+    curl -s "$QB_ADDR/$endpoint_delete" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$hash" | jq .
+}
+
+# qbittorrent-trackers "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+### 📕 Список Веб сидов используемых выбранным торрентом
+function qbittorrent-webseeds {
+    hash=$1
+    qbittorrent-auth
+    endpoint_delete="api/v2/torrents/webseeds"
+    curl -s "$QB_ADDR/$endpoint_delete" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$hash" | jq .
+}
+
+# qbittorrent-trackers "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+
+### 📝 Добавить торрент трекеры (POST)
+function qbittorrent-add-tracker {
+    hash=$1
+    trackers=$2
+    qbittorrent-auth
+    torrent_url=$1
+    endpoint_download="api/v2/torrents/addTrackers"
+    curl -s "$QB_ADDR/$endpoint_download" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$hash" \
+        --data "urls=$trackers" | jq .
+}
+
+# qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "udp://tracker.leechers-paradise.org:6969"
+# qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "udp://tracker.coppersurfer.tk:6969%0Audp://tracker.opentrackr.org:1337"
+
+# Функция формирования списка трекеров для добавления
+function tracker-list {
+    trackers_array=("$@")
+    trackers_list=""
+    for tracker in "${trackers_array[@]}"; do
+        if [ -n "$trackers_list" ]; then
+            trackers_list+="%0A"
+        fi
+        trackers_list+="$tracker"
+    done
+    echo "$trackers_list"
+}
+
+### Список трекеров из WebTorrent
+trackers_web_array=(
+    "udp://tracker.leechers-paradise.org:6969"
+    "udp://tracker.coppersurfer.tk:6969"
+    "udp://tracker.opentrackr.org:1337"
+    "udp://explodie.org:6969"
+    "udp://tracker.empire-js.us:1337"
+    "wss://tracker.btorrent.xyz"
+    "wss://tracker.openwebtorrent.com"
+)
+
+# qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "$(tracker-list "${trackers_web_array[@]}")"
+
+trackers_ru_array=(
+    "http://retracker.local/announce"
+    "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00"
+    "http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
+    "http://tr2.torrent4me.com/ann?uk=kCm7WcIM00"
+    "http://tr3.torrent4me.com/ann?uk=kCm7WcIM00"
+    "http://tr4.torrent4me.com/ann?uk=kCm7WcIM00"
+    "http://tr5.torrent4me.com/ann?uk=kCm7WcIM00"
+    "http://tr0.tor4me.info/ann?uk=kCm7WcIM00"
+    "http://tr1.tor4me.info/ann?uk=kCm7WcIM00"
+    "http://tr2.tor4me.info/ann?uk=kCm7WcIM00"
+    "http://tr3.tor4me.info/ann?uk=kCm7WcIM00"
+    "http://tr4.tor4me.info/ann?uk=kCm7WcIM00"
+    "http://tr5.tor4me.info/ann?uk=kCm7WcIM00"
+    "http://tr0.tor2me.info/ann?uk=kCm7WcIM00"
+    "http://tr1.tor2me.info/ann?uk=kCm7WcIM00"
+    "http://tr2.tor2me.info/ann?uk=kCm7WcIM00"
+    "http://tr3.tor2me.info/ann?uk=kCm7WcIM00"
+    "http://tr4.tor2me.info/ann?uk=kCm7WcIM00"
+    "http://tr5.tor2me.info/ann?uk=kCm7WcIM00"
+)
+
+# qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "$(tracker-list "${trackers_ru_array[@]}")"
+
+### ✂️ Удалить торрент трекеры
+function qbittorrent-remove-tracker {
+    hash=$1
+    trackers=$2
+    qbittorrent-auth
+    torrent_url=$1
+    endpoint_download="api/v2/torrents/removeTrackers"
+    curl -s "$QB_ADDR/$endpoint_download" \
+        -b $path_qb_cookies \
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$hash" \
+        --data "urls=$trackers" | jq .
+}
+
+# qbittorrent-remove-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "wss://tracker.openwebtorrent.com"
+# qbittorrent-remove-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00|http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
+
 ##################################### 🧲🧲🧲 Info hash 🧲🧲🧲 #####################################
 
 ### Добавить торрент файл по хэш сумме
@@ -871,12 +983,14 @@ function qbittorrent-rename-torrent {
     torrent_hash=$1
     new_name_torrent=$2
     qbittorrent-auth
-    endpoint="api/v2/torrents/trackers"
+    endpoint="api/v2/torrents/rename"
     curl "$QB_ADDR/$endpoint" \
         -b $path_qb_cookies \
-        --header "Referer: $QB_ADDR" | jq .
+        --header "Referer: $QB_ADDR" \
+        --data "hash=$torrent_hash" \
+        --data "deleteFiles=$delete_type" \
+        --data "name=$new_name_torrent"
 }
-
 # qbittorrent-rename-torrent "23a29deb70f2d38a462575f81bb6d79ca5415673" "Rick"
 
 ### Переименовать торрент файл или директорию (POST)
@@ -922,7 +1036,7 @@ function qbittorrent-relocation {
 # qbittorrent-relocation "A72BD27A0CE265A3C7965392BC06C25EDD759214" "E:/Transmission"
 
 ### Список всех уникальных трекеров используемых торрентами
-function qbittorrent-tracker-list {
+function qbittorrent-all-trackers {
     qbittorrent-auth
     endpoint="api/v2/torrents/info"
     hash_list=$(curl -s "$QB_ADDR/$endpoint" \
@@ -938,7 +1052,7 @@ function qbittorrent-tracker-list {
     echo "$tracker_list" | grep . | sort | uniq
 }
 
-# qbittorrent-tracker-list
+# qbittorrent-all-trackers
 
 ### RSS
 ### Получить список добавленных новостных лент и их содержимое (true), которые слушает клиент
@@ -1073,6 +1187,14 @@ function qbittorrent-clear {
 function magnet-uri {
     info_hash=$1
     trackers=(
+        "udp://tracker.leechers-paradise.org:6969"
+        "udp://tracker.coppersurfer.tk:6969"
+        "udp://tracker.opentrackr.org:1337"
+        "udp://explodie.org:6969"
+        "udp://tracker.empire-js.us:1337"
+        "wss://tracker.btorrent.xyz"
+        "wss://tracker.openwebtorrent.com"
+        "http://retracker.local/announce"
         "http://tr0.torrent4me.com/ann?uk=kCm7WcIM00"
         "http://tr1.torrent4me.com/ann?uk=kCm7WcIM00"
         "http://tr2.torrent4me.com/ann?uk=kCm7WcIM00"
@@ -1091,9 +1213,6 @@ function magnet-uri {
         "http://tr3.tor2me.info/ann?uk=kCm7WcIM00"
         "http://tr4.tor2me.info/ann?uk=kCm7WcIM00"
         "http://tr5.tor2me.info/ann?uk=kCm7WcIM00"
-        "http://retracker.local/announce"
-        "wss://tracker.openwebtorrent.com"
-        "wss://tracker.openwebtorrent.com"
     )
     magnet="magnet:?xt=urn:btih:$info_hash"
     for tracker in "${trackers[@]}"; do
