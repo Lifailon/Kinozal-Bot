@@ -592,7 +592,7 @@ function qbittorrent-data {
     data="🐸 Список добавленных торрентов \n"
     data+="*Свободного места на диске*: $free_space_disk Гб \n"
     data+="*Путь сохранения (по умолчанию):* $save_path_default \n"
-    data+="*Лимит скорости:* $qb_limit_down_mb ⬇️ $qb_limit_upload_mb ⬆️ МБайт/c \n"
+    data+="*Текущий лимит скорости:* $qb_limit_down_mb ⬇️ $qb_limit_upload_mb ⬆️ МБайт/c \n"
     data+="🐢 *Ограничения скорости:* $qb_limit_mode_text \n"
     data+="*Обновлено:* $(date '+%H:%M:%S')"
     echo -e "$data"
@@ -950,17 +950,19 @@ trackers_ru_array=(
     "http://bt01.nnm-club.cc:2710/announce"
     "http://bt02.nnm-club.cc:2710/announce"
     "udp://opentor.net:6969"
+    "udp://open.stealth.si:80/announce"
+    "udp://exodus.desync.com:6969/announce"
     "http://tracker.grepler.com:6969/announce"
     "udp://tracker.dler.com:6969/announce"
-    "http://h4.trakx.nibba.trade:80/announce"
-    "udp://open.stealth.si:80/announce"
     "udp://tracker.bitsearch.to:1337/announce"
-    "udp://exodus.desync.com:6969/announce"
+    "http://h1.trakx.nibba.trade:80/announce"
+    "http://h2.trakx.nibba.trade:80/announce"
+    "http://h3.trakx.nibba.trade:80/announce"
+    "http://h4.trakx.nibba.trade:80/announce"
+    "http://h5.trakx.nibba.trade:80/announce"
 )
 
 # qbittorrent-add-tracker "A72BD27A0CE265A3C7965392BC06C25EDD759214" "$(tracker-list "${trackers_ru_array[@]}")"
-
-#-----------------------------------------------------------------------------------------------------
 
 ### ✂️ Удалить торрент трекеры
 function qbittorrent-remove-tracker {
@@ -997,6 +999,8 @@ function qbittorrent-all-trackers {
 }
 
 # qbittorrent-all-trackers
+
+#-----------------------------------------------------------------------------------------------------
 
 ### Переименовать торрент раздачу (которая отображается в клиенте)
 function qbittorrent-rename-torrent {
@@ -1558,12 +1562,22 @@ function transmission-tg-status {
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     data="🔲 Список добавленных торрентов \n"
-    tans_alt_speed=$(transmission-get-alt-speed)
+    free_space_disk=$(
+        transmission-info | jq -r '."download-dir-free-space" / 1024 / 1024 / 1024 | round'
+    )
+    save_path_default=$(transmission-info | jq -r '."download-dir"')
+    save_path_default=$(transmission-info | jq -r '."download-dir"')
+    qb_limit_down_kb=$(transmission-info | jq -r '."alt-speed-down"')
+    qb_limit_upload_kb=$(transmission-info | jq -r '."alt-speed-up"')
+    tans_alt_speed=$(transmission-info | jq '."alt-speed-enabled"')
     if [[ $tans_alt_speed == true ]]; then
         tans_alt_speed_text="Включены"
     else
         tans_alt_speed_text="Отключены"
     fi
+    data+="*Свободного места на диске*: $free_space_disk Гб \n"
+    data+="*Путь сохранения (по умолчанию):* $save_path_default \n"
+    data+="*Альтернативные лимиты скорости:* $qb_limit_down_kb ⬇️ $qb_limit_upload_kb ⬆️ КБайт/c \n"
     data+="🐢 *Ограничения скорости:* $tans_alt_speed_text \n"
     data+="*Обновлено:* $(date '+%H:%M:%S')"
     if [[ $message_id_temp != "null" ]]; then
@@ -1779,7 +1793,7 @@ function transmission-add-file {
 
 # transmission-add-file "$path/1904445-Полиция_Токио_(1_сезон:_1-8_серии_из_8).torrent"
 
-function transmission-get-alt-speed {
+function transmission-info {
     endpoint="transmission/rpc"
     request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
     session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
@@ -1789,17 +1803,18 @@ function transmission-get-alt-speed {
         -H "Content-Type: application/json" \
         -d '{
             "method": "session-get"
-        }' | jq '.arguments."alt-speed-enabled"'
+        }' | jq .arguments
 }
 
-# transmission-get-alt-speed
+# transmission-info | jq .
+# transmission-info | jq '."alt-speed-enabled"'
 
 function transmission-set-alt-speed {
     endpoint="transmission/rpc"
     request=$(curl -s -X POST -u "$TRANS_USER:$TRANS_PASS" "$TRANS_ADDR/$endpoint")
     session_id=$(echo $request | sed -r "s/.+Id: //g; s/<.+//")
     # Забрать текущий статус
-    current_alt_speed=$(transmission-get-alt-speed)
+    current_alt_speed=$(transmission-info | jq '."alt-speed-enabled"')
     # Поменять статус
     if [[ $current_alt_speed == "true" ]]; then
         status_alt_speed="false"
@@ -3082,11 +3097,13 @@ function tmdb-tg-season-episodes {
     keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
     keyboard+="[{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
-    data="Список серий в $season_number сезоне:"
+    data="Список серий в $season_number сезоне \n"
+    data+="*Оценка:* $(echo $tmdb_data | jq .vote_average) \n"
+    data+="*Постер:* https://image.tmdb.org/t/p/w500/$(echo $tmdb_data | jq -r .poster_path)"
     if [[ $message_id_temp != "null" ]]; then
-        edit-keyboard "$data" "$CHAT" "$keyboard" "$message_id_temp"
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
     else
-        send-keyboard "$data" "$CHAT" "$keyboard"
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
     fi
 }
 
@@ -3127,7 +3144,8 @@ function tmdb-tg-select-episode {
     data+="*Дата выхода:* $(echo $tmdb_data | jq -r .air_date | awk -F - '{print $3"."$2"."$1}') \n"
     data+="*Продолжительность:* $(echo $tmdb_data | jq -r .runtime) \n"
     data+="*Оценка (голосов):* $(echo $tmdb_data | jq -r .vote_average) ($(echo $tmdb_data | jq -r .vote_count)) \n"
-    data+="*Описание:* $(echo $tmdb_data | jq -r .overview)"
+    data+="*Описание:* $(echo $tmdb_data | jq -r .overview) \n"
+    data+="*Фрагмент:* https://image.tmdb.org/t/p/w500/$(echo $tmdb_data | jq -r .still_path)"
     actor_id_array=$(echo $tmdb_data | jq .guest_stars[].id)
     keyboard='{"inline_keyboard":['
     for a in ${actor_id_array[@]}; do

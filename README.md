@@ -18,9 +18,13 @@ Telegram бот, который позволяет автоматизирова�
 
 С помощью бота вы получите привычный и удобный интерфейс для взаимодействия с торрент трекером [Кинозал](https://kinozal.tv), а также возможность управлять торрент клиентом [qBittorrent](https://github.com/qbittorrent/qBittorrent) или [Transmission](https://github.com/transmission/transmission) на вашем компьютере, находясь удаленно от дома. В отличии от других приложений, предназначенных для удаленного управления торрент клиентами, **вам не нужно находиться в той же локальной сети** или использовать VPN.
 
-📚 Статья на Habr: [Telegram бот для доставки torrent контента с телефона до телевизора](https://habr.com/ru/articles/782028).
-
 На базе бота реализован новостной канала 📢 [Kinozal-News](https://t.me/kinozal_news), который генерирует посты на основе новых публикаций в торрент трекере **[Кинозал](https://kinozal.tv)** с фильтрацией по **рейтингу (7.0+)** и **году выхода (2023+)**. Каждый пост содержит краткую информацию о раздаче (год выхода, страна производства, рейтинг, качество и перевод), а также `#хештеги` по жанру для фильтрации контента на канале и кнопки с ссылками описания фильма или сериала в базах данных о кинематографе [Кинопоиск](https://www.kinopoisk.ru) и [IMDb](https://www.imdb.com), бесплатный онлайн просмотр через плееры ▶️ [Kinobox](https://kinobox.tv) и 🧲 [магнитные ссылки](https://en.wikipedia.org/wiki/Magnet_URI_scheme) для прямой загрузки содержимого раздачи в вашем торрент клиенте по умолчанию (применимо как для bittorrent-клиентов на телефоне, так и Windows или Linux).
+
+### 📝 Статьи на Хабр:
+
+- [Telegram бот для доставки торрент контента с телефона до телевизора](https://habr.com/ru/articles/782028).
+
+- [Telegram бот для управления торрент клиентом и интеграция с трекером](https://habr.com/ru/articles/826774).
 
 ### 💁‍♂️ Как это работает?
 
@@ -540,9 +544,9 @@ journalctl -fu kinozal-bot
 
 ## Другие проекты:
 
-- ✨ [TorAPI](https://github.com/Lifailon/TorAPI) - неофициальный `API` (backend) для RuTracker, Kinozal, RuTor и NoNameClub для получения торрент-файлов и другой информации по названию фильма, сериалу или id.
+- ✨ [TorAPI](https://github.com/Lifailon/TorAPI) - неофициальный `API` (backend [Express.js](https://github.com/expressjs/express)) для RuTracker, Kinozal, RuTor и NoNameClub с целью получения торрент-файлов и другой информации по названию фильма, сериалу или id.
 
-- ❤️ [WebTorrent Desktop api](https://github.com/Lifailon/webtorrent-desktop-api) - ответвление (fork) оригинальной версии [WebTorrent Desktop](https://github.com/webtorrent/webtorrent-desktop) , в котором добавлен механизм удаленного управления через `REST API` на базе [Express Framework](https://github.com/expressjs/express).
+- ❤️ [WebTorrent Desktop api](https://github.com/Lifailon/webtorrent-desktop-api) - форк [WebTorrent Desktop](https://github.com/webtorrent/webtorrent-desktop) клиента, в котором добавлен механизм удаленного управления через `REST API` на базе [Express Framework](https://github.com/expressjs/express).
 
 - 🎞️ [Open Kinopoisk Chrome Extension](https://github.com/Lifailon/OpenKinopoisk) - расширение, которое добавляет кнопки на сайт Кинопоиск для поиска фильмов и сериалов в открытых источниках.
 
