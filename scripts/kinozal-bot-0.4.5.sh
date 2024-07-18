@@ -5048,9 +5048,11 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                         name=$(printf "%s\n" "${html[@]}" | grep "<title>" | sed -r 's/<title>//; s/ \/.+//' | sed -r 's/`|_|\"|&|;|quot//g')
                         rating_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+floatright">//; s/<.+//' | awk '{print $1}')
                         rating_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r 's/.+floatright">//; s/<.+//')
-                        year=$(printf "%s\n" "${html[@]}" | grep -E -B 1 "class=lnks_tobrs" | head -n 1 | sed -r 's/.+<\/b> //; s/<.+//')
                         url_kp=$(printf "%s\n" "${html[@]}" | grep kinopoisk | sed -r 's/.+href="//; s/" target=.+//')
                         url_imdb=$(printf "%s\n" "${html[@]}" | grep imdb | sed -r "s/.+href=\"//g; s/\".+//g")
+                        year=$(printf "%s\n" "${html[@]}" | grep -E -B 1 "class=lnks_tobrs" | head -n 1 | sed -r 's/.+<\/b> //; s/<.+//')
+                        region=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 2 | tail -n 1 | sed -r 's/`|_|\"|&|;|quot//g; s/ё/е/g')
+                        region_test=$(echo $region | grep "Россия")
                         ### Фильтрация постов по рейтингу
                         if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
                             ((count_skip++))
@@ -5061,9 +5063,14 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             ((count_skip++))
                             echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (year: $year)" >> $path_log
                             continue
+                        ### Фильтрация постов по региону
+                        elif [[ $region_test ]]; then
+                            ((count_skip++))
+                            echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            continue
                         else
                             ((count_post++))
-                            echo "[OK]   $(date '+%H:%M:%S'): + Post: $a (year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            echo "[OK]   $(date '+%H:%M:%S'): + Post: $a (year: $year, rating kp: $rating_kp, imdb: $rating_imdb and region: $region)" >> $path_log
                             data=$(read-html "$html" "$a" "Channel")
                             keyboard='{"inline_keyboard":['
                             ### Отдаем ссылки на 🟠 Кинопоиск, 🟡 IMDb и 🟣 Кинозал, если они были получены
