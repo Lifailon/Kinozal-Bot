@@ -227,21 +227,21 @@
 ###############################################################################
 
 ### Параметры управления:
-# bash kinozal-bot-0.4.4.sh start bot                       # запустить только бот (1 поток)
-# bash kinozal-bot-0.4.4.sh start all                       # запустить бот и канал (2 потока)
-# bash kinozal-bot-0.4.4.sh start <bot/all> service         # запустить дополнительный поток вывода логов для службы systemd
-# bash kinozal-bot-0.4.4.sh start <bot/all> docker          # запустить в режиме вывода логов для работы в контейнере Docker
-# bash kinozal-bot-0.4.4.sh status                          # статус работы сервера и количство активных процессов
-# bash kinozal-bot-0.4.4.sh status proc                     # вывести список активных процессов
-# bash kinozal-bot-0.4.4.sh stop                            # остановить сервер (остановить все процессы)
-# bash kinozal-bot-0.4.4.sh version                         # Проверить подключение ко всем сервисам и получить их текущую версию
-# bash kinozal-bot-0.4.4.sh log bot                         # вывести журнал работы бота в реальном времени
-# bash kinozal-bot-0.4.4.sh log bot 50                      # вывести 50 записей журнала
-# bash kinozal-bot-0.4.4.sh log qb                          # вывести журнал работы с клиента qBittorrent (critical и warning)
-# bash kinozal-bot-0.4.4.sh log qb all                      # вывести все записи журнала qBittorrent
-# bash kinozal-bot-0.4.4.sh log plex server                 # вывести журнал работы сервер plex (error и warning)
-# bash kinozal-bot-0.4.4.sh log plex system                 # вывести системный журнал plex (error и warning)
-# bash kinozal-bot-0.4.4.sh log plex <server/system> all    # вывести все записи журнала plex
+# bash kinozal-bot.sh start bot                       # запустить только бот (1 поток)
+# bash kinozal-bot.sh start all                       # запустить бот и канал (2 потока)
+# bash kinozal-bot.sh start <bot/all> service         # запустить дополнительный поток вывода логов для службы systemd
+# bash kinozal-bot.sh start <bot/all> docker          # запустить в режиме вывода логов для работы в контейнере Docker
+# bash kinozal-bot.sh status                          # статус работы сервера и количство активных процессов
+# bash kinozal-bot.sh status proc                     # вывести список активных процессов
+# bash kinozal-bot.sh stop                            # остановить сервер (остановить все процессы)
+# bash kinozal-bot.sh version                         # Проверить подключение ко всем сервисам и получить их текущую версию
+# bash kinozal-bot.sh log bot                         # вывести журнал работы бота в реальном времени
+# bash kinozal-bot.sh log bot 50                      # вывести 50 записей журнала
+# bash kinozal-bot.sh log qb                          # вывести журнал работы с клиента qBittorrent (critical и warning)
+# bash kinozal-bot.sh log qb all                      # вывести все записи журнала qBittorrent
+# bash kinozal-bot.sh log plex server                 # вывести журнал работы сервер plex (error и warning)
+# bash kinozal-bot.sh log plex system                 # вывести системный журнал plex (error и warning)
+# bash kinozal-bot.sh log plex <server/system> all    # вывести все записи журнала plex
 
 ###############################################################################
 
@@ -254,7 +254,7 @@
 # After=network.target
 # 
 # [Service]
-# ExecStart=/bin/bash "/home/lifailon/kinozal-web/kinozal-bot-0.4.5.sh" start bot service
+# ExecStart=/bin/bash "/home/lifailon/kinozal-web/kinozal-bot.sh" start bot service
 # ExecReload=/bin/kill -HUP $MAINPID
 # Restart=on-failure
 # Type=forking
@@ -280,10 +280,10 @@
 # FROM alpine:latest
 # WORKDIR /home/lifailon/kinozal-bot
 # RUN apk add --no-cache bash coreutils curl grep sed gawk jq
-# COPY kinozal-bot-0.4.5.sh .
+# COPY kinozal-bot.sh .
 # COPY kinozal-bot.conf .
-# RUN chmod +x kinozal-bot-0.4.5.sh
-# CMD ["bash", "-c", "./kinozal-bot-0.4.5.sh start bot docker"]
+# RUN chmod +x kinozal-bot.sh
+# CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]
 
 
 ### Собрать образ и запустить контейнер:

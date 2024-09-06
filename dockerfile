@@ -5,9 +5,9 @@ WORKDIR /home/lifailon/kinozal-bot
 # Установка зависимостей
 RUN apk add --no-cache bash coreutils curl grep sed gawk jq
 # Копируем скрипт и конфигурацию
-COPY kinozal-bot-0.4.5.sh .
+COPY kinozal-bot.sh .
 COPY kinozal-bot.conf .
 # Права на запуск скрипта
-RUN chmod +x kinozal-bot-0.4.5.sh
+RUN chmod +x kinozal-bot.sh
 # Запускаем потоки сервера и логируем вывод работы бота в консоль
-CMD ["bash", "-c", "./kinozal-bot-0.4.5.sh start bot docker"]
+CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]

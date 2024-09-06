@@ -156,7 +156,7 @@ bash --version
 GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)
 ```
 
-Для запуска бота необходимо загрузить скрипт `kinozal-bot-*.sh` последней версии и конфигурационный файл `kinozal-bot.conf`, который располагается рядом со скриптом.
+Для запуска бота необходимо загрузить скрипт `kinozal-bot.sh` и конфигурационный файл `kinozal-bot.conf`, который располагается рядом со скриптом.
 
 ```shell
 # Создаем директорию для скрипта и хранения сопутствующих файлов в процессе работы
@@ -165,7 +165,7 @@ mkdir kinozal-bot
 # Клонируем репозиторий
 git clone https://github.com/Lifailon/Kinozal-Bot
 # Копируем скрипт и файл конфигурации
-cp Kinozal-Bot/scripts/kinozal-bot-0.4.5.sh kinozal-bot
+cp Kinozal-Bot/scripts/kinozal-bot.sh kinozal-bot
 cp Kinozal-Bot/scripts/kinozal-bot.conf kinozal-bot
 # Удаляем остальные файлы проекта
 rm -r Kinozal-Bot
@@ -183,6 +183,8 @@ cd kinozal-bot
 
 Для работы бота, необходимо подготовить свою домашнюю среду, все настройки подключения задаются в конфигурационном файле: 📑 **[kinozal-bot.conf](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/scripts/kinozal-bot.conf)**.
 
+> Для редактирования конфигурационного файла можете воспользоваться любым встроенным консольным редактором, например: `nano kinozal-bot.conf`.
+
 1. Зарегистрируйте аккаунт на сайте [Кинозал](https://kinozal.tv) и заполнить параметры конфигурации:
 
 `KZ_PROFILE="id_you_profile"` - идентификатор вашего профиля (используется для получения информации из профиля Кинозал) \
@@ -191,7 +193,7 @@ cd kinozal-bot
 
 2. Если у вас заблокирован доступ в Кинозал, вы можете воспользоваться VPN или Proxy сервером, через который бот сможет проксировать свои запросы.
 
-> Я использую **HandyCache** на системе Windows, рядом с которым запущена бесплатная версия **VPN Hotspot Shield** в режиме раздельного туннелирования (Split Tunneling) до сайта Кинозал и TMDB.
+Я использую **HandyCache (Proxy)** на системе Windows, рядом с которым запущена бесплатная версия **VPN Hotspot Shield в режиме Split Tunneling** до сайта Кинозал (в таком режиме не будет доступен сервис TMDB API), при котором трафик до указанного сайта проходит через VPN туннель и не затрагивает другие сервисы, тем самым не ограничивая загрузку торрентов на хостовой машине. Вы также можете настроить выделенную виртуальную машину для подобного стэка без необходимости использовать раздельное туннелирование.
 
 - 2.1. Настройка Proxy-сервера:
 
@@ -319,7 +321,7 @@ log_size_mbyte=10
 
 ```shell
 cd ~/kinozal-bot
-bash kinozal-bot-0.4.5.sh version
+bash kinozal-bot.sh version
 
 qBittorrent Client:  4.6.5 (api: 2.9.3)
 Transmission Client: 4.0.6 (38c164933e)
@@ -331,13 +333,13 @@ Plex Media Server:   1.40.0.7998-c29d4c0c8
 - Используйте интерпретатор **Bash** для запуска (**root** права не требуются):
 
 ```shell
-bash kinozal-bot-0.4.5.sh start bot
+bash kinozal-bot.sh start bot
 ```
 
 - Узнать статус работы и количество активных процессов:
 
 ```shell
-bash kinozal-bot-0.4.5.sh status
+bash kinozal-bot.sh status
 
 [INFO] 14:38:46: Server running. Count running process: 4
 ```
@@ -347,31 +349,31 @@ bash kinozal-bot-0.4.5.sh status
 Если настройки заданы правильно, вы можете отобразить журнал работы qBittorrent клиента и сервера Plex в своей консоли.
 
 ```shell
-bash kinozal-bot-0.4.5.sh log qb
-bash kinozal-bot-0.4.5.sh log qb all
+bash kinozal-bot.sh log qb
+bash kinozal-bot.sh log qb all
 ```
 
 - Отобразить журнал работы системы и сервера Plex:
 
 ```shell
-bash kinozal-bot-0.4.5.sh log plex system
-bash kinozal-bot-0.4.5.sh log plex system all
-bash kinozal-bot-0.4.5.sh log plex server
-bash kinozal-bot-0.4.5.sh log plex server all
+bash kinozal-bot.sh log plex system
+bash kinozal-bot.sh log plex system all
+bash kinozal-bot.sh log plex server
+bash kinozal-bot.sh log plex server all
 ```
 
 - Вывести журнал работы бота:
 
 ```shell
-bash kinozal-bot-0.4.5.sh log bot   
-bash kinozal-bot-0.4.5.sh log bot 50
+bash kinozal-bot.sh log bot   
+bash kinozal-bot.sh log bot 50
 ```
 
 - Остановка бота и всех его дочерних процессов:
 
 ```shell
-bash kinozal-bot-0.4.5.sh stop
-bash kinozal-bot-0.4.5.sh status
+bash kinozal-bot.sh stop
+bash kinozal-bot.sh status
 
 [INFO] 14:40:16: Server not running. Count running process: 0
 ```
@@ -397,7 +399,7 @@ Description=Telegram bot for kinozal.tv torrent tracker, remote managment qBitto
 After=network.target
 
 [Service]
-ExecStart=/bin/bash "/home/lifailon/kinozal-bot/kinozal-bot-0.4.5.sh" start bot service
+ExecStart=/bin/bash "/home/lifailon/kinozal-bot/kinozal-bot.sh" start bot service
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 Type=forking
@@ -445,12 +447,12 @@ WORKDIR /home/lifailon/kinozal-bot
 # Установка зависимостей
 RUN apk add --no-cache bash coreutils curl grep sed gawk jq
 # Копируем скрипт и конфигурацию
-COPY kinozal-bot-0.4.5.sh .
+COPY kinozal-bot.sh .
 COPY kinozal-bot.conf .
 # Права на запуск скрипта
-RUN chmod +x kinozal-bot-0.4.5.sh
+RUN chmod +x kinozal-bot.sh
 # Запускаем потоки сервера и логируем вывод работы бота в консоль
-CMD ["bash", "-c", "./kinozal-bot-0.4.5.sh start bot docker"]
+CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]
 ```
 
 > Рабочая директория (**WORKDIR**) используется как в конфигурации (`$path`) для локального запуска, по этому **измените его на свой**.
@@ -470,7 +472,7 @@ docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && do
 
 Размер образа составляет 20 МБайт. Вы можете управлять запуском контейнар с помощью команд: `docker <start/restart/stop> kinozal-bot`. Для просмотра журналов контейнера используется команда: `docker logs kinozal-bot --tail 100`.
 
-Для удобства мониторинга через веб-интерфейс, рекомендуется настроить [Dozzle](https://github.com/amir20/dozzle).
+Для удобного мониторинга контейнеров через веб-интерфейс, можете воспользоваться [Dozzle](https://github.com/amir20/dozzle):
 
 ![Image alt](image/settings/docker-dozzle.jpg)
 
