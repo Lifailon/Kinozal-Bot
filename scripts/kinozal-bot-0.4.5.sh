@@ -229,7 +229,8 @@
 ### Параметры управления:
 # bash kinozal-bot-0.4.4.sh start bot                       # запустить только бот (1 поток)
 # bash kinozal-bot-0.4.4.sh start all                       # запустить бот и канал (2 потока)
-# bash kinozal-bot-0.4.4.sh start <bot/all> log             # запустить дополнительный поток вывода логов для службы systemd
+# bash kinozal-bot-0.4.4.sh start <bot/all> service         # запустить дополнительный поток вывода логов для службы systemd
+# bash kinozal-bot-0.4.4.sh start <bot/all> docker          # запустить в режиме вывода логов для работы в контейнере Docker
 # bash kinozal-bot-0.4.4.sh status                          # статус работы сервера и количство активных процессов
 # bash kinozal-bot-0.4.4.sh status proc                     # вывести список активных процессов
 # bash kinozal-bot-0.4.4.sh stop                            # остановить сервер (остановить все процессы)
@@ -244,7 +245,7 @@
 
 ###############################################################################
 
-### Служба для управления ботом
+### Служба systemd для управления ботом
 
 ### nano /etc/systemd/system/kinozal-bot.service
 
@@ -253,7 +254,7 @@
 # After=network.target
 # 
 # [Service]
-# ExecStart=/bin/bash "/home/lifailon/kinozal-web/kinozal-bot-0.4.5.sh" start all log
+# ExecStart=/bin/bash "/home/lifailon/kinozal-web/kinozal-bot-0.4.5.sh" start bot service
 # ExecReload=/bin/kill -HUP $MAINPID
 # Restart=on-failure
 # Type=forking
@@ -268,6 +269,34 @@
 ### systemctl restart kinozal-bot   # перезапустить бота
 ### journalctl -fu kinozal-bot      # вывести журнал работы бота в реальном времени
 ### journalctl -eu kinozal-bot      # вывесли журнал работы бота с конца
+
+###############################################################################
+
+### Запуск в контейнере Docker
+
+### cd kinozal-bot
+### nano dockerfile
+
+# FROM alpine:latest
+# WORKDIR /home/lifailon/kinozal-bot
+# RUN apk add --no-cache bash coreutils curl grep sed gawk jq
+# COPY kinozal-bot-0.4.5.sh .
+# COPY kinozal-bot.conf .
+# RUN chmod +x kinozal-bot-0.4.5.sh
+# CMD ["bash", "-c", "./kinozal-bot-0.4.5.sh start bot docker"]
+
+
+### Собрать образ и запустить контейнер:
+# docker build -t kinozal-bot .
+# docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
+
+### docker start kinozal-bot             # запустить бота
+### docker stop kinozal-bot              # остановить бота
+### docker restart kinozal-bot           # перезапустить бота
+### docker logs kinozal-bot --tail 100   # вывести журнал работы бота с конца
+
+### Удалить контейнер и образ:
+# docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
 
 ###############################################################################
 
@@ -4022,8 +4051,12 @@ if [[ $1 == "start" ]]; then
         echo "Available parameters: bot and all"
         exit 0
     fi
-    if [[ $3 == "log" ]]; then
+    ### 🐧 Режим запуска с дополнительным потоком логирования для Unit Systemd
+    if [[ $3 == "service" ]]; then
         tail -f $path_log &
+    ### 🐳 Режим запуска с выводом логов в консоль для работоспособности контейнера Docker
+    elif [[ $3 == "docker" ]]; then
+        docker=true
     fi
 else
     process_name="kinozal"
@@ -5133,5 +5166,10 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
             sleep $TIMEOUT_SEC_ERROR
         fi
     done &
+fi
+
+### 🐳 Docker
+if [[ $docker == true ]]; then
+    tail -f $path_log
 fi
 ###############################################################################
