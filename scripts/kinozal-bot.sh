@@ -243,6 +243,9 @@
 # bash kinozal-bot.sh log plex system                 # вывести системный журнал plex (error и warning)
 # bash kinozal-bot.sh log plex <server/system> all    # вывести все записи журнала plex
 
+### Быстрый перезапуск бота для отладки:
+# bash kinozal-bot.sh stop && bash kinozal-bot.sh start bot && bash kinozal-bot.sh log bot
+
 ###############################################################################
 
 ### Служба systemd для управления ботом
@@ -284,7 +287,6 @@
 # COPY kinozal-bot.conf .
 # RUN chmod +x kinozal-bot.sh
 # CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]
-
 
 ### Собрать образ и запустить контейнер:
 # docker build -t kinozal-bot .
@@ -3473,7 +3475,12 @@ function menu-info {
     qb_prop_peers_total=$(echo $qb_prop | jq -r ".peers_total")
     qb_prop_download_speed_avg=$(echo $qb_prop | jq -r ".download_speed_avg")
     qb_name=$(echo $qb_name | sed -r "s/_/ /g")
-    data=$(echo "*Название:* $qb_name \n")
+    # Удалить расширение из названия файла для поиска в plex (/find)
+    qb_name_replace=$(echo "$qb_name" | sed -E 's/\.(mkv|avi|mp.*)$//')
+    #qb_name_replace=${qb_name%.mkv}
+    #qb_name_replace=${qb_name_replace%.avi}
+    #qb_name_replace=${qb_name_replace%.mp*}
+    data=$(echo "*Название:* $qb_name_replace \n")
     data+=$(echo "*Статус загрузки:* $qb_status_emoji ($qb_status) \n")
     data+=$(echo "*Прогресс:* $qb_progress \n")
     data+=$(echo "*Размер:* $qb_size ($qb_size_total)\n")
@@ -3492,8 +3499,10 @@ function menu-info {
     data+=$(echo "*Описание:* $qb_prop_comment \n")
     data+=$(echo "*Инфо хеш:* \`$qb_hash\`")
     #data+=$(echo "*Путь:* $qb_path")
-    # Удалить расширение для поиска в plex (/find)
-    qb_name_replace=$(echo $qb_name | sed -r "s/\.mkv$|\.avi$|\.mp4$//g")
+    # Проверить длинну символов в название (#), которая не должна превышать 50 символов для callback
+    if [[ ${#qb_name_replace} -gt 50 ]]; then
+        qb_name_replace=""
+    fi
     keyboard="{
         \"inline_keyboard\":[
             [{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/status\"},
@@ -5140,7 +5149,11 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             ######################### ▶️▶️▶️ Kinomix © Kinobox ▶️▶️▶️ #########################
                             ### Source: https://kinobox.tv
                             kp_id=$(echo $url_kp | sed -r "s/.+\///g")
-                            url_km="https://kinomix.web.app/#$kp_id"
+                            if [[ -z $kp_id ]]; then
+                                url_km="https://kinomix.web.app/#$name"
+                            else
+                                url_km="https://kinomix.web.app/#$kp_id"
+                            fi
                             keyboard+="{\"text\":\"▶️ Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
                             send-keyboard "$encoded_data" "$TG_CHANNEL" "$keyboard"
