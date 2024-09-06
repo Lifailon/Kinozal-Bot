@@ -18,6 +18,8 @@ Telegram бот, который позволяет автоматизирова�
 
 С помощью бота вы получите привычный и удобный интерфейс для взаимодействия с торрент трекером [Кинозал](https://kinozal.tv), а также возможность управлять торрент клиентом [qBittorrent](https://github.com/qbittorrent/qBittorrent) или [Transmission](https://github.com/transmission/transmission) на вашем компьютере, находясь удаленно от дома. В отличии от других приложений, предназначенных для удаленного управления торрент клиентами, **вам не нужно находиться в той же локальной сети** или использовать VPN.
 
+Вы можете настроить и управлять любым торрент клиентом независимо от настройки или работоспособности трекера Кинозал, или наоборот, использовать интерфейс Кинозал для поиска раздач и выгрузки торрент файлов в Telegram. После подготовки конфигурационного файла, вы сможете запустить бота как службу systemd или в контейнере Docker.
+
 На базе бота реализован новостной канала 📢 [Kinozal-News](https://t.me/kinozal_news), который генерирует посты на основе новых публикаций в торрент трекере **[Кинозал](https://kinozal.tv)** с фильтрацией по **рейтингу (7.0+)** и **году выхода (2023+)**. Каждый пост содержит краткую информацию о раздаче (год выхода, страна производства, рейтинг, качество и перевод), а также `#хештеги` по жанру для фильтрации контента на канале и кнопки с ссылками описания фильма или сериала в базах данных о кинематографе [Кинопоиск](https://www.kinopoisk.ru) и [IMDb](https://www.imdb.com), бесплатный онлайн просмотр через плееры ▶️ [Kinobox](https://kinobox.tv) и 🧲 [магнитные ссылки](https://en.wikipedia.org/wiki/Magnet_URI_scheme) для прямой загрузки содержимого раздачи в вашем торрент клиенте по умолчанию (применимо как для bittorrent-клиентов на телефоне, так и Windows или Linux).
 
 ### 📝 Статьи на Хабр:
@@ -62,7 +64,7 @@ Telegram бот, который позволяет автоматизирова�
 - [jqlang](https://github.com/jqlang/jq) для обработки данных в формате *json*;
 - Клиентское приложение **VPN** через **Proxy-сервер** или обратный прокси сервер (например, [Reverse Proxy .NET](https://github.com/Lifailon/rpnet)) для доступа в Кинозал и TMDB (*опционально*).
 
-Серверная часть написана на чистом [Bash](https://ru.wikipedia.org/wiki/Bash) и использует стандартный набор unix-утилит. Вы можете настроить и управлять любым торрент клиентом независимо от настройки или работоспособности трекера Кинозал, или наоборот, использовать интерфейс Кинозал для поиска раздач и выгрузки торрент файлов в Telegram.
+Серверная часть написана на чистом [Bash](https://ru.wikipedia.org/wiki/Bash) и использует стандартный набор unix-утилит (curl, grep, sed, awk и другие).
 
 ---
 
@@ -71,7 +73,7 @@ Telegram бот, который позволяет автоматизирова�
 - Загрузка раздачи из канала по 🧲 магнитной ссылки (переадресация происходит автоматически в торрент клиент по умолчанию):
 
 <h1 align="center">
-<img src="image/examples/magnet-download.jpg" width="400"/></a> <img src="image/examples/magnet-redirect.jpg" width="400"></a>
+    <img src="image/examples/magnet-download.jpg" width="400"/></a> <img src="image/examples/magnet-redirect.jpg" width="400"></a>
 </h1>
 
 💡 Так как параметр url в [keyboard Telegram API](https://core.telegram.org/bots/api#inlinekeyboardmarkup) не поддерживает magnet-ссылки, был реалезован механизм переадресации через [magnet2url](https://github.com/Lifailon/magnet2url), который также добавляет в ссылку список актуальных серверов торрент трекеров, используемых в Кинозал, а также WebTorrent, RuTracker, NoNameClub и RuTor.
@@ -79,13 +81,13 @@ Telegram бот, который позволяет автоматизирова�
 Быстрее всего (в течение 1-2 секунд с момента перехода по ссылке) метаданные загружает локальный клиент [LibreTorrent](https://github.com/proninyaroslav/libretorrent) на Android и клиент [WebTorrent Desktop](https://github.com/webtorrent/webtorrent-desktop) или [WebTorrent Desktop api](https://github.com/Lifailon/webtorrent-desktop-api) на Windows, в то время как qBittorrent и Transmission может понадобиться до нескольки минут, а также загрузка может происходить медленнее. Для решения такой проблемы, может помочь запрос большего количества участников у торрент трекера (повторно анонсировать, доступно для клиента qBittorrent).
 
 <h1 align="center">
-<img src="image/examples/kinozal-news-webtorrent.jpg"/></a>
+    <img src="image/examples/kinozal-news-webtorrent.jpg"/></a>
 </h1>
 
 - Демонстрация работы поиска и добавление на загрузку в qBittorrent (**версия 0.4.4**):
 
 <h1 align="center">
-<img src="image/examples/search-and-download.gif"/></a>
+    <img src="image/examples/search-and-download.gif"/></a>
 </h1>
 
 - 🔍 Поиск в торрент трекере c фильтрацией по году выхода и формату разрешения:
@@ -93,37 +95,37 @@ Telegram бот, который позволяет автоматизирова�
 > Скорость получения информации из трекера Кинозал на прямую зависит от скорости работы вашего интернета и/или VPN соединения.
 
 <h1 align="center">
-<img src="image/examples/search-all.jpg" width="400"/></a> <img src="image/examples/search-filter.jpg" width="400"></a>
+    <img src="image/examples/search-all.jpg" width="400"/></a> <img src="image/examples/search-filter.jpg" width="400"></a>
 </h1>
 
 - 👤 Профиль Кинозал, список торрент файлов на сервере и выгрузка всех торрент файлов (с полученными метаданными) в Telegram:
 
 <h1 align="center">
-<img src="image/examples/torrent-files-and-kinozal-profile.jpg" width="400"/></a> <img src="image/examples/torrent-files-send-telegram.jpg" width="400"></a>
+    <img src="image/examples/torrent-files-and-kinozal-profile.jpg" width="400"/></a> <img src="image/examples/torrent-files-send-telegram.jpg" width="400"></a>
 </h1>
 
 - 🍿 Получение информации о выбранном сериале в Кинозал (стандартный вывод для всех раздач, из данного интерфейса происходит управление выбранным торрент файлом), а также пример управления загрузкой в клиенте 🔳 Transmission:
 
 <h1 align="center">
-<img src="image/examples/kinozal-info.jpg" width="400"/></a> <img src="image/examples/transmission.jpg" width="400"></a>
+    <img src="image/examples/kinozal-info.jpg" width="400"/></a> <img src="image/examples/transmission.jpg" width="400"></a>
 </h1>
 
 - 👥 Поиск по актеру в трекере Кинозал и список фильмов с его участием, а также получение дополнительной информации из базы 💙 TMDB и даты выхода всех сезонов и серий:
 
 <h1 align="center">
-<img src="image/examples/search-actor.jpg" width="400"/></a> <img src="image/examples/tmdb-info.jpg" width="400"></a>
+    <img src="image/examples/search-actor.jpg" width="400"/></a> <img src="image/examples/tmdb-info.jpg" width="400"></a>
 </h1>
 
 - 🐸 Список и статус всех активных торрентов, добавленных в клиент qBittorrent, а также получение дополнительной информации и управление загрукой файлов:
 
 <h1 align="center">
-<img src="image/examples/qbittorrent-status.jpg" width="400"/></a> <img src="image/examples/qbittorrent-files.jpg" width="400"></a>
+    <img src="image/examples/qbittorrent-status.jpg" width="400"/></a> <img src="image/examples/qbittorrent-files.jpg" width="400"></a>
 </h1>
 
 - 🟠 Список секций и синхронизация контента, а также просмотр содержимого файлов на сервере Plex:
 
 <h1 align="center">
-<img src="image/examples/plex-sync.jpg" width="400"/></a> <img src="image/examples/plex-file-list.jpg" width="400"></a>
+    <img src="image/examples/plex-sync.jpg" width="400"/></a> <img src="image/examples/plex-file-list.jpg" width="400"></a>
 </h1>
 
 ---
@@ -190,7 +192,7 @@ KZ_ADDR="http://192.168.3.100:8443"
 - 4.1. Включите **Веб-интерфейс** в настройках приложения:
 
 <h1 align="center">
-<img src="image/settings/qbittorrent-settings.jpg" width="800"/></a>
+    <img src="image/settings/qbittorrent-settings.jpg" width="800"/></a>
 </h1>
 
 Укажите параметры подключения к клиенту:
@@ -204,13 +206,13 @@ KZ_ADDR="http://192.168.3.100:8443"
 💡 Это должна быть директория, которая будет добавлена на сервер Plex, что бы в дальнейшем можно было синхронизировать загруженный контент, используя бот.
 
 <h1 align="center">
-<img src="image/settings/qbittorrent-default-directory.jpg" width="800"/></a>
+    <img src="image/settings/qbittorrent-default-directory.jpg" width="800"/></a>
 </h1>
 
 5. [Установите](https://transmissionbt.com/download) и настройте Transmission для управления клиентом с помощью бота:
 
 <h1 align="center">
-<img src="image/settings/transmission-settings.jpg" width="800"/></a>
+    <img src="image/settings/transmission-settings.jpg" width="800"/></a>
 </h1>
 
 Укажите параметры подключения к клиенту:
@@ -262,32 +264,37 @@ log_size_mbyte=10
 
 💡 Все запросы к боту, а также его ответы логируются
 
-## 🐧 Запуск
+## 🚀 Запуск
 
-#### Зависимости
+- [Зависимости](#зависимости)
+- [Проверка подключения](#проверка-подключение)
+- [Управление](#управление)
+- [Служба](#-service)
+- [Docker](#-docker)
+
+### Зависимости
 
 Установите **[jq](https://github.com/jqlang/jq)**:
 
-```bash
+```shell
 apt install jq
 jq --version
-
 jq-1.6
 ```
 
 Для запуска бота [загрузите](https://github.com/Lifailon/Kinozal-Bot/tree/rsa/scripts) скрипт `kinozal-bot-*.sh` последней версии, и расположите предварительно настроенный конфигурационный файл **kinozal-bot.conf** рядом со скриптом.
 
-В примере используется директория `kinozal-bot` в корне домашнего каталога текущего пользователя, так выглядит состав файлов на рабочем экземпляре:
+В примере используется директория `kinozal-bot` в корне домашнего каталога текущего пользователя. Так выглядит состав файлов на рабочем экземпляре:
 
 <h1 align="center">
-<img src="image/settings/kinozal-bot-files.jpg" width="800"/></a>
+    <img src="image/settings/kinozal-bot-files.jpg" width="800"/></a>
 </h1>
 
-#### Проверка подключения
+### Проверка подключение
 
-Перед запуском, вы можете проверить подключение к сервисам, в случае успеха, вы получите текущую версию:
+Перед запуском, вы можете проверить подключение к сервисам, в случае успеха, вы получите текущую версию приложения:
 
-```bash
+```shell
 bash kinozal-bot/kinozal-bot-0.4.5.sh version
 
 qBittorrent Client:  4.6.5 (api: 2.9.3)
@@ -295,18 +302,18 @@ Transmission Client: 4.0.6 (38c164933e)
 Plex Media Server:   1.40.0.7998-c29d4c0c8
 ```
 
-#### Управление
+### Управление
 
-- Используйте интерпретатор 🐧 **Bash** для запуска (**root** права не требуются):
+- Используйте интерпретатор **Bash** для запуска (**root** права не требуются):
 
-```bash
+```shell
 cd ~/kinozal-bot
 bash kinozal-bot-0.4.5.sh start bot
 ```
 
 - Узнать статус работы и количество активных процессов:
 
-```bash
+```shell
 bash kinozal-bot-0.4.5.sh status
 
 [INFO] 14:38:46: Server running. Count running process: 4
@@ -316,14 +323,14 @@ bash kinozal-bot-0.4.5.sh status
 
 Если настройки заданы правильно, вы можете отобразить журнал работы qBittorrent клиента и сервера Plex в своей консоли.
 
-```bash
+```shell
 bash kinozal-bot-0.4.5.sh log qb
 bash kinozal-bot-0.4.5.sh log qb all
 ```
 
 - Отобразить журнал работы системы и сервера Plex:
 
-```bash
+```shell
 bash kinozal-bot-0.4.5.sh log plex system
 bash kinozal-bot-0.4.5.sh log plex system all
 bash kinozal-bot-0.4.5.sh log plex server
@@ -332,23 +339,23 @@ bash kinozal-bot-0.4.5.sh log plex server all
 
 - Вывести журнал работы бота:
 
-```bash
+```shell
 bash kinozal-bot-0.4.5.sh log bot   
 bash kinozal-bot-0.4.5.sh log bot 50
 ```
 
 - Остановка бота и всех его дочерних процессов:
 
-```bash
+```shell
 bash kinozal-bot-0.4.5.sh stop
 bash kinozal-bot-0.4.5.sh status
 
 [INFO] 14:40:16: Server not running. Count running process: 0
 ```
 
-## 🚀 Служба
+## 🐧 Service
 
-Если все настройки заданы и подключение проверено, можно запустить бота как службу **systemd**, что бы автоматизировать процесс запуска в случае перезагрузки системы или другого сбоя, а также передать поток логов в системный журнал.
+Если все настройки заданы и подключение проверено, можно запустить бота как службу (unit) **systemd**, что бы автоматизировать процесс запуска в случае перезагрузки системы, а также передать поток логов в системный журнал (удобно для удаленного мониторинга, например, через `rsyslog` в [graylog](https://github.com/Graylog2/graylog2-server)).
 
 - Создайте файл службы и откройте его в любом текстовом редакторе:
 
@@ -376,9 +383,9 @@ WantedBy=multi-user.target
 
 💡 Замените путь к скрипту сервера в параметре запуска `ExecStart` на свой.
 
-- Примените настройки, включите автозапуск и запустите бота:
+- Примените настройки, включите автозапуск и запустите службу:
 
-```bash
+```shell
 systemctl daemon-reload
 systemctl enable kinozal-bot
 systemctl start kinozal-bot
@@ -389,8 +396,53 @@ systemctl status kinozal-bot
 
 Для просмотра журнала работы бота, можете использовать утилиту `journalctl`:
 
-```bash
+```shell
 journalctl -fu kinozal-bot
+```
+
+## 🐳 Docker
+
+Запуск в контейнере является альтернативной настройки службы **systemd**. Было замечено, что скорось ответов бота в контейнере возрасло примерно в два раза, по этому такой способ является **рекомендуемым**.
+
+- Перейдите в директорию со скриптом и настроенным файлом конфигурации:
+
+```shell
+cd ~/kinozal-bot
+```
+
+- Создайте [dockerfile](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/dockerfile) с содержимым:
+
+```dockerfile
+# Базовый легковесный образ
+FROM alpine:latest
+# Устанавливаем рабочую директорию как в конфигурации для локального запуска 
+WORKDIR /home/lifailon/kinozal-bot
+# Установка зависимостей
+RUN apk add --no-cache bash coreutils curl grep sed gawk jq
+# Копируем скрипт и конфигурацию
+COPY kinozal-bot-0.4.5.sh .
+COPY kinozal-bot.conf .
+# Права на запуск скрипта
+RUN chmod +x kinozal-bot-0.4.5.sh
+# Запускаем потоки сервера и логируем вывод работы бота в консоль
+CMD ["bash", "-c", "./kinozal-bot-0.4.5.sh start bot docker"]
+```
+
+> Рабочая директория (**WORKDIR**) используется как в конфигурации (`$path`) для локального запуска, по этому **измените его на свой**.
+
+- Соберите образ и запустите контейнер:
+
+```shell
+docker build -t kinozal-bot .
+docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
+```
+
+Размер образа составит около 20 МБайт. Вы можете управлять запуском контейнар с помощью команд: `docker <start/restart/stop> kinozal-bot`. Для просмотра журналов контейнера, рекомендую использовать [Dozzle](https://github.com/amir20/dozzle).
+
+Для быстрого удаления контейнера одной командой:
+
+```shell
+docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
 ```
 
 ---
@@ -544,10 +596,10 @@ journalctl -fu kinozal-bot
 
 ## Другие проекты:
 
-- ✨ [TorAPI](https://github.com/Lifailon/TorAPI) - неофициальный `API` (backend [Express.js](https://github.com/expressjs/express)) для RuTracker, Kinozal, RuTor и NoNameClub с целью получения торрент-файлов и другой информации по названию фильма, сериалу или id.
+- ✨ [TorAPI](https://github.com/Lifailon/TorAPI/blob/main/README_RU.md) - неофициальный `API` (backend) для торрент трекеров RuTracker, Kinozal, RuTor и NoNameClub. Используется для быстрого поиска раздач, а также получения torrent-файлов, магнитных ссылок и подробной информации о раздаче по названию фильма, сериала или идентификатору раздачи, а также предоставляет новостную RSS ленту для всех провайдеров.
+
+- 🔎 [LibreKinopoisk](https://github.com/Lifailon/LibreKinopoisk) - расширение для Google Chrome, которое добавляет кнопки на сайт Кинопоиск и предоставляет интерфейс **TorAPI** в стиле [Jackett](https://github.com/Jackett/Jackett) (без необходимости устанавливать серверную часть и использовать VPN) для быстрого поиска фильмов и сериалов в открытых источниках.
 
 - ❤️ [WebTorrent Desktop api](https://github.com/Lifailon/webtorrent-desktop-api) - форк [WebTorrent Desktop](https://github.com/webtorrent/webtorrent-desktop) клиента, в котором добавлен механизм удаленного управления через `REST API` на базе [Express Framework](https://github.com/expressjs/express).
 
-- 🎞️ [Open Kinopoisk Chrome Extension](https://github.com/Lifailon/OpenKinopoisk) - расширение, которое добавляет кнопки на сайт Кинопоиск для поиска фильмов и сериалов в открытых источниках.
-
-- 📡 [Reverse Proxy .NET](https://github.com/Lifailon/rpnet) - кроссплатформенная утилита командной строки для реализации обратного прокси-сервер на базе .NET. Используется для предоставления доступа хостам с одного сетевого интерфейса к удаленным приложениям через протоколы TCP, UDP или HTTP/HTTPS доступных через другой сетевой интерфейс без лишних настроек и с поддержкой авторизации.
+- 📡 [Reverse Proxy .NET](https://github.com/Lifailon/rpnet/blob/main/README_RU.md) - кроссплатформенная утилита командной строки для реализации обратного прокси-сервер на базе **.NET**. Используется для предоставления доступа хостам в сети с одного сетевого интерфейса к удаленным приложениям через протоколы **TCP**, **UDP** или **HTTP/HTTPS** (поддерживаются `GET` и `POST` запросы для доступа к внешним ресурсам через Интернет) доступных через другой сетевой интерфейс на вашем хосте без лишних настроек и с поддержкой авторизации.
