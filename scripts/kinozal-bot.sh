@@ -83,6 +83,15 @@
 # + Добавлена поддержка использования зеркала и обратного прокси сервера;
 # - Отключен функционал Kinopoisk api (/kinopoisk_movie) и описание из Кинозал (/kinozal_description);
 # ~ Добавлены функции для взаимодействия с файловой системой Windows через Everything api (не поддерживается отправка файлов в Telegram свыше 50мб).
+### 07.09.2024 (0.4.6):
+# + Добавлена возможность запуска бота в контейнере Docker (сборка через dockerfile)
+# + Хранение торрент файлов перемещено в дочернюю директорию torrents для синхронизации с контейнером Docker
+# + Добавлено формирование имени файла при выгрузке торрент файла (.torrent) из qBittorrent
+# + Добавлен выход в меню списка файлов и обновление текста после отправки торрент файла в Telegram для обновления загрузки кнопки
+# ~ Обновлена инструкция по установке и удалены старые версии
+# + Добавлен фильтр для канала (исключен Российского кинематограф)
+# ~ Добавлен поиск в Kinobox по имени для канала, если в раздаче отсутствует id Kinopoisk
+# ~ Отлажена проблема открытиия раздач в клиенте qBittorrent (длинное имя файла в callback для поиска в Plex)
 
 ###############################################################################
 
@@ -227,24 +236,21 @@
 ###############################################################################
 
 ### Параметры управления:
-# bash kinozal-bot.sh start bot                       # запустить только бот (1 поток)
-# bash kinozal-bot.sh start all                       # запустить бот и канал (2 потока)
-# bash kinozal-bot.sh start <bot/all> service         # запустить дополнительный поток вывода логов для службы systemd
-# bash kinozal-bot.sh start <bot/all> docker          # запустить в режиме вывода логов для работы в контейнере Docker
-# bash kinozal-bot.sh status                          # статус работы сервера и количство активных процессов
-# bash kinozal-bot.sh status proc                     # вывести список активных процессов
-# bash kinozal-bot.sh stop                            # остановить сервер (остановить все процессы)
-# bash kinozal-bot.sh version                         # Проверить подключение ко всем сервисам и получить их текущую версию
-# bash kinozal-bot.sh log bot                         # вывести журнал работы бота в реальном времени
-# bash kinozal-bot.sh log bot 50                      # вывести 50 записей журнала
-# bash kinozal-bot.sh log qb                          # вывести журнал работы с клиента qBittorrent (critical и warning)
-# bash kinozal-bot.sh log qb all                      # вывести все записи журнала qBittorrent
-# bash kinozal-bot.sh log plex server                 # вывести журнал работы сервер plex (error и warning)
-# bash kinozal-bot.sh log plex system                 # вывести системный журнал plex (error и warning)
-# bash kinozal-bot.sh log plex <server/system> all    # вывести все записи журнала plex
-
-### Быстрый перезапуск бота для отладки:
-# bash kinozal-bot.sh stop && bash kinozal-bot.sh start bot && bash kinozal-bot.sh log bot
+# bash kinozal-bot.sh start bot                      # запустить только бот (1 поток)
+# bash kinozal-bot.sh start all                      # запустить бот и канал (2 потока)
+# bash kinozal-bot.sh start <bot/all> service        # запустить дополнительный поток вывода логов для службы systemd
+# bash kinozal-bot.sh start <bot/all> docker         # запустить в режиме вывода логов для работы в контейнере Docker
+# bash kinozal-bot.sh status                         # статус работы сервера и количство активных процессов
+# bash kinozal-bot.sh status proc                    # вывести список активных процессов
+# bash kinozal-bot.sh stop                           # остановить сервер (остановить все процессы)
+# bash kinozal-bot.sh version                        # Проверить подключение ко всем сервисам и получить их текущую версию
+# bash kinozal-bot.sh log bot                        # вывести журнал работы бота в реальном времени
+# bash kinozal-bot.sh log bot 50                     # вывести 50 записей журнала
+# bash kinozal-bot.sh log qb                         # вывести журнал работы с клиента qBittorrent (critical и warning)
+# bash kinozal-bot.sh log qb all                     # вывести все записи журнала qBittorrent
+# bash kinozal-bot.sh log plex server                # вывести журнал работы сервер plex (error и warning)
+# bash kinozal-bot.sh log plex system                # вывести системный журнал plex (error и warning)
+# bash kinozal-bot.sh log plex <server/system> all   # вывести все записи журнала plex
 
 ###############################################################################
 
@@ -297,9 +303,6 @@
 ### docker restart kinozal-bot           # перезапустить бота
 ### docker logs kinozal-bot --tail 100   # вывести журнал работы бота с конца
 
-### Удалить контейнер и образ:
-# docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
-
 ###############################################################################
 
 ### Получить путь к конфигурации (по умолчанию файл конфигурации находится рядом со скриптом сервера)
@@ -308,6 +311,17 @@ conf="$kinozal_bot_path/kinozal-bot.conf"
 
 ###############################################################################
 ############################## Debug to console ###############################
+
+### Перезапуск бота для отладки
+# bash kinozal-bot.sh stop && bash kinozal-bot.sh start bot && bash kinozal-bot.sh log bot
+
+### Пересборка контейнера после внесения изменений
+# docker stop kinozal-bot && \
+#     docker rm kinozal-bot && \
+#     docker rmi kinozal-bot && docker rmi alpine && \
+#     docker build -t kinozal-bot . && \
+#     docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/lifailon/kinozal-bot/torrents --restart=unless-stopped kinozal-bot
+
 ###############################################################################
 
 ### (Debug) Передаем путь к конфигурации вручную
@@ -322,17 +336,23 @@ else
     exit 1
 fi
 
-### Пути хранения лог файла и cookie относительно заданного в конфигурации
+### Пути хранения лог файла, cookie и торрент файлов относительно заданного в конфигурации
 path_log="$path/kinozal-bot.log"
 path_qb_cookies="$path/qbittorrent.cookies"
 path_kz_cookies="$path/kinozal.cookies"
+path_torrents="$path/torrents"
+
+### Создаем директорию для хранения торрентов, если она не существует (используется в Docker для монтирования Volume)
+if [ ! -d "$path_torrents" ]; then
+    mkdir -p "$path_torrents"
+fi
+
+### Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
+CHECK_TG_AND_INTERNET="False"
 
 ### (Debug) Забираем первый id из массива для отправки сообщений в Telegram через консоли и формируем URL Proxy-сервера
 # CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
 # URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
-
-### (Debug) Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
-CHECK_TG_AND_INTERNET="False"
 
 ################################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ####################################
 
@@ -734,8 +754,8 @@ function qbittorrent-priority {
 function qbittorrent-download {
     qbittorrent-auth
     filename_id=$1
-    filename=$(ls -l $path | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
-    file_path="$path/$filename"
+    filename=$(ls -l $path_torrents | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
+    file_path="$path_torrents/$filename"
     echo "[INFO] $(date '+%H:%M:%S'): Download video from file: $file_path" >> $path_log
     if [ -e $file_path ]; then
         echo "[INFO] $(date '+%H:%M:%S'): Torrent file avalible: $file_path" >> $path_log
@@ -863,16 +883,17 @@ function qbittorrent-add-torrent-from-hash {
 ### Экспортировать из раздачи с полученными метаданными на клиенте в торрент файл
 function qbittorrent-export-torrent-file {
     hash=$1
+    file_name=$2
     qbittorrent-auth
     endpoint="api/v2/torrents/export"
     curl -s "$QB_ADDR/$endpoint" \
         -b $path_qb_cookies \
         --header "Referer: $QB_ADDR" \
         --data "hash=$hash" \
-        -o "$path/$hash.torrent"
+        -o "$path_torrents/$file_name"
 }
 
-# qbittorrent-export-torrent-file "A72BD27A0CE265A3C7965392BC06C25EDD759214"
+# qbittorrent-export-torrent-file "c4ca488b76683c5924acc5654295ba75e6d8b266" "1972967-План Б. Сериал. 2023 (WEB-DL 1080p).torrent"
 
 ###################################### 📄📄📄 Trackers 📝📝📝 ######################################
 
@@ -2129,7 +2150,7 @@ function download-torrent {
     url_down="$protocol://dl.$address/download.php?id=$kz_id"
     url_login="$KZ_ADDR/takelogin.php"
     url_refrer="$KZ_ADDR/"
-    path_down="$path/$kz_id-$kz_name.torrent"
+    path_down="$path_torrents/$kz_id-$kz_name.torrent"
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
         curl -s $url_login -X POST \
@@ -3322,8 +3343,8 @@ function tmdb-all-episodes {
 function menu-files {
     TEXT=$1
     CHAT=$2
-    ls=$(ls -l $path | grep -E "*\.torrent" | awk '{print $9}' | sed -r "s/.torrent//")
-    wc=$(ls -l $path | grep -E "*\.torrent" | wc -l)
+    ls=$(ls -l $path_torrents | grep -E "*\.torrent" | awk '{print $9}' | sed -r "s/.torrent//")
+    wc=$(ls -l $path_torrents | grep -E "*\.torrent" | wc -l)
     echo "[INFO] $(date '+%H:%M:%S'): Torrent files count: $wc" >> $path_log
     IFS=$'\n'
     keyboard='{"inline_keyboard":['
@@ -4244,7 +4265,7 @@ while :
             fi
             echo "[INFO] $(date '+%H:%M:%S'): Torrent file name: $down_id-$down_name.torrent" >> $path_log
             download-torrent "$down_id" "$down_name"
-            file_path="$path/$down_id-$down_name.torrent"
+            file_path="$path_torrents/$down_id-$down_name.torrent"
             if [ -e $file_path ]; then
                 echo "[INFO] $(date '+%H:%M:%S'): Torrent file downloaded: $file_path" >> $path_log
                 file_size=$(ls -lh $file_path | awk '{print $5}')
@@ -4287,12 +4308,12 @@ while :
         ### Request: /delete_torrent_file_id 🗑 🗂 📚 🗂 🗑
         elif [[ $command == /delete_torrent_file_* ]]; then
             filename_id=$(echo $command | sed "s/\/delete_torrent_file_//")
-            filename=$(ls -l $path | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
+            filename=$(ls -l $path_torrents | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /delete_torrent_file on $filename ($filename_id)" >> $path_log
-            file_path="$path/$filename"
-            wc_be=$(ls -l $path | grep -E "*\.torrent" | wc -l)
+            file_path="$path_torrents/$filename"
+            wc_be=$(ls -l $path_torrents | grep -E "*\.torrent" | wc -l)
             rm $file_path
-            wc_af=$(ls -l $path | grep -E "*\.torrent" | wc -l)
+            wc_af=$(ls -l $path_torrents | grep -E "*\.torrent" | wc -l)
             echo "[INFO] $(date '+%H:%M:%S'): Before torrent files: $wc_be, after torrent files: $wc_af" >> $path_log
             if [[ $wc_af < $wc_be ]]; then
                 menu-files "🗂 Торрент файл удален:" $CHAT
@@ -4441,26 +4462,30 @@ while :
         elif [[ $command == /send_torrent_file_* ]]; then
             id_send_file=$(echo $command | sed "s/\/send_torrent_file_//")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /send_torrent_file for $id_send_file" >> $path_log
-            send_file=$(ls $path | grep $id_send_file)
-            send_file_path=$(echo "$path/$send_file")
+            send_file_name=$(ls $path_torrents | grep $id_send_file)
+            send_file_path=$(echo "$path_torrents/$send_file_name")
             echo "[INFO] $(date '+%H:%M:%S'): File path: $send_file_path" >> $path_log
             send-file "$send_file_path"
+            file_save_name=$(basename  $send_file_path)
+            menu-files "🗂 Торрент файл *$file_save_name* отправлен в Telegram" $CHAT
         ### Request: /send_last_torrent_file ⬆️⬆️⬆️
         elif [[ $command == /send_last_torrent_file ]]; then
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /send_last_torrent_file" >> $path_log
-            send_file=$(ls -t "$path" | grep "\.torrent" | head -n 1)
-            send_file_path=$(echo "$path/$send_file")
+            send_file_name=$(ls -t "$path_torrents" | grep "\.torrent" | head -n 1)
+            send_file_path=$(echo "$path_torrents/$send_file_name")
             echo "[INFO] $(date '+%H:%M:%S'): Send file: $send_file_path" >> $path_log
             send-file "$send_file_path"
+            menu-files "🗂 Торрент файл *$send_file_name* отправлен в Telegram" $CHAT
         ### Request: /send_all_torrent_files ⬆️⬆️⬆️⬆️⬆️⬆️
         elif [[ $command == /send_all_torrent_files ]]; then
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /send_all_torrent_files" >> $path_log
-            send_file_array=($(ls $path | grep "\.torrent"))
-            for send_file in ${send_file_array[@]}; do
-                send_file_path=$(echo "$path/$send_file")
+            send_file_array=($(ls $path_torrents | grep "\.torrent"))
+            for send_file_name in ${send_file_array[@]}; do
+                send_file_path=$(echo "$path_torrents/$send_file_name")
                 echo "[INFO] $(date '+%H:%M:%S'): Send file: $send_file_path" >> $path_log
                 send-file "$send_file_path"
             done
+            menu-files "🗂 Все торрент файлы отправлены в Telegram" $CHAT
         ###### 🟡 🟡 🟡 Kinopoisk 🟡 🟡 🟡
         ### Поиск в Kinopoisk API по Kinozal id (/kinopoisk_movie 2026484)
         ### Request: /kinopoisk_movie
@@ -4634,8 +4659,8 @@ while :
         elif [[ $command == /download_trans_* ]]; then
             filename_id=$(echo $command | sed "s/\/download_trans_//")
             echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_trans for id $id_down to Transmission" >> $path_log
-            filename=$(ls -l $path | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
-            file_path="$path/$filename"
+            filename=$(ls -l $path_torrents | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
+            file_path="$path_torrents/$filename"
             echo "[INFO] $(date '+%H:%M:%S'): Download video from file: $file_path" >> $path_log
             transmission-add-file $file_path
             sleep $TIMEOUT_SEC_UPDATE_STATUS
@@ -4736,14 +4761,22 @@ while :
         elif [[ $command == /get_torrent* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/get_torrent //")
             echo "[INFO] $(date '+%H:%M:%S'): Get torrent files from hash: $qb_hash" >> $path_log
+            # Формируем имя торрент файла для сохранения
+            file_prop=$(qbittorrent-properties $qb_hash)
+            file_prop_name=$(echo $file_prop | jq -r .name | sed -r "s/\s/_/g")
+            file_prop_id=$(echo $file_prop | jq -r .comment | sed -r "s/.+id=//g")
+            file_save_name="$file_prop_id-$file_prop_name.torrent"
             # Экспортируем торрент файл на сервер
-            echo "[INFO] $(date '+%H:%M:%S'): Export and send torrent file: $path/$qb_hash.torrent" >> $path_log
-            qbittorrent-export-torrent-file "$qb_hash"
+            echo "[INFO] $(date '+%H:%M:%S'): Export and send torrent file: $path_torrents/$file_save_name" >> $path_log
+            qbittorrent-export-torrent-file "$qb_hash" "$file_save_name"
             # Отправляем файл в телеграм
-            send-file "$path/$qb_hash.torrent"
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            send-file "$path_torrents/$file_save_name"
             # Удаляем торрент файл на сервере
-            # rm "$path/$qb_hash.torrent"
-            menu-info $qb_hash
+            # rm "$path_torrents/$file_save_name"
+            # Обновляем меню или выводим список файлов
+            #menu-info $qb_hash
+            menu-files "🗂 Загружен новый торрент файл *$file_save_name* из qBittorrent" $CHAT
         ### Request: /torrent_recheck hash ♻️♻️♻️
         elif [[ $command == /torrent_recheck* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/torrent_recheck //")
