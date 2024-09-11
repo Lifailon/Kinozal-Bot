@@ -507,6 +507,19 @@ docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/li
 docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
 ```
 
+Также вы можете сохранить образ контейнера с помощью оной команды. Это удобно, в случае переустановки системы или переноса бота на другую машину (тем самым не нужно заполнять конфигурацию и собирать образ заново):
+
+```shell
+docker save -o kinozal-bot.tar kinozal-bot
+```
+
+На новой системе остается только загрузить образ из файла и запустить контейнер:
+
+```shell
+docker load -i kinozal-bot.tar
+docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
+```
+
 ---
 
 ## 📌 Команды
