@@ -5183,7 +5183,8 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             ### Source: https://kinobox.tv
                             kp_id=$(echo $url_kp | sed -r "s/.+\///g")
                             if [[ -z $kp_id ]]; then
-                                url_km="https://kinomix.web.app/#$name"
+                                name_only=$(echo $name | sed -r "s/\(.+//g")
+                                url_km="https://kinomix.web.app/#$name_only"
                             else
                                 url_km="https://kinomix.web.app/#$kp_id"
                             fi
