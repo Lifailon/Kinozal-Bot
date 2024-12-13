@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-    <a href="https://t.me/kinozal_news"><img title="GitHub Created At"src="https://img.shields.io/github/created-at/Lifailon/Kinozal-Bot?logo=telegram&label=Kinozal-News&labelColor=white&color=blue"></a>
+    <a href="https://t.me/kinozal_news"><img title="GitHub Created At"src="https://img.shields.io/github/created-at/Lifailon/Kinozal-Bot?logo=telegram&label=Kinozal+News+©&labelColor=white&color=blue"></a>
 </p>
 
 Telegram бот, который позволяет автоматизировать процесс доставки контента до вашего телевизора, используя только телефон.
@@ -20,7 +20,15 @@ Telegram бот, который позволяет автоматизирова�
 
 Запустить бота возможно как **службу Systemd** или в контейнере **Docker** (рекомендуется). Вы можете настроить и управлять торрент клиентом независимо от настройки или работоспособности трекера Кинозал, или наоборот, использовать только интерфейс Кинозал для поиска раздач и выгрузки торрент файлов в Telegram.
 
-На базе бота реализован новостной канала 📢 [Kinozal-News](https://t.me/kinozal_news), который генерирует посты на основе новых публикаций в торрент трекере **[Кинозал](https://kinozal.tv)** с фильтрацией по **рейтингу (7.0+)** и **году выхода (2023+)**. Каждый пост содержит краткую информацию о раздаче (год выхода, страна производства, рейтинг, качество и перевод), а также `#хештеги` по жанру для фильтрации контента на канале и кнопки с ссылками описания фильма или сериала в базах данных о кинематографе [Кинопоиск](https://www.kinopoisk.ru) и [IMDb](https://www.imdb.com), бесплатный онлайн просмотр через плееры ▶️ [Kinobox](https://kinobox.tv) и 🧲 [магнитные ссылки](https://en.wikipedia.org/wiki/Magnet_URI_scheme) для прямой загрузки содержимого раздачи в вашем торрент клиенте по умолчанию (применимо как для bittorrent-клиентов на телефоне, так и Windows или Linux).
+На базе бота реализован новостной канала 📢 [Kinozal-News](https://t.me/kinozal_news), который генерирует посты на основе новых публикаций в торрент трекере **[Кинозал](https://kinozal.tv)** с фильтрацией по **рейтингу (7.0+)** и **году выхода (2023+)** (современная альтернатива **RSS**). Каждый пост содержит краткую информацию о раздаче (год выхода, страна производства, рейтинг, качество и перевод), а также `#хештеги` по жанру для фильтрации контента на канале и кнопки с ссылками описания фильма или сериала в базах данных о кинематографе [Кинопоиск](https://www.kinopoisk.ru) и [IMDb](https://www.imdb.com), бесплатный онлайн просмотр через плееры ▶️ [Kinobox](https://kinobox.tv) и 🧲 [магнитные ссылки](https://en.wikipedia.org/wiki/Magnet_URI_scheme) для прямой загрузки содержимого раздачи в вашем торрент клиенте по умолчанию (применимо как для bittorrent-клиентов на телефоне, так и Windows или Linux).
+
+Присоединяйтесь к каналу, что бы не пропускать новые публикации в трекере:
+
+[![Telegram](https://img.shields.io/badge/Kinozal_News-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/kinozal_news)
+
+Или используйте публичную RSS ленту новостей из проекта [TorAPI](https://github.com/Lifailon/TorAPI/blob/main/README_RU.md) с поддержкой фильтрации:
+
+[![Public RSS Feed](https://img.shields.io/badge/kinozal_rss_feed-F88900?style=for-the-badge&logo=rss&logoColor=white)](https://torapi.vercel.app/api/get/rss/kinozal?category=0&year=0&format=0) [![Swagger](https://img.shields.io/badge/-настройка_RSS-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white)](https://torapi.vercel.app/api/get/rss/kinozal?category=0&year=0&format=0)
 
 ### 📝 Статьи на Хабр:
 
@@ -64,7 +72,9 @@ Telegram бот, который позволяет автоматизирова�
 **Зависимости:**
 
 - [jqlang](https://github.com/jqlang/jq) для обработки данных в формате *json*;
-- Клиентское приложение **VPN** через **Proxy-сервер** или обратный прокси сервер (например, [Reverse Proxy .NET](https://github.com/Lifailon/rpnet)) для доступа в Кинозал и TMDB (*опционально*).
+- Клиентское приложение **VPN** через **Proxy-сервер** или обратный прокси сервер (например, [froxy](https://github.com/Lifailon/froxy)) для доступа в Кинозал и TMDB (*опционально*).
+
+> По мимо этого вы можете запустить свое публичное зеркало для доступа к трекеру (без использования VPN), ознакомьтесь со всеми возможными вариантами в [Настройках](#️-настройка).
 
 Серверная часть написана на чистом [Bash](https://ru.wikipedia.org/wiki/Bash) и использует стандартный набор Unix-утилит.
 
@@ -138,9 +148,10 @@ Telegram бот, который позволяет автоматизирова�
 - [Настройка](#-настройка)
 - [Проверка подключения](#проверка-подключения)
 - [Управление](#управление)
-- [Служба](#-service)
-- [Контейнер](#-docker)
+- [Запуск службы](#-service)
+- [Запуск в контейнере](#-docker)
 - [Меню бота](#-меню-бота)
+- [Другие проекты по тематике](#другие-проекты)
 
 ### Зависимости
 
@@ -217,12 +228,12 @@ KZ_ADDR="https://kinozal.tv"
 KZ_ADDR="https://kinozal.me"
 ```
 
-- 2.3. Возможен вариант использования обратного прокси сервер, на котором есть прямой доступ к трекеру, например, через [Reverse Proxy .NET](https://github.com/Lifailon/rpnet):
+- 2.3. Возможен вариант использования обратного прокси сервер, на котором есть прямой доступ к трекеру, например, через [froxy](https://github.com/Lifailon/froxy):
 
-Скачайте [исполняемый файл](https://github.com/Lifailon/rpnet/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal:
+Загрузите [исполняемый файл](https://github.com/Lifailon/froxy/releases) и запустите обратный прокси сервер на машине с доступом к Кинозал:
 
 ```
-rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
+froxy.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
 ```
 
 Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
@@ -232,7 +243,13 @@ PROXY="False"
 KZ_ADDR="http://192.168.3.100:8443"
 ```
 
-💡 В версии `rpnet` *0.0.2* добавлена поддержка передачи данных через `POST` запросы, что позволяет боту производить аутентификацию в трекере для загрузки торрент файлов и получения хэш суммы (info hash) раздачи.
+Вы можете ознакомиться что такое обратный прокси сервер и какие задачи он решает на странице [репозитория](https://github.com/Lifailon/froxy/blob/main/README_RU.md).
+
+- 2.4. Также возможно развернуть свое публичное зеркало на сервере с использованием **функции serverless** для доступа к трекеру без использования VPN, используя кнопку ниже и следуя инструкциям.
+
+[![Vercel](https://img.shields.io/badge/Deploy-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/new/torapi/clone?repository-url=https://github.com/lifailon/Kinozal-Proxy)
+
+💡 Рекомендуется запустить свое приложение из исходного репозитория [Kinozal-Proxy](https://github.com/Lifailon/Kinozal-Proxy), во избежании излишней нагрузки на одну копию и сохранности ваших авторизационных данных в трекере.
 
 3. Создайте своего Telegram бота через **[@BotFather](https://t.me/BotFather)** используя интуитивно понятный интерфейс и получите API-токен доступа. Что бы получить ваш **чат id**, напишите любое сообщение вашему боту и перешлите его **[Get My ID](https://t.me/getmyid_arel_bot)**, после чего заполните параметры:
 
@@ -502,6 +519,8 @@ docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/li
 
 ![Image alt](image/settings/docker-dozzle.jpg)
 
+Или установите терминальный пользовательский интерфейс [lazyjournal](https://github.com/Lifailon/lazyjournal) для быстрого мониторинга и фильтрации логов контейнеров или служб в консоли Linux.
+
 Команда для быстрого удаления контейнера и образа:
 
 ```shell
@@ -690,12 +709,15 @@ find - 🔍 Поиск в Plex
 
 ---
 
-## Другие проекты:
+## Другие проекты
 
-- ✨ [TorAPI](https://github.com/Lifailon/TorAPI/blob/main/README_RU.md) - неофициальный `API` (backend) для торрент трекеров RuTracker, Kinozal, RuTor и NoNameClub. Используется для быстрого поиска раздач, а также получения torrent-файлов, магнитных ссылок и подробной информации о раздаче по названию фильма, сериала или идентификатору раздачи, а также предоставляет новостную RSS ленту для всех провайдеров.
+- ✨ [TorAPI](https://github.com/Lifailon/TorAPI/blob/main/README_RU.md) - неофициальный API (**backend**) для торрент трекеров RuTracker, Kinozal, RuTor и NoNameClub. Используется для быстрого и централизованного поиска раздач, получения торрент файлов, магнитных ссылок и подробной информации о раздаче по названию фильма, сериала или идентификатору раздачи, а также предоставляет новостную RSS ленту для всех провайдеров с фильтрацией по категориям.
 
-- 🔎 [LibreKinopoisk](https://github.com/Lifailon/LibreKinopoisk) - расширение Google Chrome, которое добавляет кнопки на сайт Кинопоиск и предоставляет интерфейс **TorAPI** в стиле [Jackett](https://github.com/Jackett/Jackett) (без необходимости устанавливать серверную часть и использовать VPN) для быстрого поиска фильмов и сериалов в открытых источниках.
+- 🔎 [LibreKinopoisk](https://github.com/Lifailon/LibreKinopoisk) - расширение для Google Chrome, [Mozilla Firefox](https://addons.mozilla.org/ru/firefox/addon/librekinopoisk) и мобильных устройств, которое добавляет кнопки на сайт [Кинопоиск](http://kinopoisk.ru) и в контекстное меню браузера, а также реализует интерфейс [TorAPI](https://github.com/Lifailon/TorAPI) для быстрого поиска фильмов и сериалов в открытых источниках.
+
 
 - ❤️ [WebTorrent Desktop api](https://github.com/Lifailon/webtorrent-desktop-api) - форк клиента [WebTorrent Desktop](https://github.com/webtorrent/webtorrent-desktop), в котором добавлен механизм удаленного управления через `REST API` на базе [Express Framework](https://github.com/expressjs/express).
 
-- 📡 [Reverse Proxy .NET](https://github.com/Lifailon/rpnet/blob/main/README_RU.md) - кроссплатформенная утилита командной строки для реализации обратного прокси-сервер на базе **.NET**. Используется для предоставления доступа хостам в сети с одного сетевого интерфейса к удаленным приложениям через протоколы **TCP**, **UDP** или **HTTP/HTTPS** (поддерживаются `GET` и `POST` запросы для доступа к внешним ресурсам через Интернет) доступных через другой сетевой интерфейс (например, через **VPN**) на вашем хосте без лишних настроек и с поддержкой авторизации.
+- 📡 [froxy](https://github.com/Lifailon/froxy/blob/main/README_RU.md) - кроссплатформенная утилита командной строки для реализации SOCKS, HTTP и обратного прокси сервера на базе **.NET**. Поддерживается протокол **SOCKS5** для туннелирования TCP трафика и **HTTP** протокол для прямого (классического) проксирования любого **HTTPS** трафика (`CONNECT` запросы), а также **TCP**, **UDP** и **HTTP/HTTPS** протоколы для обратоного проксирования. Для переадресации веб-траффика через обратный прокси поддерживаются `GET` и `POST` запросы с передачей заголовков и тела запроса от клиента, что позволяет использовать `API` запросы и проходить авторизацию на сайтах (передача cookie).
+
+- 🛡 [vpnc](https://github.com/Lifailon/vpnc/blob/main/README_ru.md) - универсальный инструмент для автоматического (локального) и удаленного управления VPN соединением через настольное приложение (системный трей) и API.

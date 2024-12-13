@@ -38,6 +38,11 @@
 # PROXY="False"
 # KZ_ADDR="http://192.168.3.100:8443"
 
+### Kinozal-Proxy
+### https://github.com/Lifailon/Kinozal-Proxy
+# KZ_ADDR="kinozal.vercel.app"
+# KZ_ADDR="kinozal-proxy.vercel.app"
+
 ###############################################################################
 
 ### Change log:
@@ -346,9 +351,6 @@ path_torrents="$path/torrents"
 if [ ! -d "$path_torrents" ]; then
     mkdir -p "$path_torrents"
 fi
-
-### Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
-CHECK_TG_AND_INTERNET="False"
 
 ### (Debug) Забираем первый id из массива для отправки сообщений в Telegram через консоли и формируем URL Proxy-сервера
 # CHAT=$(echo "${TG_CHAT_ARRAY[0]}")
@@ -4197,7 +4199,9 @@ log-rotate
 
 ###############################################################################
 ################################# Thread 1️⃣ ##################################
-### Chat-Bot (reading Telegram requests and sending response messages)
+### Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
+CHECK_TG_AND_INTERNET="False"
+### Логировать количество интераций цикла в минуту (производительность)
 LOG_INTERACTIONS="False"
 start_time=$(date +%s)
 count_interaction=0
@@ -4216,7 +4220,6 @@ while :
             count_interaction=0
         fi
     fi
-    ### Check Telegram and Internet
     if [[ $CHECK_TG_AND_INTERNET == "True" ]]; then
         tg_test=$(test-telegram)
         if [ -z "$tg_test" ]; then
@@ -4245,7 +4248,7 @@ while :
     user=$(echo $last_message | jq ".user" | sed -r 's/\"//g')
     CHAT=$(echo $last_message | jq ".chat" | sed -r 's/\"//g')
     command=$(echo $last_message | jq ".text" | sed -r 's/\"//g')
-    ### Check type last massage (command or keyboard)
+    ### Проверка типа последнего сообщения (command или keyboard)
     message_id=$(echo $last_message | jq -r ".message_id")
     if [[ -n $message_id && $message_id != "null" ]]; then
         message_id_temp="$message_id"
@@ -5093,7 +5096,7 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
             rss=$(curl -s $KZ_ADDR/rss.xml)
         fi
         if [ -n "$rss" ]; then
-            links=($(printf "%s\n" "${rss[@]}" | grep "<link>$KZ_ADDR/details" | sed -r 's/<link>|<\/link>//g'))
+            links=($(printf "%s\n" "${rss[@]}" | grep "<link>https://kinozal.tv/details" | sed -r 's/<link>|<\/link>//g'))
             link=$(echo ${links[0]})
             if [ $link != $link_temp ]; then
                 echo "[INFO] $(date '+%H:%M:%S'): RSS data updated"  >> $path_log
@@ -5114,6 +5117,9 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                 count_skip=0
                 count_error=0
                 for a in ${array[@]}; do
+                    # Обновляем адрес на обратный прокси
+                    original_url=$a
+                    a=$(echo $a | sed -r "s|https://kinozal.tv|$KZ_ADDR|")
                     if [[ $PROXY == "True" ]]; then
                         html=$(curl -s -x $URL_PROXY $a | iconv -f windows-1251 -t UTF-8)
                     else
@@ -5152,15 +5158,15 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             if [[ -n "$url_kp" && -n "$url_imdb" ]]; then
                                 keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
                                 keyboard+="{\"text\":\"IMDb\",\"url\":\"$url_imdb\"},"
-                                keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                                keyboard+="{\"text\":\"Кинозал\",\"url\":\"$original_url\"}],"
                             elif [[ -n "$url_kp" && -z "$url_imdb" ]]; then
                                 keyboard+="[{\"text\":\"Кинопоиск\",\"url\":\"$url_kp\"},"
-                                keyboard+="{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                                keyboard+="{\"text\":\"Кинозал\",\"url\":\"$original_url\"}],"
                             elif [[ -z "$url_kp" && -n "$url_imdb" ]]; then
-                                keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"},"
+                                keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$original_url\"},"
                                 keyboard+="{\"text\":\"IMDb\",\"url\":\"$url_imdb\"}],"
                             else
-                                keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$a\"}],"
+                                keyboard+="[{\"text\":\"Кинозал\",\"url\":\"$original_url\"}],"
                             fi
                             ### Забираем info hash
                             info_hash=$(echo -e ${data[@]} | grep "Инфо хеш:" | sed -r "s/\`//g; s/.+\:\*\s//g")
