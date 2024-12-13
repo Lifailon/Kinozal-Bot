@@ -5,13 +5,9 @@
 </h1>
 
 <p align="center">
-    <a href="https://github.com/Lifailon/Kinozal-Bot/releases"><img title="GitHub Release"src="https://img.shields.io/github/v/release/Lifailon/Kinozal-Bot?logo=github&label=version&color=white"></a>
     <a href="https://github.com/Lifailon/Kinozal-Bot"><img title="GitHub Top Language"src="https://img.shields.io/github/languages/top/Lifailon/KInozal-Bot?label=bash&color=green"></a>
-    <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/LICENSE"><img title="GitHub License"src="https://img.shields.io/github/license/Lifailon/Kinozal-Bot?color=orange"></a>
-</p>
-
-<p align="center">
-    <a href="https://t.me/kinozal_news"><img title="GitHub Created At"src="https://img.shields.io/github/created-at/Lifailon/Kinozal-Bot?logo=telegram&label=Kinozal+News+©&labelColor=white&color=blue"></a>
+    <a href="https://github.com/Lifailon/Kinozal-Bot/releases"><img title="GitHub Release"src="https://img.shields.io/github/v/release/Lifailon/Kinozal-Bot?logo=github&label=version&color=blue"></a>
+    <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/LICENSE"><img title="GitHub License"src="https://img.shields.io/github/license/Lifailon/Kinozal-Bot?logo=markdown&color=white"></a>
 </p>
 
 Telegram бот, который позволяет автоматизировать процесс доставки контента до вашего телевизора, используя только телефон.
@@ -72,9 +68,7 @@ Telegram бот, который позволяет автоматизирова�
 **Зависимости:**
 
 - [jqlang](https://github.com/jqlang/jq) для обработки данных в формате *json*;
-- Клиентское приложение **VPN** через **Proxy-сервер** или обратный прокси сервер (например, [froxy](https://github.com/Lifailon/froxy)) для доступа в Кинозал и TMDB (*опционально*).
-
-> По мимо этого вы можете запустить свое публичное зеркало для доступа к трекеру (без использования VPN), ознакомьтесь со всеми возможными вариантами в [Настройках](#️-настройка).
+- Клиентское приложение **VPN** через **Proxy-сервер** или обратный прокси сервер (например, [froxy](https://github.com/Lifailon/froxy)) для доступа в Кинозал и TMDB (*опционально*, ознакомьтесь со всеми возможными вариантами в [настройках](#️-настройка)).
 
 Серверная часть написана на чистом [Bash](https://ru.wikipedia.org/wiki/Bash) и использует стандартный набор Unix-утилит.
 
