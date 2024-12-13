@@ -24,7 +24,7 @@ Telegram бот, который позволяет автоматизирова�
 
 Или используйте публичную RSS ленту новостей из проекта [TorAPI](https://github.com/Lifailon/TorAPI/blob/main/README_RU.md) с поддержкой фильтрации:
 
-[![Public RSS Feed](https://img.shields.io/badge/kinozal_rss_feed-F88900?style=for-the-badge&logo=rss&logoColor=white)](https://torapi.vercel.app/api/get/rss/kinozal?category=0&year=0&format=0) [![Swagger](https://img.shields.io/badge/-настройка_RSS-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white)](https://torapi.vercel.app/api/get/rss/kinozal?category=0&year=0&format=0)
+[![Kinozal RSS Feed](https://img.shields.io/badge/kinozal_rss_feed-F88900?style=for-the-badge&logo=rss&logoColor=white)](https://torapi.vercel.app/api/get/rss/kinozal?category=0&year=0&format=0) [![Swagger Settings](https://img.shields.io/badge/-Настройка_RSS-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white)](https://app.swaggerhub.com/apis-docs/Lifailon/TorAPI/0.5.2#/RSS/get_api_get_rss_kinozal)
 
 ### 📝 Статьи на Хабр:
 
