@@ -17,7 +17,7 @@
 # TMDB api (https://developer.themoviedb.org/reference/intro/getting-started)
 ### Зависимости:
 # jqlang 1.6 (https://github.com/jqlang/jq)
-# VPN через Proxy сервер (например, Hotspot Shield в режиме Split Tunneling через HandyCache) или обратный прокси сервер (например, rpnet) для доступа в Кинозал и TMDB
+# VPN через Proxy сервер или обратный прокси/зеркало для доступа в Кинозал и TMDB
 
 ###############################################################################
 
@@ -26,22 +26,26 @@
 # KZ_ADDR="https://kinozal.me"
 
 ### Proxy:
+### Например, VPN Hotspot Shield в режиме Split Tunneling через Proxy HandyCache для Windows
 # PROXY="True"
 # PROXY_ADDR="http://192.168.3.100:9090"
 # PROXY_USER="kinozal"
 # PROXY_PASS="proxy"
 
 ### Reverse Proxy:
-### Скачайте исполняемый файл Reverse Proxy .NET (https://github.com/Lifailon/rpnet/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal
-# rpnet.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
+### Скачайте исполняемый файл froxy (https://github.com/Lifailon/froxy/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal
+# froxy --local 192.168.3.100:8443 --remote https://kinozal.tv
+### Запуск в контейнере
+# docker pull lifailon/froxy:latest
+# docker run -d --name froxy -e SOCKS=0 -e FORWARD=0 -e LOCAL="*:8443" -e REMOTE="https://kinozal.tv" -e USER="false" -e PASSWORD="false" -p 8443:8443 --restart=unless-stopped lifailon/froxy
 ### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
 # PROXY="False"
 # KZ_ADDR="http://192.168.3.100:8443"
 
-### Kinozal-Proxy
-### https://github.com/Lifailon/Kinozal-Proxy
+### Kinozal-Proxy (public mirror):
+### Разверните проект из исходного кода Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy) на бессерверной платформе Vercel
+# PROXY="False"
 # KZ_ADDR="kinozal.vercel.app"
-# KZ_ADDR="kinozal-proxy.vercel.app"
 
 ###############################################################################
 
@@ -97,6 +101,15 @@
 # + Добавлен фильтр для канала (исключен Российского кинематограф)
 # ~ Добавлен поиск в Kinobox по имени для канала, если в раздаче отсутствует id Kinopoisk
 # ~ Отлажена проблема открытиия раздач в клиенте qBittorrent (длинное имя файла в callback для поиска в Plex)
+
+### 13.12.2024 (0.4.7):
+# + Поддержка публичного зеркала на базе Next.js
+
+### Backlog:
+# + Анализ публикаций для канала (если есть название публикации, добавить проверку по качеству и размеру) и отключить публикацию в ночное время
+# + Поиск без скобок для фильтрации по разрешению и добавить категории поиска: фильм/сериал (например, люцифер 2019 1080 сериал)
+# + Добавить образ в Docker Hub (чтение конфигурации из локального файла в системе), а также дату в лог и скорректировать время для контейнера (+3)
+# + Добавить в меню управление VPN через vpnc api (https://github.com/lifailon/vpnc)
 
 ###############################################################################
 
@@ -1598,7 +1611,7 @@ function transmission-tg-status {
         tr_stalled=$(echo $select | jq -r .isStalled)
         tr_down=$(echo $select | jq -r .status)
         if [[ $tr_percentDone == 1 || $tr_percentComplete == 1 ]]; then
-            tr_status=$(echo $tr_name | sed -r "s/^/🆗 /")
+            tr_status=$(echo $tr_name | sed -r "s/^/✅ /")
         elif [[ $tr_metadata != 1 ]]; then
             tr_status=$(echo $tr_name | sed -r "s/^/🧲 /")
         elif [[ $tr_stalled == true ]]; then
@@ -1652,7 +1665,7 @@ function transmission-tg-info {
     tr_stalled=$(echo $select | jq -r .isStalled)
     tr_down=$(echo $select | jq -r .status)
     if [[ $tr_percentDone == 1 || $tr_percentComplete == 1 ]]; then
-        tr_status="🆗 Загружено"
+        tr_status="✅ Загружено"
     elif [[ $tr_metadata != 1 ]]; then
         tr_status="🧲 Загрузка метаданных"
     elif [[ $tr_stalled == true ]]; then
@@ -2149,7 +2162,14 @@ function download-torrent {
     # Извлечь протокол и адрес
     protocol=${KZ_ADDR%%://*}
     address=${KZ_ADDR#*://}
-    url_down="$protocol://dl.$address/download.php?id=$kz_id"
+    # if [[ ! "$KZ_ADDR" == *"vercel"* ]]; then
+    if ! echo "$KZ_ADDR" | grep -q "vercel"; then
+        # Использовать субдомен для обратного прокси сервера (froxy)
+        url_down="$protocol://dl.$address/download.php?id=$kz_id"
+    else
+        # Не использовать субдомен для Kinozal-Proxy
+        url_down="$protocol://$address/download.php?id=$kz_id"
+    fi
     url_login="$KZ_ADDR/takelogin.php"
     url_refrer="$KZ_ADDR/"
     path_down="$path_torrents/$kz_id-$kz_name.torrent"
@@ -3374,7 +3394,7 @@ function menu-files {
 # 📶 stalledDL           Торрент скачивается, но соединение не установлено (может находится в режиме анонсирования 📢)
 # 📶 stalledUP           Торрент загружается, но соединение не установлено (может находится в режиме анонсирования 📢)
 # ⏸ pausedDL            Торрент приостановлен и загрузка НЕ ​​завершена
-# ⏸🆗 pausedUP         Торрент приостановлен и загрузка завершена
+# ⏸✅ pausedUP         Торрент приостановлен и загрузка завершена
 # ⬇️ downloading         Торрент скачивается и данные передаются
 # ⬆️ uploading           Торрент загружается и данные передаются
 # ⏯ queuedUP            Очередь включена, и торрент поставлен в очередь на загрузку
@@ -3406,13 +3426,13 @@ function menu-status {
         qb_status=$(echo $qb_state | jq -r ". | select(.hash == \"$qb_hash\").state")
         qb_progress=$(echo $qb_state | jq -r ". | select(.hash == \"$qb_hash\").progress")
         if [[ $qb_status == "completed" || $qb_progress == "100 %" ]]; then
-            qb_name=$(echo $qb_name | sed -r "s/^/🆗 /")
+            qb_name=$(echo $qb_name | sed -r "s/^/✅ /")
         elif [[ $qb_status =~ "stalled" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/📶 /")
         elif [[ $qb_status == "pausedDL" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/⏸ /")
         elif [[ $qb_status =~ "pausedUP" ]]; then
-            qb_name=$(echo $qb_name | sed -r "s/^/⏸🆗 /")
+            qb_name=$(echo $qb_name | sed -r "s/^/⏸✅ /")
         elif [[ $qb_status =~ "download" ]]; then
             qb_name=$(echo $qb_name | sed -r "s/^/⬇️ /")
         elif [[ $qb_status =~ "upload" ]]; then
@@ -3454,13 +3474,13 @@ function menu-info {
     qb_status=$(echo $qb_state | jq -r ".state")
     qb_progress=$(echo $qb_state | jq -r ".progress" | sed -r "s/\..+ %/ %/")
     if [[ $qb_status == "completed" || $qb_progress == "100 %" ]]; then
-        qb_status_emoji="🆗"
+        qb_status_emoji="✅"
     elif [[ $qb_status =~ "stalled" ]]; then
         qb_status_emoji="📶"
     elif [[ $qb_status == "pausedDL" ]]; then
         qb_status_emoji="⏸"
     elif [[ $qb_status =~ "pausedUP" ]]; then
-        qb_status_emoji="⏸🆗"
+        qb_status_emoji="⏸✅"
     elif [[ $qb_status =~ "download" ]]; then
         qb_status_emoji="⬇️"
     elif [[ $qb_status =~ "upload" ]]; then

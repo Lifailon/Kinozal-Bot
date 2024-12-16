@@ -59,16 +59,16 @@ Telegram бот, который позволяет автоматизирова�
 
 ### 📚 Stack:
 
-- [Telegram api](https://core.telegram.org/bots/api);
-- [qBittorrent WebUI api](https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1));
-- [Transmission RPC api](https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md);
-- [Plex Media Server](https://github.com/plexinc) api (не содержит официальной документации);
-- [TMDB api](https://developer.themoviedb.org/reference/intro/getting-started).
+- [Telegram REST api](https://core.telegram.org/bots/api)
+- [qBittorrent WebUI api](https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1))
+- [Transmission RPC api](https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md)
+- [Plex Media Server api](https://github.com/plexinc) (не содержит официальной документации)
+- [TMDB api](https://developer.themoviedb.org/reference/intro/getting-started)
 
 **Зависимости:**
 
-- [jqlang](https://github.com/jqlang/jq) для обработки данных в формате *json*;
-- Клиентское приложение **VPN** через **Proxy-сервер** или обратный прокси сервер (например, [froxy](https://github.com/Lifailon/froxy)) для доступа в Кинозал и TMDB (*опционально*, ознакомьтесь со всеми возможными вариантами в [настройках](#️-настройка)).
+- [jqlang](https://github.com/jqlang/jq) для обработки данных в формате *json*
+- **VPN** через **Proxy** или обратный прокси сервер (например, [froxy](https://github.com/Lifailon/froxy)) для доступа в Кинозал и TMDB (*опционально*, ознакомьтесь со всеми возможными вариантами в [настройках](#️-настройка))
 
 Серверная часть написана на чистом [Bash](https://ru.wikipedia.org/wiki/Bash) и использует стандартный набор Unix-утилит.
 
@@ -210,36 +210,43 @@ cd kinozal-bot
 `PROXY_USER="LOGIN"` \
 `PROXY_PASS="PASSWORD"`
 
-- 2.2. Вы можете указать любой из адресов для доступа к Кинозал, используя зеркало:
+- Вы можете указать любой из адресов для доступа к Кинозал, используя зеркало:
 
-```
+```shell
 KZ_ADDR="https://kinozal.tv"
 ```
 
 или
 
-```
+```shell
 KZ_ADDR="https://kinozal.me"
 ```
 
-- 2.3. Возможен вариант использования обратного прокси сервер, на котором есть прямой доступ к трекеру, например, через [froxy](https://github.com/Lifailon/froxy):
+- 2.2. Поддерживается использования обратного прокси сервера, на котором есть прямой доступ к трекеру, например, через [froxy](https://github.com/Lifailon/froxy):
 
 Загрузите [исполняемый файл](https://github.com/Lifailon/froxy/releases) и запустите обратный прокси сервер на машине с доступом к Кинозал:
 
 ```
-froxy.exe --local 192.168.3.100:8443 --remote https://kinozal.tv
+froxy --local 192.168.3.100:8443 --remote https://kinozal.tv
+```
+
+Или запуск в контейнере:
+
+```shell
+docker pull lifailon/froxy:latest
+docker run -d --name froxy -e SOCKS=0 -e FORWARD=0 -e LOCAL="*:8443" -e REMOTE="https://kinozal.tv" -e USER="false" -e PASSWORD="false" -p 8443:8443 --restart=unless-stopped lifailon/froxy
 ```
 
 Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
 
-```
+```shell
 PROXY="False"
 KZ_ADDR="http://192.168.3.100:8443"
 ```
 
 Вы можете ознакомиться что такое обратный прокси сервер и какие задачи он решает на странице [репозитория](https://github.com/Lifailon/froxy/blob/main/README_RU.md).
 
-- 2.4. Также возможно развернуть свое публичное зеркало на сервере с использованием **функции serverless** для доступа к трекеру без использования VPN, используя кнопку ниже и следуя инструкциям.
+- 2.3. Также возможно развернуть свое публичное зеркало с использованием **функции serverless** на базе `Next.js` для доступа к трекеру без использования VPN. Вопользуйтесь кнопкой ниже и следуйте инструкциям.
 
 [![Vercel](https://img.shields.io/badge/Deploy-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/new/torapi/clone?repository-url=https://github.com/lifailon/Kinozal-Proxy)
 
@@ -282,7 +289,7 @@ KZ_ADDR="http://192.168.3.100:8443"
 
 Укажите параметры подключения к клиенту:
 
-```
+```shell
 TRANS_ADDR="http://192.168.3.100:9091"
 TRANS_USER="LOGIN"
 TRANS_PASS="PASSWORD"
@@ -294,7 +301,7 @@ TRANS_PASS="PASSWORD"
 
 Так как нет возможности напрямую получить токент доступа в веб-интерфейсе, можно воспользоваться панелью разработчика в браузере. Откройте [Development Tools](https://developer.chrome.com/docs/devtools?hl=ru) нажатием кнопки `F12` и перейдите на вкладку **сеть (network)**, обновите страницу интерфейса вашего сервера Plex, после чего вы сможете увидеть токен в любом из url-запросов (X-Plex-Token=**ваш_токена**). Передайте адрес сервера (по умолчанию, порт **32400**) и содержимое токена в параметры:
 
-```
+```shell
 PLEX_ADDR="http://192.168.3.100:32400"
 PLEX_TOKEN="ваш_токена"
 ```
@@ -322,7 +329,7 @@ TMDB_TOKEN="XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX"
 
 8. Путь для хранения торрент файлов, cookie (временные файлы, которые используются для авторизации в Кинозал и qBittorrent), а также лог-файлов и его размер (поддерживается ротация) на сервере **задаются в конфигурации**:
 
-```
+```shell
 path="/home/lifailon/kinozal-bot"
 log_size_mbyte=10
 ```
