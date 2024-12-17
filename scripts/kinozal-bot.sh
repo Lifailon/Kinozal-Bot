@@ -50,48 +50,49 @@
 ###############################################################################
 
 ### Change log:
-### 16.11.2023 (0.1):   Создан новостной канал Kinozal_News и Telegram-бот для скачивания торрент-файлов и управления qBittorrent.
-### 27.11.2023 (0.2):   Добавлено меню клавиатуры Telegram, удаление торрент-файлов и профиль в Кинозал с информацией о загрузках.
-### 30.11.2023 (0.3):   Добавлен функционал Plex для просмотра содержимого секций и синхронизации контента.
-### 04.12.2023 (0.4.0): Добавлен поиск в Кинозал, список альтернативных ссылок, получение содержимого торрент файла и изменение приоритета.
-### 07.12.2023 (0.4.1): Добавлено получение дополнительной информации из Кинозал и поиск в Plex.
-### 27.12.2023 (0.4.2): Добавлен список актеров для каждого фильма, просмотр их фильмографии и ссылка на Кинопоиск.
-# Получение дополнительной информации и список трейлеров из kinopoisk api. Фильтрация для поиска фильмов по году выхода.
-### 20.01.2023 (0.4.3): Добавлен функционал для управления Windows через WinAPI: состояния системы, запуск и остановка приложений qBittorrent и Plex. 
-# Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data).
+### 16.11.2023 (0.1):   Создан новостной канал Kinozal_News и Telegram-бот для скачивания торрент-файлов и управления qBittorrent
+### 27.11.2023 (0.2):   Добавлено меню клавиатуры Telegram, удаление торрент-файлов и профиль в Кинозал с информацией о загрузках
+### 30.11.2023 (0.3):   Добавлен функционал Plex для просмотра содержимого секций и синхронизации контента
+### 04.12.2023 (0.4.0): Добавлен поиск в Кинозал, список альтернативных ссылок, получение содержимого торрент файла и изменение приоритета
+### 07.12.2023 (0.4.1): Добавлено получение дополнительной информации из Кинозал и поиск в Plex
+### 27.12.2023 (0.4.2): Добавлен список актеров для каждого фильма, просмотр их фильмографии и ссылка на Кинопоиск
+# Получение дополнительной информации и список трейлеров из kinopoisk api. Фильтрация для поиска фильмов по году выхода
+### 20.01.2023 (0.4.3):
+# + Добавлен функционал для управления Windows через проект WinAPI (https://github.com/Lifailon/WinAPI): состояния системы, запуск и остановка приложений qBittorrent и Plex
+# - Нереализовано: просмотр списка директорий и файлов с возможностью их удаления (проблема с отображением из за длинны пути при отправке через callback_data)
 ### 16.05.2024-12.06.2024 (0.4.4):
-# + Изменены параметры управления запуска (2 режима) и возможность настройки управления чере службу systemd;
-# + Добавлены параметры вывода логов бота, журнала работы клиента qBittorrent и сервера Plex;
-# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /search_id);
-# + Повторить последний поисковой запрос (доступно из меню и /search_id);
-# + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала;
-# + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм);
-# + Добавлена возможность загрузить торрент по инфо хеш (/add_torrent из меню);
-# + Выгрузить торрент файла из клиента qBittorrent (после загрузки метаданных) на сервер с отправкой в телеграм;
-# + Добавлена проверка (сканирование целостности) торрент раздачи в qBittorrent;
-# + Добавлен статус приоритета и загрузки в списке файлов выбранного торрента;
-# + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent;
-# + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>);
-# + Добавлена информация о настройках и лимитах qBittorrent в список торрентов (/status) и переключение на альтернатывные лимиты скорости (/torrent_limit);
-# ~ Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент;
-# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск + IMDb + Кинозал + Magnet + Kinobox);
-# ~ Обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов;
-# + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url;
-# + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins).
+# + Изменены параметры управления запуска (2 режима) и возможность настройки управления чере службу systemd
+# + Добавлены параметры вывода логов бота, журнала работы клиента qBittorrent и сервера Plex
+# + Добавлено получение инфо хеш каждой раздачи и содержимое раздачи (/file_list из /search_id)
+# + Повторить последний поисковой запрос (доступно из меню и /search_id)
+# + Фильтрация по формату (разрешению) при поиске по названию фильма или сериала
+# + Получение последнего, выбранного и всех загруженных торрент файлов с сервера (отправка в телеграм)
+# + Добавлена возможность загрузить торрент по инфо хеш (/add_torrent из меню)
+# + Выгрузить торрент файла из клиента qBittorrent (после загрузки метаданных) на сервер с отправкой в телеграм
+# + Добавлена проверка (сканирование целостности) торрент раздачи в qBittorrent
+# + Добавлен статус приоритета и загрузки в списке файлов выбранного торрента
+# + Добавлен пропуск и восстановление загрузки всех файлов в qBittorrent
+# + Добавлен поиск в Plex из qBittorrent по имени файла (из /info <name> в /find <name>)
+# + Добавлена информация о настройках и лимитах qBittorrent в список торрентов (/status) и переключение на альтернатывные лимиты скорости (/torrent_limit)
+# ~ Исправлено: обновление статуса после синхронизации контента Plex, добавлено время обновления, что бы отвисала кнопка, где может не обновляться контент
+# ~ Канал: добавлены хэштеги по жанру и кнопки для перехода по url (Кинопоиск + IMDb + Кинозал + Magnet + Kinobox)
+# ~ Обновлен парсинг и добавлены условия для проверки на наличие содержимого в описание постов
+# + Добавлен redirect с url https на magnet uri для перенаправления в торрент клиент по умолчанию, т.к. магнитные ссылки не принимает Telegram для передачи в url
+# + Добавлены функции qBittorrent для получения списка трекеров, содержимого RSS ленты и работы с поисковыми плагинами (Search Plugins)
 ### 14.06.2024-06.07.2024 (0.4.5):
 # + Добавлен функционал управления торрент клиентом  (добавление по торрент файлу и хэшу, остановка и возобновление загрузки, управление приоритетом файлов, удаление торрента и данных);
-# + Добавление торрента в qBittorrent и Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации);
-# ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash);
-# ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title;
-# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name> и фото актера;
-# ~ Переработан парсинг списка фильмографии актера;
-# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id через Kinozal id (список актеров, сезонов и серий с датами выхода);
-# + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS);
-# + Добавлен размер свободного места на диске в статус qBittorrent и возможность принудительно повторно анонсировать выбранный торрент;
-# + Добавлен параметр управления version для проверки доступности всех сервисов и получения текущей версии;
-# + Добавлена поддержка использования зеркала и обратного прокси сервера;
-# - Отключен функционал Kinopoisk api (/kinopoisk_movie) и описание из Кинозал (/kinozal_description);
-# ~ Добавлены функции для взаимодействия с файловой системой Windows через Everything api (не поддерживается отправка файлов в Telegram свыше 50мб).
+# + Добавление торрента в qBittorrent и Transmission клиент по url-адресу загрузки торрент файла (без необходимости скачивать торрент файл на сервер, актуально для трекеров без авторизации
+# ~ Изменено добавление торрента по хешу (вначале принимается команда /add_torrent <hash> для выбора клиента, после нажатия вызывается команда /add_hash)
+# ~ Переименованы конечные точки: /find_kinozal на /search_id и /search на /search_title
+# ~ Переработан поиск актеров: добавлена конечная точка /search_actor для получения списка актеров в базе Кинозал и добавлен параметр возврата в /actor <search/list> <name> и фото актера
+# ~ Переработан парсинг списка фильмографии актера
+# + Добавлен функционал TMDB api для поиска информации о фильмах и сериалов через IMDb id через Kinozal id (список актеров, сезонов и серий с датами выхода)
+# + Добавлен список плееров Kinobox в меню результатов поиска Кинозал (токен авторизации не требуется, включение и отключение через параметр конфигурации KINOBOX_PLAYERS)
+# + Добавлен размер свободного места на диске в статус qBittorrent и возможность принудительно повторно анонсировать выбранный торрент
+# + Добавлен параметр управления version для проверки доступности всех сервисов и получения текущей версии
+# + Добавлена поддержка использования зеркала и обратного прокси сервера
+# - Отключен функционал Kinopoisk api (/kinopoisk_movie) и описание из Кинозал (/kinozal_description)
+# ~ Добавлены функции для взаимодействия с файловой системой Windows через Everything api (отключено, не поддерживается отправка файлов в Telegram свыше 50мб)
 ### 07.09.2024 (0.4.6):
 # + Добавлена возможность запуска бота в контейнере Docker (сборка через dockerfile)
 # + Хранение торрент файлов перемещено в дочернюю директорию torrents для синхронизации с контейнером Docker
@@ -102,14 +103,16 @@
 # ~ Добавлен поиск в Kinobox по имени для канала, если в раздаче отсутствует id Kinopoisk
 # ~ Отлажена проблема открытиия раздач в клиенте qBittorrent (длинное имя файла в callback для поиска в Plex)
 
-### 13.12.2024 (0.4.7):
-# + Поддержка публичного зеркала на базе Next.js
+### 13.12.2024-... (0.4.7):
+# + Поддержка публичного зеркала для проекта Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy)
+# + Анализ публикаций для канала Kinozal-News по размеру раздачи и отключение публикаций в ночное время
+# + Добавлена дата в логирование и откорректирована временная зона через конфиигурацию для контейнера
 
 ### Backlog:
-# + Анализ публикаций для канала (если есть название публикации, добавить проверку по качеству и размеру) и отключить публикацию в ночное время
-# + Поиск без скобок для фильтрации по разрешению и добавить категории поиска: фильм/сериал (например, люцифер 2019 1080 сериал)
-# + Добавить образ в Docker Hub (чтение конфигурации из локального файла в системе), а также дату в лог и скорректировать время для контейнера (+3)
-# + Добавить в меню управление VPN через vpnc api (https://github.com/lifailon/vpnc)
+# + Поиск без скобок для фильтрации по разрешению и добавить категории поиска: фильм/сериал (например: люцифер 2019 1080 сериал)
+# + Поиск в TMDB через меню Telegram
+# + "ТОП раздач Кинозал" и "Новинки Кинозал" через меню Telegram
+# + Добавить в меню управление VPN через проект VPNc api (https://github.com/lifailon/vpnc)
 
 ###############################################################################
 
@@ -359,6 +362,10 @@ path_log="$path/kinozal-bot.log"
 path_qb_cookies="$path/qbittorrent.cookies"
 path_kz_cookies="$path/kinozal.cookies"
 path_torrents="$path/torrents"
+path_post="$path/posting.json"
+
+### Корректируем временную зону для логирования
+export TZ="$TIMEZONE"
 
 ### Создаем директорию для хранения торрентов, если она не существует (используется в Docker для монтирования Volume)
 if [ ! -d "$path_torrents" ]; then
@@ -389,9 +396,9 @@ function send-telegram {
         -d text="$text" \
         -d "parse_mode=$mode")
     if [[ "$curl_response" =~ "error_code" ]]; then
-        echo "[WARN] $(date '+%H:%M:%S'): cURL: $curl_response" >> $path_log
+        echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): cURL: $curl_response" >> $path_log
     else
-        echo "[OK]   $(date '+%H:%M:%S'): cURL: send new message to telegram" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): cURL: send new message to telegram" >> $path_log
     fi
 }
 
@@ -409,9 +416,9 @@ function send-keyboard {
         -d "parse_mode=$mode" \
         -d "reply_markup=$reply_markup")
     if [[ "$curl_response" =~ "error_code" ]]; then
-        echo "[WARN] $(date '+%H:%M:%S'): cURL: $curl_response" >> $path_log
+        echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): cURL: $curl_response" >> $path_log
     else
-        echo "[OK]   $(date '+%H:%M:%S'): cURL: send new keyboard to telegram" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): cURL: send new keyboard to telegram" >> $path_log
     fi
 }
 
@@ -431,9 +438,9 @@ function edit-keyboard {
         -d "reply_markup=$reply_markup" \
         -d "message_id=$message_id")
     if [[ "$curl_response" =~ "error_code" ]]; then
-        echo "[WARN] $(date '+%H:%M:%S'): cURL: $curl_response" >> $path_log
+        echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): cURL: $curl_response" >> $path_log
     else
-        echo "[OK]   $(date '+%H:%M:%S'): cURL: send edit keyboard to telegram" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): cURL: send edit keyboard to telegram" >> $path_log
     fi
 }
 
@@ -446,9 +453,9 @@ function send-file {
         -F chat_id="$CHAT" \
         -F document=@"$document")
     if [[ "$curl_response" =~ "error_code" ]]; then
-        echo "[WARN] $(date '+%H:%M:%S'): cURL: $curl_response" >> $path_log
+        echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): cURL: $curl_response" >> $path_log
     else
-        echo "[OK]   $(date '+%H:%M:%S'): cURL: sent file to telegram" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): cURL: sent file to telegram" >> $path_log
     fi
 }
 
@@ -499,7 +506,7 @@ function read-telegram {
 
 ### Функция авторизации в qBittorrent
 function qbittorrent-auth {
-        echo "[INFO] $(date '+%H:%M:%S'): Authorization to qBittorrent" >> $path_log
+        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Authorization to qBittorrent" >> $path_log
         endpoint_auth="api/v2/auth/login"
         curl -s "$QB_ADDR/$endpoint_auth" \
             --max-time 1 \
@@ -515,17 +522,17 @@ function qbittorrent-test {
     qb_test=0
     if [[ $cookies_test -le 4 ]]; then
         qb_test=1
-        echo "[ERRO] $(date '+%H:%M:%S'): qBittrrent error authorization (cookies null)" >> $path_log
+        echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): qBittrrent error authorization (cookies null)" >> $path_log
         QB_IP=$(echo $QB_ADDR | sed -r "s/.+\/\/|:.+//g")
         QB_PORT=$(echo $QB_ADDR | sed -r "s/.+://")
         timeout 2 nc -zv $QB_IP $QB_PORT &> /dev/null
         if [ $? != 0 ]; then
             qb_test=2
-            echo "[ERRO] $(date '+%H:%M:%S'): qBittorrent service not avaliable (tcp port)" >> $path_log
+            echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): qBittorrent service not avaliable (tcp port)" >> $path_log
             qb_ping=$(ping $QB_IP -c 2 | grep -i ttl)
             if [ -z "$qb_ping" ]; then
                 qb_test=3
-                echo "[ERRO] $(date '+%H:%M:%S'): qBittorrent server not avaliable (icmp ping)" >> $path_log
+                echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): qBittorrent server not avaliable (icmp ping)" >> $path_log
             fi
         fi
     fi
@@ -668,7 +675,7 @@ function qbittorrent-data {
 ### Основная функция получения списка торрентов добавленных на клиенте и дополнительная информация для выбранной раздачи
 function qbittorrent-info {
     qbittorrent-auth
-    echo "[INFO] $(date '+%H:%M:%S'): Get info (status) from qBittorrent" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Get info (status) from qBittorrent" >> $path_log
     endpoint_info="api/v2/torrents/info"
     curl -s "$QB_ADDR/$endpoint_info" \
         -b $path_qb_cookies \
@@ -771,19 +778,19 @@ function qbittorrent-download {
     filename_id=$1
     filename=$(ls -l $path_torrents | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
     file_path="$path_torrents/$filename"
-    echo "[INFO] $(date '+%H:%M:%S'): Download video from file: $file_path" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Download video from file: $file_path" >> $path_log
     if [ -e $file_path ]; then
-        echo "[INFO] $(date '+%H:%M:%S'): Torrent file avalible: $file_path" >> $path_log
+        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file avalible: $file_path" >> $path_log
         file_size=$(ls -lh $file_path | awk '{print $5}')
-        echo "[INFO] $(date '+%H:%M:%S'): File size: $file_size" >> $path_log
+        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): File size: $file_size" >> $path_log
         file_test=$(cat "$file_path" | grep "javascript")
         if [ -z "$file_test" ]; then
-            echo "[INFO] $(date '+%H:%M:%S'): Torrent file valid (not found javascript to file)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file valid (not found javascript to file)" >> $path_log
         else
-            echo "[INFO] $(date '+%H:%M:%S'): Torrent file not valid (found javascript to file)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file not valid (found javascript to file)" >> $path_log
         fi
     else
-        echo "[INFO] $(date '+%H:%M:%S'): Torrent file not avalible: $file_path" >> $path_log
+        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file not avalible: $file_path" >> $path_log
     fi
     endpoint_download="api/v2/torrents/add"
     curl -s "$QB_ADDR/$endpoint_download" \
@@ -1091,12 +1098,12 @@ function qbittorrent-rename-file {
     type_file=$3
     # Получаем текущий путь по хэшу и забираем из него старое имя
     old_torrent_path=$(qbittorrent-info | jq -r ". | select(.hash == \"$torrent_hash\").path")
-    echo "[INFO] $(date '+%H:%M:%S'): Old torrent path: $old_torrent_path" # >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Old torrent path: $old_torrent_path" # >> $path_log
     old_torrent_name=$(echo $old_torrent_path | sed -r 's/.+\\//')
     # Забираем текущий путь к файлу и формируем путь с новым именем файла
     torrent_path=$(echo $old_torrent_path | sed "s/$old_torrent_name"//)
     new_torrent_path="$torrent_path$new_name_file"
-    echo "[INFO] $(date '+%H:%M:%S'): New torrent path: $new_torrent_path" # >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): New torrent path: $new_torrent_path" # >> $path_log
     old_torrent_path=$(echo $old_torrent_path | sed 's/\\/\\\\/g')
     new_torrent_path=$(echo $new_torrent_path | sed 's/\\/\\\\/g')
     endpoint="api/v2/torrents/rename$type_file"
@@ -1308,17 +1315,17 @@ function transmission-test {
     tr_test=0
     if [[ -z $session_id ]]; then
         tr_test=1
-        echo "[ERRO] $(date '+%H:%M:%S'): Transmission error authorization" >> $path_log
+        echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Transmission error authorization" >> $path_log
         TRANS_IP=$(echo $TRANS_ADDR | sed -r "s/.+\/\/|:.+//g")
         TRANS_PORT=$(echo $TRANS_ADDR | sed -r "s/.+://")
         timeout 2 nc -zv $TRANS_IP $TRANS_PORT &> /dev/null
         if [ $? != 0 ]; then
             tr_test=2
-            echo "[ERRO] $(date '+%H:%M:%S'): Transmission service not avaliable (tcp port)" >> $path_log
+            echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Transmission service not avaliable (tcp port)" >> $path_log
             tr_ping=$(ping $TRANS_IP -c 2 | grep -i ttl)
             if [ -z "$tr_ping" ]; then
                 tr_test=3
-                echo "[ERRO] $(date '+%H:%M:%S'): Transmission server not avaliable (icmp ping)" >> $path_log
+                echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Transmission server not avaliable (icmp ping)" >> $path_log
             fi
         fi
     fi
@@ -1928,17 +1935,17 @@ function plex-test {
     plex_test=0
     if [[ -z $plex_ver ]]; then
         plex_test=1
-        echo "[ERRO] $(date '+%H:%M:%S'): Plex Media Server error authorization" >> $path_log
+        echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Plex Media Server error authorization" >> $path_log
         PLEX_IP=$(echo $PLEX_ADDR | sed -r "s/.+\/\/|:.+//g")
         PLEX_PORT=$(echo $PLEX_ADDR | sed -r "s/.+://")
         timeout 2 nc -zv $PLEX_IP $PLEX_PORT &> /dev/null
         if [ $? != 0 ]; then
             plex_test=2
-            echo "[ERRO] $(date '+%H:%M:%S'): Plex Media Server service not avaliable (tcp port)" >> $path_log
+            echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Plex Media Server service not avaliable (tcp port)" >> $path_log
             plex_ping=$(ping $PLEX_IP -c 2 | grep -i ttl)
             if [ -z "$plex_ping" ]; then
                 plex_test=3
-                echo "[ERRO] $(date '+%H:%M:%S'): Plex Media Server server not avaliable (icmp ping)" >> $path_log
+                echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Plex Media Server server not avaliable (icmp ping)" >> $path_log
             fi
         fi
     fi
@@ -2032,13 +2039,13 @@ function plex-info {
         fi
     else
         if [[ $plex_test == 1 ]]; then
-            echo "[WARN] $(date '+%H:%M:%S'): <<< Error authorization on /plex_info" >> $path_log
+            echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Error authorization on /plex_info" >> $path_log
             data="☹️ Ошибка авторизации на сервере *Plex*"
         elif [[ $plex_test == 2 ]]; then
-            echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable tcp port on Plex Media Server" >> $path_log
+            echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Not avaliable tcp port on Plex Media Server" >> $path_log
             data="☹️ Сервер *Plex* не запущен"
         elif [[ $plex_test == 3 ]]; then
-            echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable icmp ping on Plex Media Server" >> $path_log
+            echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Not avaliable icmp ping on Plex Media Server" >> $path_log
             data="☹️ Сервер *Plex* недоступен"
         fi
         keyboard='{"inline_keyboard":['
@@ -2221,7 +2228,7 @@ function count-torrent {
     count_torrent=$(echo "$html_profile" | cat -v | grep -oE "\( [0-9]+ \)" | sed -r "s/\(|\)//g")
     count_all=$(echo $count_torrent | awk '{print $1}')
     count_current=$(echo $count_torrent | awk '{print $2}')
-    echo "[INFO] $(date '+%H:%M:%S'): Downloaded $count_current of $count_all" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Downloaded $count_current of $count_all" >> $path_log
     data_count="$count_current из $count_all"
     uploaded=$(echo "$html_profile" | grep "Залил" | sed -r "s/.+<td>//; s/<\/td>.+//")
     downloaded=$(echo "$html_profile" | grep "Скачал" | sed -r "s/.+<td>//; s/<\/td>.+//")
@@ -2422,7 +2429,7 @@ function get-links {
         done
     elif [[ $type == "description" ]]; then
         id_url="$KZ_ADDR/ajax/details_get.php?id=$id_find&sr=101"
-        echo "[INFO] $(date '+%H:%M:%S'): Url top: $id_url" >> $path_log
+        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Url top: $id_url" >> $path_log
         if [[ $PROXY == "True" ]]; then
             URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
             html=$(curl -s -x $URL_PROXY $id_url | iconv -f windows-1251 -t UTF-8)
@@ -2617,7 +2624,7 @@ function get-search {
     # Кодируем запрос в url строку (для кириллицы)
     search_name_encode=$(url-encode-ru "$search_name")
     search_name_replace_space=$(echo $search_name_encode | sed "s/ /+/g")
-    echo "[INFO] $(date '+%H:%M:%S'): Url name: $search_name_replace_space" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Url name: $search_name_replace_space" >> $path_log
     id_url+="&s=$search_name_replace_space"
     # Проверяем параметры для формирования тела ответа
     data="Поиск: *$search_name*\n"
@@ -2656,7 +2663,7 @@ function get-search {
     keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
     keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
     search_count=$(echo $(( $(echo $keyboard | jq . | grep "text" | wc -l) -4 )))
-    echo "[INFO] $(date '+%H:%M:%S'): Search count link: $search_count" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search count link: $search_count" >> $path_log
     data+="Совпадений: *$search_count*"
     if [[ $message_id_temp != "null" ]]; then
         edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
@@ -3367,7 +3374,7 @@ function menu-files {
     CHAT=$2
     ls=$(ls -l $path_torrents | grep -E "*\.torrent" | awk '{print $9}' | sed -r "s/.torrent//")
     wc=$(ls -l $path_torrents | grep -E "*\.torrent" | wc -l)
-    echo "[INFO] $(date '+%H:%M:%S'): Torrent files count: $wc" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent files count: $wc" >> $path_log
     IFS=$'\n'
     keyboard='{"inline_keyboard":['
     for l in $ls; do
@@ -3470,7 +3477,7 @@ function menu-info {
     qb_hash=$1
     qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
     qb_name=$(echo $qb_state | jq ".name" | sed -r 's/\"//g')
-    echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /info for $qb_name ($qb_hash)" >> $path_log
+    echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /info for $qb_name ($qb_hash)" >> $path_log
     qb_status=$(echo $qb_state | jq -r ".state")
     qb_progress=$(echo $qb_state | jq -r ".progress" | sed -r "s/\..+ %/ %/")
     if [[ $qb_status == "completed" || $qb_progress == "100 %" ]]; then
@@ -3577,7 +3584,7 @@ function menu-torrent-content {
     qb_files=$(qbittorrent-files $qb_hash)
     qb_files_array=$(echo $qb_files | jq -r .[].name)
     qb_path=$(echo $qb_files_array | sed -r "s/\/.+//")
-    echo "[INFO] $(date '+%H:%M:%S'): Selected torrent name: $qb_path" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Selected torrent name: $qb_path" >> $path_log
     TEXT="Содержимое *$qb_path*:"
     IFS=$'\n'
     keyboard='{"inline_keyboard":['
@@ -3622,7 +3629,7 @@ function menu-torrent-file {
     file_index=$1
     file_info=$(qbittorrent-files $global_hash | jq ".[] | select(.index == $file_index)")
     file_name=$(echo $file_info | jq -r .name | sed -r "s/.+\///")
-    echo "[INFO] $(date '+%H:%M:%S'): Selected file name: $file_name (index: $file_index)" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Selected file name: $file_name (index: $file_index)" >> $path_log
     # Set global vardiable for /torrent_priority
     declare -g global_file_index=$file_index
     progress=$(echo $file_info | jq -r '.progress * 100 | floor / 100 * 100 | tostring + " %"' | sed -r "s/\..+ %/ %/")
@@ -3678,7 +3685,7 @@ function menu-plex-status {
     declare -g global_section_key=$section_key
     plex_sections=$(plex-sections | jq ".| select(.key == \"$section_key\")")
     plex_name=$(echo $plex_sections | jq -r .name)
-    echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_status for $plex_name (key: $section_key)" >> $path_log
+    echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /plex_status for $plex_name (key: $section_key)" >> $path_log
     plex_type=$(echo $plex_sections | jq -r .type)
     plex_path=$(echo $plex_sections | jq -r .path)
     plex_scanned=$(echo $plex_sections | jq -r .scanned)
@@ -3911,8 +3918,8 @@ function win-files {
         declare -g global_win_path="$global_win_path/$win_path"
         win_path=$global_win_path
     fi
-    echo "[INFO] $(date '+%H:%M:%S'): Current new path: $global_win_path" >> $path_log
-    echo "[INFO] $(date '+%H:%M:%S'): Back path: $global_win_path_back" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Current new path: $global_win_path" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Back path: $global_win_path_back" >> $path_log
     win_files=$(curl -s -X GET -u $WIN_API_USER:$WIN_API_PASS $WIN_API_ADDR/api/files -H "Path: $win_path")
     win_files_array=$(echo $win_files | jq -r .[].Name)
     keyboard='{"inline_keyboard":['
@@ -4093,11 +4100,11 @@ function test-status {
 if [[ $1 == "start" ]]; then
     if [[ $2 == "bot" ]]; then
         TG_CHANNEL_USE="false"
-        echo "[OK]   $(date '+%H:%M:%S'): Server started (only bot)" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Server started (only bot)" >> $path_log
         cat $path_log | tail -n 1
     elif [[ $2 == "all" ]]; then
         TG_CHANNEL_USE="True"
-        echo "[OK]   $(date '+%H:%M:%S'): Server started (bot and channel)" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Server started (bot and channel)" >> $path_log
         cat $path_log | tail -n 1
     else
         echo "Available parameters: bot and all"
@@ -4123,12 +4130,12 @@ else
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             proc=($(ps -AF | grep "$process_name" | grep -vE "grep|stop"))
             if [[ ${#proc[@]} == 0 ]]; then
-                echo "[OK]   $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+                echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
             else
-                echo "[ERR]  $(date '+%H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+                echo "[ERR]  $(date '+%d.%m.%Y %H:%M:%S'): Server stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
             fi
         else
-            echo "[WARN] $(date '+%H:%M:%S'): Server is already stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
+            echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Server is already stopped. Count running process: $(echo ${#proc[@]})" >> $path_log
         fi
         cat $path_log | tail -n 1
     elif [[ $1 == "status" ]]; then
@@ -4141,9 +4148,9 @@ else
         else
             proc=($(ps -AF | grep "$process_name" | grep -vE "grep|status" | awk '{print $2}'))
             if [ -n "$proc" ]; then 
-                echo "[INFO] $(date '+%H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Server running. Count running process: $(echo ${#proc[@]})"
             else
-                echo "[INFO] $(date '+%H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Server not running. Count running process: $(echo ${#proc[@]})"
             fi
         fi
     elif [[ $1 == "version" ]]; then
@@ -4235,7 +4242,7 @@ while :
         end_time=$(date +%s)
         sum_time=$((end_time - start_time))
         if [[ $sum_time -ge 60 ]]; then
-            echo "[INFO] $(date '+%H:%M:%S'): $count_interaction interactions in minute ($sum_time seconds)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): $count_interaction interactions in minute ($sum_time seconds)" >> $path_log
             start_time=$(date +%s)
             count_interaction=0
         fi
@@ -4244,19 +4251,19 @@ while :
         tg_test=$(test-telegram)
         if [ -z "$tg_test" ]; then
             test_code=1
-            echo "[ERRO] $(date '+%H:%M:%S'): Telegram api not avaliable" >> $path_log
+            echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Telegram api not avaliable" >> $path_log
             ping=$(ping 8.8.8.8 -c 2 | grep -i ttl)
             if [ -z "$ping" ]; then
                 test_code=2
-                echo "[ERRO] $(date '+%H:%M:%S'): Internet not avaliable" >> $path_log
+                echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Internet not avaliable" >> $path_log
             fi
             sleep $TIMEOUT_SEC_ERROR
             continue
         else
             if [[ $test_code == 1 ]]; then
-                echo "[OK]   $(date '+%H:%M:%S'): Telegram api avaliable" >> $path_log
+                echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Telegram api avaliable" >> $path_log
             elif [[ $test_code == 2 ]]; then
-                echo "[OK]   $(date '+%H:%M:%S'): Internet avaliable" >> $path_log
+                echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Internet avaliable" >> $path_log
             fi
             test_code=0
         fi
@@ -4277,28 +4284,28 @@ while :
     fi
     if [[ $update_id > $update_id_temp ]]; then
         update_id_temp=$update_id
-        echo "[OK]   $(date '+%H:%M:%S'): >>> Request command from user: $user ($CHAT)" >> $path_log
+        echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): >>> Request command from user: $user ($CHAT)" >> $path_log
         ### Request: /download_torrent id name ⬇️
         if [[ $command == /download_torrent* ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_torrent" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /download_torrent" >> $path_log
             down_id=$(echo $command | awk '{print $2}')
             down_name=$(echo $command | awk '{print $3}')
             if [[ $down_name == "GLOBAL_NAME" ]]; then
                 down_name=$global_name_down
             fi
-            echo "[INFO] $(date '+%H:%M:%S'): Torrent file name: $down_id-$down_name.torrent" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file name: $down_id-$down_name.torrent" >> $path_log
             download-torrent "$down_id" "$down_name"
             file_path="$path_torrents/$down_id-$down_name.torrent"
             if [ -e $file_path ]; then
-                echo "[INFO] $(date '+%H:%M:%S'): Torrent file downloaded: $file_path" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file downloaded: $file_path" >> $path_log
                 file_size=$(ls -lh $file_path | awk '{print $5}')
-                echo "[INFO] $(date '+%H:%M:%S'): File size: $file_size" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): File size: $file_size" >> $path_log
                 file_test=$(cat "$file_path" | grep "javascript")
                 if [ -z "$file_test" ]; then
-                    echo "[OK]   $(date '+%H:%M:%S'): Torrent file uploaded" >> $path_log
+                    echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Torrent file uploaded" >> $path_log
                     data=$(echo "Торрент файл загружен успешно (размер: $file_size)")
                 else
-                    echo "[WARN] $(date '+%H:%M:%S'): Torrent file downloaded with error (found javascript to file)" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file downloaded with error (found javascript to file)" >> $path_log
                     data=$(echo "Торрент файл загружен с ошибкой (размер: $file_size)")
                 fi
                 encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
@@ -4317,39 +4324,39 @@ while :
                     send-keyboard "$encoded_data" "$CHAT" "$keyboard"
                 fi
             else
-                echo "[WARN] $(date '+%H:%M:%S'): Torrent file not uploaded (possible connection error)" >> $path_log
+                echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file not uploaded (possible connection error)" >> $path_log
                 send-telegram "Ошибка при загрузке торрент файла (файл не загружен)." "$CHAT"
             fi
         ### Request: /profile 👤👤👤
         elif [[ $command == /profile ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /profile" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /profile" >> $path_log
             count-torrent
         ### Request: /torrent_files 🗂📚🗂
         elif [[ $command == /torrent_files ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_files" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /torrent_files" >> $path_log
             menu-files "🗂 Список загруженных торрент файлов:" $CHAT
         ### Request: /delete_torrent_file_id 🗑 🗂 📚 🗂 🗑
         elif [[ $command == /delete_torrent_file_* ]]; then
             filename_id=$(echo $command | sed "s/\/delete_torrent_file_//")
             filename=$(ls -l $path_torrents | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /delete_torrent_file on $filename ($filename_id)" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /delete_torrent_file on $filename ($filename_id)" >> $path_log
             file_path="$path_torrents/$filename"
             wc_be=$(ls -l $path_torrents | grep -E "*\.torrent" | wc -l)
             rm $file_path
             wc_af=$(ls -l $path_torrents | grep -E "*\.torrent" | wc -l)
-            echo "[INFO] $(date '+%H:%M:%S'): Before torrent files: $wc_be, after torrent files: $wc_af" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Before torrent files: $wc_be, after torrent files: $wc_af" >> $path_log
             if [[ $wc_af < $wc_be ]]; then
                 menu-files "🗂 Торрент файл удален:" $CHAT
             else
                 menu-files "🗂 Торрент файл не удален:" $CHAT
-                echo "[ERRO] $(date '+%H:%M:%S'): Error delete torrent file" >> $path_log
+                echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): Error delete torrent file" >> $path_log
             fi
         ### Request: /search_id <id> 🔎🔎🔎
         elif [[ $command == /search_id* ]]; then
             id_find=$(echo $command | sed "s/\/search_id //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search_id for $id_find" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /search_id for $id_find" >> $path_log
             id_url="$KZ_ADDR/details.php?id=$id_find"
-            echo "[INFO] $(date '+%H:%M:%S'): Url: $id_url" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Url: $id_url" >> $path_log
             if [[ $PROXY == "True" ]]; then
                 URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
                 html=$(curl -s -x $URL_PROXY $id_url | iconv -f windows-1251 -t UTF-8)
@@ -4363,7 +4370,7 @@ while :
                 # Изменить глобальную переменную для конечной точки /download_torrent через меню (функция get-links)
                 name_down=$(get-global-name "$html")
                 declare -g global_name_down=$name_down
-                echo "[INFO] $(date '+%H:%M:%S'): Set name for download: $global_name_down" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Set name for download: $global_name_down" >> $path_log
                 # Global variables to go back
                 declare -g GLOBAL_ID_FIND=$id_find
                 if [[ $message_id_temp != "null" ]]; then
@@ -4371,9 +4378,9 @@ while :
                 else
                     send-keyboard "$encoded_data" "$CHAT" "$keyboard"
                 fi
-                echo "[INFO] $(date '+%H:%M:%S'): HTML data avaliable, sending data to chat: $id_url" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): HTML data avaliable, sending data to chat: $id_url" >> $path_log
             else
-                echo "[ERRO] $(date '+%H:%M:%S'): HTML data not avaliable (connection problem or torrent file invalid id): $id_url" >> $path_log
+                echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): HTML data not avaliable (connection problem or torrent file invalid id): $id_url" >> $path_log
                 keyboard="{
                     \"inline_keyboard\":[
                         [{\"text\":\"🗑 Удалить торрент файл\",\"callback_data\":\"\/delete_torrent_file_$id_find\"}],
@@ -4390,7 +4397,7 @@ while :
         ### Request: /kinozal_description 💬💬💬🟣🟣🟣
         elif [[ $command == /kinozal_description* ]]; then
             id_find=$(echo $command | sed "s/\/kinozal_description //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinozal_description for $id_find" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /kinozal_description for $id_find" >> $path_log
             id_url="$KZ_ADDR/details.php?id=$id_find"
             if [[ $PROXY == "True" ]]; then
                 URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
@@ -4417,7 +4424,7 @@ while :
         ### Request: /kinozal_actors 👥
         elif [[ $command == /kinozal_actors* ]]; then
             id_find=$(echo $command | sed "s/\/kinozal_actors //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinozal_actors for $id_find" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /kinozal_actors for $id_find" >> $path_log
             id_url="$KZ_ADDR/details.php?id=$id_find"
             if [[ $PROXY == "True" ]]; then
                 URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
@@ -4450,7 +4457,7 @@ while :
             # Update global variables for research
             declare -g GLOBAL_SEARCH_NAME=$search_name
             declare -g GLOBAL_SEARCH_TYPE="Film or Serial"
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search_title for $search_name" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /search_title for $search_name" >> $path_log
             get-search "$search_name"
         ### Request: /search_actor 🔎👥
         elif [[ $command == /search_actor* ]]; then
@@ -4458,7 +4465,7 @@ while :
             # Update global variables for research
             declare -g GLOBAL_SEARCH_NAME=$actor_name
             declare -g GLOBAL_SEARCH_TYPE="Actor"
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /search_actor for $actor_name" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /search_actor for $actor_name" >> $path_log
             actor-list "$actor_name"
         ### Request: /actor 👥
         elif [[ $command == /actor* ]]; then
@@ -4466,7 +4473,7 @@ while :
             # Обработка параметра для кнопки возврата в поиск или список актеров фильма/сериала
             back_type=$(echo $actor_param | awk '{print $1}')
             actor_name=$(echo $actor_param | sed -r "s/$back_type //g")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /actor for $actor_name (back type: $back_type)" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /actor for $actor_name (back type: $back_type)" >> $path_log
             if [[ $back_type == "search" ]]; then
                 get-actor "search" "$actor_name"
             elif [[ $back_type == "list" ]]; then
@@ -4475,7 +4482,7 @@ while :
         ### Request: /research 🔎⬅️🔄🔎
         elif [[ $command == /research ]]; then
             search_name=$(echo $command | sed "s/\/search_title //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /research for $GLOBAL_SEARCH_NAME (type: $GLOBAL_SEARCH_TYPE)" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /research for $GLOBAL_SEARCH_NAME (type: $GLOBAL_SEARCH_TYPE)" >> $path_log
             if  [[ $GLOBAL_SEARCH_TYPE == "Actor" ]]; then
                 actor-list "$GLOBAL_SEARCH_NAME"
             else
@@ -4484,28 +4491,28 @@ while :
         ### Request: /send_torrent_file ⬆️
         elif [[ $command == /send_torrent_file_* ]]; then
             id_send_file=$(echo $command | sed "s/\/send_torrent_file_//")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /send_torrent_file for $id_send_file" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /send_torrent_file for $id_send_file" >> $path_log
             send_file_name=$(ls $path_torrents | grep $id_send_file)
             send_file_path=$(echo "$path_torrents/$send_file_name")
-            echo "[INFO] $(date '+%H:%M:%S'): File path: $send_file_path" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): File path: $send_file_path" >> $path_log
             send-file "$send_file_path"
             file_save_name=$(basename  $send_file_path)
             menu-files "🗂 Торрент файл *$file_save_name* отправлен в Telegram" $CHAT
         ### Request: /send_last_torrent_file ⬆️⬆️⬆️
         elif [[ $command == /send_last_torrent_file ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /send_last_torrent_file" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /send_last_torrent_file" >> $path_log
             send_file_name=$(ls -t "$path_torrents" | grep "\.torrent" | head -n 1)
             send_file_path=$(echo "$path_torrents/$send_file_name")
-            echo "[INFO] $(date '+%H:%M:%S'): Send file: $send_file_path" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Send file: $send_file_path" >> $path_log
             send-file "$send_file_path"
             menu-files "🗂 Торрент файл *$send_file_name* отправлен в Telegram" $CHAT
         ### Request: /send_all_torrent_files ⬆️⬆️⬆️⬆️⬆️⬆️
         elif [[ $command == /send_all_torrent_files ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /send_all_torrent_files" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /send_all_torrent_files" >> $path_log
             send_file_array=($(ls $path_torrents | grep "\.torrent"))
             for send_file_name in ${send_file_array[@]}; do
                 send_file_path=$(echo "$path_torrents/$send_file_name")
-                echo "[INFO] $(date '+%H:%M:%S'): Send file: $send_file_path" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Send file: $send_file_path" >> $path_log
                 send-file "$send_file_path"
             done
             menu-files "🗂 Все торрент файлы отправлены в Telegram" $CHAT
@@ -4514,35 +4521,35 @@ while :
         ### Request: /kinopoisk_movie
         elif [[ $command == /kinopoisk_movie* ]]; then
             id_kz_search=$(echo $command | sed "s/\/kinopoisk_movie //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /kinopoisk_movie" >> $path_log
-            echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinozal: $id_kz_search" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /kinopoisk_movie" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Search on id Kinozal: $id_kz_search" >> $path_log
             # Получить Kinopoisk id по Kinozal id
             id_kp=$(get-kp-id "$id_kz_search")
-            echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinopoisk: $id_kp" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Search on id Kinopoisk: $id_kp" >> $path_log
             get-movie-kinopoisk-id "$id_kp"
         ###### 🔷 🔷 🔷 TMDB 🔷 🔷 🔷
         ### Request: /tmdb_info
         elif [[ $command == /tmdb_info* ]]; then
             kz_id=$(echo $command | sed "s/\/tmdb_info //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_info" >> $path_log
-            echo "[OK]   $(date '+%H:%M:%S'): Search on id Kinozal: $kz_id" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /tmdb_info" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Search on id Kinozal: $kz_id" >> $path_log
             # Получить IMDb id по Kinozal id
             imdb_id=$(get-imdb-id "$kz_id")
-            echo "[OK]   $(date '+%H:%M:%S'): Search on id IMDb: $imdb_id to TMDB" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Search on id IMDb: $imdb_id to TMDB" >> $path_log
             tmdb-tg-find "$imdb_id" "$kz_id"
         ### Request: /tmdb_actor
         elif [[ $command == /tmdb_actor* ]]; then
             tmdb_param=$(echo $command | sed "s/\/tmdb_actor //")
             tmdb_id=$(echo $tmdb_param | awk '{print $1}')
             tmdb_type=$(echo $tmdb_param | awk '{print $2}')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_actor for tmdb id: $tmdb_id and type: $tmdb_type" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /tmdb_actor for tmdb id: $tmdb_id and type: $tmdb_type" >> $path_log
             tmdb-tg-actor $tmdb_id $tmdb_type
         ### Request: /tmdb_season_episodes
         elif [[ $command == /tmdb_season_episodes* ]]; then
             tmdb_param=$(echo $command | sed "s/\/tmdb_season_episodes //")
             tmdb_id=$(echo $tmdb_param | awk '{print $1}')
             season_number=$(echo $tmdb_param | awk '{print $2}')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_season_episodes for tmdb id: $tmdb_id and season number: $season_number" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /tmdb_season_episodes for tmdb id: $tmdb_id and season number: $season_number" >> $path_log
             tmdb-tg-season-episodes $tmdb_id $season_number
         ### Request: /tmdb_select_episode
         elif [[ $command == /tmdb_select_episode* ]]; then
@@ -4550,17 +4557,17 @@ while :
             tmdb_id=$(echo $tmdb_param | awk '{print $1}')
             season_number=$(echo $tmdb_param | awk '{print $2}')
             episode_number=$(echo $tmdb_param | awk '{print $3}')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_select_episode for tmdb id: $tmdb_id, season nubmer: $season_number and episode number: $episode_number" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /tmdb_select_episode for tmdb id: $tmdb_id, season nubmer: $season_number and episode number: $episode_number" >> $path_log
             tmdb-tg-select-episode $tmdb_id $season_number $episode_number
         ### Request: /tmdb_person
         elif [[ $command == /tmdb_person* ]]; then
             person_id=$(echo $command | sed "s/\/tmdb_person //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /tmdb_person for id: $person_id" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /tmdb_person for id: $person_id" >> $path_log
             tmdb-tg-person $person_id
         ###### Kinozal hash and file list 📖🟣
         ### Request: /file_list
         elif [[ $command == /file_list ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /file_list" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /file_list" >> $path_log
             files_and_hash=$(files-and-hash "$GLOBAL_ID_FIND")
             file_list=$(echo "$files_and_hash" | grep -oP '(?<=<li>)[^<]+(?=<i>)')
             file_sizes=$(echo "$files_and_hash" | grep -oP '(?<=<i>)[^<]+(?=</i>)' | sed -r "s/\s\(.+//g; s/^/(/; s/$/)/")
@@ -4583,17 +4590,17 @@ while :
         elif [[ $command == /status ]]; then
             qb_check=$(qbittorrent-test)
             if [[ $qb_check == 0 ]]; then
-                echo "[OK]   $(date '+%H:%M:%S'): <<< Response on qBittorrent /status" >> $path_log
+                echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on qBittorrent /status" >> $path_log
                 menu-status "$(qbittorrent-data)" "$CHAT"
             else
                 if [[ $qb_check == 1 ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): <<< Error authorization on qBittorrent /status" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Error authorization on qBittorrent /status" >> $path_log
                     data="☹️ Ошибка авторизации на сервере *qBittorrent*"
                 elif [[ $qb_check == 2 ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable tcp port on qBittorrent" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Not avaliable tcp port on qBittorrent" >> $path_log
                     data="☹️ Приложение *qBittorrent* не запущено"
                 elif [[ $qb_check == 3 ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable icmp ping on qBittorrent" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Not avaliable icmp ping on qBittorrent" >> $path_log
                     data="☹️ Сервер *qBittorrent* недоступен"
                 fi
                 keyboard='{"inline_keyboard":['
@@ -4617,29 +4624,29 @@ while :
         ### Request: /torrent_content hash 📖📖📖
         elif [[ $command == /torrent_content* ]]; then
             qb_hash=$(echo $command | sed "s/\/torrent_content //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_content for torrent hash: $qb_hash" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /torrent_content for torrent hash: $qb_hash" >> $path_log
             menu-torrent-content "$qb_hash"
         ### Request: /file_torrent index
         elif [[ $command == /file_torrent* ]]; then
             file_index=$(echo $command | sed "s/\/file_torrent //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /file_torrent for torrent file index: $file_index" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /file_torrent for torrent file index: $file_index" >> $path_log
             menu-torrent-file "$file_index"
         ### Request: /torrent_priority num_priority ⏸▶️🔼⏫
         elif [[ $command == /torrent_priority* ]]; then
             num_priority=$(echo $command | sed "s/\/torrent_priority //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_priority: $num_priority" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /torrent_priority: $num_priority" >> $path_log
             qbittorrent-priority $global_hash $global_file_index $num_priority
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             menu-torrent-file "$global_file_index"
         ### Request: /skip_all_files ⏸⏸⏸ (добавляем в /torrent_content после обновления global_hash)
         elif [[ $command == /skip_all_files ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /skip_all_files for $global_hash" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /skip_all_files for $global_hash" >> $path_log
             # Забираем индексы всех файлов из последнего выбранного глобального хеш торрента
             files_array=$(qbittorrent-files $global_hash)
             files_index_array=$(echo $files_array | jq -r .[].index)
             # Логируем количество файлов в раздаче
             files_index_array_count=$(echo $files_index_array | wc -w)
-            echo "[OK]   $(date '+%H:%M:%S'): Count files for skip: $files_index_array_count" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Count files for skip: $files_index_array_count" >> $path_log
             for files_index in $files_index_array; do
                 # Поочередно изменяем приоритет всех файлов на 0 (не загружать)
                 qbittorrent-priority "$global_hash" "$files_index" "0"
@@ -4648,11 +4655,11 @@ while :
             menu-torrent-content $global_hash
         ### Request: /normal_all_files ▶️▶️▶️
         elif [[ $command == /normal_all_files ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /normal_all_files for $global_hash" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /normal_all_files for $global_hash" >> $path_log
             files_array=$(qbittorrent-files $global_hash)
             files_index_array=$(echo $files_array | jq -r .[].index)
             files_index_array_count=$(echo $files_index_array | wc -w)
-            echo "[OK]   $(date '+%H:%M:%S'): Count files for skip: $files_index_array_count" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Count files for skip: $files_index_array_count" >> $path_log
             for files_index in $files_index_array; do
                 qbittorrent-priority "$global_hash" "$files_index" "1"
             done
@@ -4661,30 +4668,30 @@ while :
         ### Request: /download_video_id 🐸🐸🐸⏩⏩⏩
         elif [[ $command == /download_video_* ]]; then
             id_down=$(echo $command | sed "s/\/download_video_//")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_video for id $id_down to qBittorrent" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /download_video for id $id_down to qBittorrent" >> $path_log
             wc_be=$(qbittorrent-info | jq .name | wc -l)
             start=$(qbittorrent-download $id_down)
             wc_af=$(qbittorrent-info | jq .name | wc -l)
-            echo "[INFO] $(date '+%H:%M:%S'): Before: $wc_be, after: $wc_af" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Before: $wc_be, after: $wc_af" >> $path_log
             if [[ $wc_af > $wc_be ]]; then
-                echo "[INFO] $(date '+%H:%M:%S'): Download started" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Download started" >> $path_log
                 menu-status "🐸 Торрент добавлен на загрузку:" "$CHAT"
             else
                 if [[ $start == "Fails." ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): Already downloading (response: Fails)" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Already downloading (response: Fails)" >> $path_log
                     menu-status "🐸 Торрент уже добавлен:" "$CHAT"
                 else
-                    echo "[WARN] $(date '+%H:%M:%S'): Download not started (response: Null)" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Download not started (response: Null)" >> $path_log
                     menu-status "🐸 Торрент файл не добавлен (ошибка):" "$CHAT"
                 fi
             fi
         ### Request: /download_trans_id ➕➕➕➕➕➕
         elif [[ $command == /download_trans_* ]]; then
             filename_id=$(echo $command | sed "s/\/download_trans_//")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /download_trans for id $id_down to Transmission" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /download_trans for id $id_down to Transmission" >> $path_log
             filename=$(ls -l $path_torrents | grep -E "*\.torrent" | grep "$filename_id" | awk '{print $9}')
             file_path="$path_torrents/$filename"
-            echo "[INFO] $(date '+%H:%M:%S'): Download video from file: $file_path" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Download video from file: $file_path" >> $path_log
             transmission-add-file $file_path
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-status
@@ -4694,13 +4701,13 @@ while :
             qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
             qb_name=$(echo $qb_state | jq ".name" | sed -r 's/\"//g')
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /pause for $qb_name ($qb_hash)" >> $path_log
-            echo "[INFO] $(date '+%H:%M:%S'): Before status: $qb_status" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /pause for $qb_name ($qb_hash)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Before status: $qb_status" >> $path_log
             qbittorrent-pause "$qb_hash"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
-            echo "[INFO] $(date '+%H:%M:%S'): After status: $qb_status" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): After status: $qb_status" >> $path_log
             menu-info "$qb_hash"
         ### Request: /resume hash ▶️▶️▶️
         elif [[ $command == /resume* ]]; then
@@ -4708,13 +4715,13 @@ while :
             qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
             qb_name=$(echo $qb_state | jq ".name" | sed -r 's/\"//g')
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /resume for $qb_name ($qb_hash)" >> $path_log
-            echo "[INFO] $(date '+%H:%M:%S'): Before status: $qb_status" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /resume for $qb_name ($qb_hash)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Before status: $qb_status" >> $path_log
             qbittorrent-resume "$qb_hash"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             qb_state=$(qbittorrent-info | jq ". | select(.hash == \"$qb_hash\")")
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
-            echo "[INFO] $(date '+%H:%M:%S'): After status: $qb_status" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): After status: $qb_status" >> $path_log
             menu-info "$qb_hash"
         ### Request: /delete_torrent hash 🗑🗑🗑
         elif [[ $command == /delete_torrent* ]]; then
@@ -4724,16 +4731,16 @@ while :
             qb_state=$(echo $qb_state_all | jq ". | select(.hash == \"$qb_hash\")")
             qb_name=$(echo $qb_state | jq ".name" | sed -r 's/\"//g')
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /delete_torrent for $qb_name ($qb_hash)" >> $path_log
-            echo "[INFO] $(date '+%H:%M:%S'): Before count: $wc_be" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /delete_torrent for $qb_name ($qb_hash)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Before count: $wc_be" >> $path_log
             qbittorrent-delete "$qb_hash" "false"
             wc_af=$(qbittorrent-info | jq .name | wc -l)
-            echo "[INFO] $(date '+%H:%M:%S'): After: $wc_af" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): After: $wc_af" >> $path_log
             if [[ $wc_af < $wc_be ]]; then
-                echo "[INFO] $(date '+%H:%M:%S'): Torrent file deleted" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file deleted" >> $path_log
                 menu-status "🐸 Торрент файл удален:" "$CHAT"
             else
-                echo "[WARN] $(date '+%H:%M:%S'): Torrent file not deleted" >> $path_log
+                echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file not deleted" >> $path_log
                 menu-status "🐸 Возникла ошибка при удалении:" "$CHAT"
             fi
         ### Request: /delete_video hash ❌❌❌
@@ -4744,22 +4751,22 @@ while :
             qb_state=$(echo $qb_state_all | jq ". | select(.hash == \"$qb_hash\")")
             qb_name=$(echo $qb_state | jq ".name" | sed -r 's/\"//g')
             qb_status=$(echo $qb_state | jq ".state" | sed -r 's/\"//g')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /delete_video for $qb_name ($qb_hash)" >> $path_log
-            echo "[INFO] $(date '+%H:%M:%S'): Before count: $wc_be" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /delete_video for $qb_name ($qb_hash)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Before count: $wc_be" >> $path_log
             qbittorrent-delete "$qb_hash" "true"
             wc_af=$(qbittorrent-info | jq .name | wc -l)
-            echo "[INFO] $(date '+%H:%M:%S'): After: $wc_af" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): After: $wc_af" >> $path_log
             if [[ $wc_af < $wc_be ]]; then
-                echo "[INFO] $(date '+%H:%M:%S'): Torrent file and video content deleted" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file and video content deleted" >> $path_log
                 menu-status "🐸 Торрент файл и видео контент удалены:" "$CHAT"
             else
-                echo "[WARN] $(date '+%H:%M:%S'): Torrent file and video content not deleted" >> $path_log
+                echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Torrent file and video content not deleted" >> $path_log
                 menu-status "🐸 Возникла ошибка при удалении:" "$CHAT"
             fi
         ### Request: /add_torrent hash ➕🧲🧲🧲🧲🧲🧲
         elif [[ $command == /add_torrent* ]]; then
             torrent_hash=$(echo $command | sed -r "s/\/add_torrent //")
-            echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $torrent_hash for select torrent client (qBittorrent or Transmission)" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Add torrent from hash: $torrent_hash for select torrent client (qBittorrent or Transmission)" >> $path_log
             data="Выберите торрент клиент для загрузки:"
             keyboard='{"inline_keyboard":['
             keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/add_hash qbit $torrent_hash\"}],"
@@ -4770,7 +4777,7 @@ while :
             add_param=$(echo $command | sed "s/\/add_hash //")
             selected_torrent=$(echo $add_param | awk '{print $1}')
             torrent_hash=$(echo $add_param | awk '{print $2}')
-            echo "[INFO] $(date '+%H:%M:%S'): Add torrent from hash: $torrent_hash to Torrent Client: $selected_torrent" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Add torrent from hash: $torrent_hash to Torrent Client: $selected_torrent" >> $path_log
             if [[ $selected_torrent == "qbit" ]]; then
                 qbittorrent-add-torrent-from-hash "$torrent_hash"
                 sleep $TIMEOUT_SEC_UPDATE_STATUS
@@ -4783,14 +4790,14 @@ while :
         ### Request: /get_torrent hash 🧲⬆️
         elif [[ $command == /get_torrent* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/get_torrent //")
-            echo "[INFO] $(date '+%H:%M:%S'): Get torrent files from hash: $qb_hash" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Get torrent files from hash: $qb_hash" >> $path_log
             # Формируем имя торрент файла для сохранения
             file_prop=$(qbittorrent-properties $qb_hash)
             file_prop_name=$(echo $file_prop | jq -r .name | sed -r "s/\s/_/g")
             file_prop_id=$(echo $file_prop | jq -r .comment | sed -r "s/.+id=//g")
             file_save_name="$file_prop_id-$file_prop_name.torrent"
             # Экспортируем торрент файл на сервер
-            echo "[INFO] $(date '+%H:%M:%S'): Export and send torrent file: $path_torrents/$file_save_name" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Export and send torrent file: $path_torrents/$file_save_name" >> $path_log
             qbittorrent-export-torrent-file "$qb_hash" "$file_save_name"
             # Отправляем файл в телеграм
             sleep $TIMEOUT_SEC_UPDATE_STATUS
@@ -4803,42 +4810,42 @@ while :
         ### Request: /torrent_recheck hash ♻️♻️♻️
         elif [[ $command == /torrent_recheck* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/torrent_recheck //")
-            echo "[INFO] $(date '+%H:%M:%S'): Recheck torrent: $qb_hash" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Recheck torrent: $qb_hash" >> $path_log
             qbittorrent-recheck "$qb_hash"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_recheck" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /torrent_recheck" >> $path_log
             menu-info $qb_hash
         ### Request: /torrent_reannounce hash 📢📢📢
         elif [[ $command == /torrent_reannounce* ]]; then
             qb_hash=$(echo $command | sed -r "s/\/torrent_reannounce //")
-            echo "[INFO] $(date '+%H:%M:%S'): Reannounce torrent: $qb_hash" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Reannounce torrent: $qb_hash" >> $path_log
             qbittorrent-reannounce "$qb_hash"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_reannounce" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /torrent_reannounce" >> $path_log
             menu-info $qb_hash
         ### Request: /torrent_limit 🐢🐢🐢
         elif [[ $command == /torrent_limit ]]; then
-            echo "[INFO] $(date '+%H:%M:%S'): Switch torrent limit" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Switch torrent limit" >> $path_log
             qbittorrent-switch-limit
             sleep $TIMEOUT_SEC_UPDATE_STATUS
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /torrent_limit" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /torrent_limit" >> $path_log
             menu-status "$(qbittorrent-data)" "$CHAT"
         ######  🔲 🔲 🔲 Transmission 🔲 🔲 🔲
         ### Request: /trans_status
         elif [[ $command == /trans_status ]]; then
             trans_test=$(transmission-test)
             if [[ $trans_test == 0 ]]; then
-                echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_status" >> $path_log
+                echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /trans_status" >> $path_log
                 transmission-tg-status
             else
                 if [[ $trans_test == 1 ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): <<< Error authorization on /trans_status" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Error authorization on /trans_status" >> $path_log
                     data="☹️ Ошибка авторизации на сервере *Transmission*"
                 elif [[ $trans_test == 2 ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable tcp port on Transmission" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Not avaliable tcp port on Transmission" >> $path_log
                     data="☹️ Приложение *Transmission* не запущено"
                 elif [[ $trans_test == 3 ]]; then
-                    echo "[WARN] $(date '+%H:%M:%S'): <<< Not avaliable icmp ping on Transmission" >> $path_log
+                    echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Not avaliable icmp ping on Transmission" >> $path_log
                     data="☹️ Сервер *Transmission* недоступен"
                 fi
                 keyboard='{"inline_keyboard":['
@@ -4857,7 +4864,7 @@ while :
         ### Request: /trans_info
         elif [[ $command == /trans_info* ]]; then
             tr_id=$(echo $command | sed "s/\/trans_info //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_info for id: $tr_id" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /trans_info for id: $tr_id" >> $path_log
             transmission-tg-info "$tr_id"
         ### Request: /trans_file_all
         elif [[ $command == /trans_file_all* ]]; then
@@ -4867,7 +4874,7 @@ while :
             # Фиксируем и логируем количество файлов выбранной раздачи
             select=$(transmission-status | jq -r ". | select(.id == $tr_id) | .priorities[]")
             files_index_array_count=$(echo $select | wc -w)
-            echo "[OK]   $(date '+%H:%M:%S'): Count files for $tr_type: $files_index_array_count" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Count files for $tr_type: $files_index_array_count" >> $path_log
             # Формируем массив индексов
             files_index_array=()
             for ((i = 0; i < files_index_array_count; i++)); do
@@ -4890,7 +4897,7 @@ while :
             tr_file=$(echo $tr_param | awk '{print $2}')
             # Получить текущий приоритет
             select_status=$(transmission-status | jq -r ". | select(.id == $tr_id) | .fileStats[$tr_file].wanted")
-            echo "[OK]   $(date '+%H:%M:%S'): Change priority transmission torrent $tr_id for file $tr_file" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Change priority transmission torrent $tr_id for file $tr_file" >> $path_log
             # Переключить приоритет
             if [[ $select_status == true ]]; then
                 transmission-priority $tr_id $tr_file skip
@@ -4905,7 +4912,7 @@ while :
             tr_param=$(echo $command | sed "s/\/trans_pause //")
             tr_id=$(echo $tr_param | awk '{print $1}')
             tr_type=$(echo $tr_param | awk '{print $2}')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_pause type $tr_type for id: $tr_id" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /trans_pause type $tr_type for id: $tr_id" >> $path_log
             transmission-pause "$tr_id" "$tr_type"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-info "$tr_id"
@@ -4914,7 +4921,7 @@ while :
             tr_param=$(echo $command | sed "s/\/trans_remove //")
             tr_id=$(echo $tr_param | awk '{print $1}')
             tr_type=$(echo $tr_param | awk '{print $2}')
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_remove (data: $tr_type) for id: $tr_id" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /trans_remove (data: $tr_type) for id: $tr_id" >> $path_log
             transmission-remove "$tr_id" "$tr_type"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-status
@@ -4922,7 +4929,7 @@ while :
         ### Request: /add_url ➕🌐🟢
         elif [[ $command == /add_url* ]]; then
             tr_url=$(echo $command | sed "s/\/add_url //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_url for url $tr_url (select client via menu)" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /add_url for url $tr_url (select client via menu)" >> $path_log
             data="Выберите торрент клиент для загрузки:"
             keyboard='{"inline_keyboard":['
             keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/add_qbit_url $tr_url\"}],"
@@ -4931,27 +4938,27 @@ while :
         ### Request: /add_qbit_url ➕🟢
         elif [[ $command == /add_qbit_url* ]]; then
             tr_url=$(echo $command | sed "s/\/add_qbit_url //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_qbit_url. Add torrent to qBittorrent from url $tr_url" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /add_qbit_url. Add torrent to qBittorrent from url $tr_url" >> $path_log
             qbittorrent-add-url $tr_url
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             menu-status "$(qbittorrent-data)" "$CHAT"
         ### Request: /add_trans_url ➕🔲
         elif [[ $command == /add_trans_url* ]]; then
             tr_url=$(echo $command | sed "s/\/add_trans_url //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /add_trans_url. Add torrent to Transmission from url $tr_url" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /add_trans_url. Add torrent to Transmission from url $tr_url" >> $path_log
             transmission-add-url $tr_url
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-status
         ### Request: /trans_set_alt_speed 🐢🐢🐢
         elif [[ $command == /trans_set_alt_speed ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /trans_set_alt_speed for Transmission" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /trans_set_alt_speed for Transmission" >> $path_log
             transmission-set-alt-speed
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             transmission-tg-status
         ###### 🟠 🟠 🟠 PLEX 🟠 🟠 🟠
         ### Request: /plex_info 🟠
         elif [[ $command == /plex_info ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_info" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /plex_info" >> $path_log
             plex-info
         ### Request: /plex_status_key
         elif [[ $command == /plex_status_* ]]; then
@@ -4961,21 +4968,21 @@ while :
             section_key=$(echo $command | sed "s/\/plex_sync_//")
             plex_sections=$(plex-sections | jq ". | select(.key == \"$section_key\")")
             plex_name=$(echo $plex_sections | jq -r .name)
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_sync for $plex_name (key: $section_key)" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /plex_sync for $plex_name (key: $section_key)" >> $path_log
             plex_scanned=$(echo $plex_sections | jq -r .scanned)
-            echo "[OK]   $(date '+%H:%M:%S'): Before scanned: $plex_scanned" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): Before scanned: $plex_scanned" >> $path_log
             plex-sync-section "$section_key"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             # Повторно забираем дату последнего сканирования
             plex_sections=$(plex-sections | jq ". | select(.key == \"$section_key\")")
             plex_scanned=$(echo $plex_sections | jq -r .scanned)
-            echo "[OK]   $(date '+%H:%M:%S'): After scanned: $plex_scanned" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): After scanned: $plex_scanned" >> $path_log
             # Отправляем запрос в функцию /plex_status_key для ответа
             menu-plex-status "/plex_status_$section_key" "$CHAT"
         ### Request: /plex_folder_key 📋🎥🎧
         elif [[ $command == /plex_folder_* ]]; then
             section_key=$(echo $command | sed "s/\/plex_folder_//")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_folder for key: $section_key" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /plex_folder for key: $section_key" >> $path_log
             plex_folder=$(plex-folder-from-section "$section_key")
             plex_foleer_name=$(echo $plex_folder | jq -r ".name")
             IFS=$'\n'
@@ -5006,18 +5013,18 @@ while :
         elif [[ $command == /find* ]]; then
             folder_name=$(echo $command | sed "s/\/find //")
             if [[ $folder_name == $command ]]; then
-                echo "[WARN] $(date '+%H:%M:%S'): <<< Response on $command invalid. Valid response: \"/find folder or file name\"" >> $path_log
+                echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on $command invalid. Valid response: \"/find folder or file name\"" >> $path_log
             else
-                echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /find for $folder_name to Plex" >> $path_log
+                echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /find for $folder_name to Plex" >> $path_log
                 if [[ $folder_name == /* ]]; then
-                    echo "[INFO] $(date '+%H:%M:%S'): Find on endpoint: $folder_name" >> $path_log
+                    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Find on endpoint: $folder_name" >> $path_log
                     endpoint=$folder_name
                     json_data=$(plex-content-from-folder "$endpoint")
                     data=$(echo "Содержимое указанной директории:\n\n")
                 else
-                    echo "[INFO] $(date '+%H:%M:%S'): Find on folder: $folder_name" >> $path_log
+                    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Find on folder: $folder_name" >> $path_log
                     endpoint=$(plex-folder-from-section $global_section_key | jq -r ". | select(.name == \"$folder_name\").endpoint")
-                    echo "[INFO] $(date '+%H:%M:%S'): Get endpoint for find: $endpoint" >> $path_log
+                    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Get endpoint for find: $endpoint" >> $path_log
                     json_data=$(plex-content-from-folder "$endpoint")
                     data=$(echo "Содержимое *$folder_name*:\n\n")
                 fi
@@ -5030,14 +5037,14 @@ while :
             fi
         ### Request: /plex_last_views ⏯
         elif [[ $command == /plex_last_views ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_last_views" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /plex_last_views" >> $path_log
             endpoint="/library/onDeck"
             json_data=$(plex-content-from-folder "$endpoint")
             data=$(echo "Список последних просмотров:\n\n")
             menu-plex-find "$json_data" "$data" "$CHAT" "last_view"
         ### Request: /plex_last_added 🆕
         elif [[ $command == /plex_last_added ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /plex_last_added" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /plex_last_added" >> $path_log
             endpoint="/library/recentlyAdded"
             plex_dir=$(curl -s -X GET "$PLEX_ADDR$endpoint" \
                 -H "X-Plex-Token: $PLEX_TOKEN" \
@@ -5061,42 +5068,42 @@ while :
         ###### ⚙️ ⚙️ ⚙️ WinAPI ⚙️ ⚙️ ⚙️
         ### Request: /win_state
         elif [[ $command == /win_state* ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /win_state" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /win_state" >> $path_log
             win-state
         ### Request: /win_files
         elif [[ $command == /win_files* ]]; then
             win_path=$(echo $command | sed "s/\/win_files //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /win_files for disk or directory: $win_path" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /win_files for disk or directory: $win_path" >> $path_log
             win-files "$win_path"
         ### Request: /win_process
         elif [[ $command == /win_process* ]]; then
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /win_process" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /win_process" >> $path_log
             win-process
         ### Request: /app_status
         elif [[ $command == /app_status* ]]; then
             app_name=$(echo $command | sed "s/\/app_status //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /app_status for application: $app_name" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /app_status for application: $app_name" >> $path_log
             app-status-response "$app_name"
         ### Request: ▶️▶️▶️ /app_start
         elif [[ $command == /app_start* ]]; then
             app_name=$(echo $command | sed "s/\/app_start //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /app_start for application: $app_name" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /app_start for application: $app_name" >> $path_log
             if [[ $app_name == *"plex"* ]]; then
                 app_status_start=$(app-start-plex "$app_name")
             else
                 app_status_start=$(app-start "$app_name")
             fi
-            echo "[INFO] $(date '+%H:%M:%S'): Response from $app_name: $app_status_start" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Response from $app_name: $app_status_start" >> $path_log
             app-status-response "$app_name"
         ### Request: ⏹⏹⏹ /app_stop
         elif [[ $command == /app_stop* ]]; then
             app_name=$(echo $command | sed "s/\/app_stop //")
-            echo "[OK]   $(date '+%H:%M:%S'): <<< Response on /app_start for application: $app_name" >> $path_log
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /app_start for application: $app_name" >> $path_log
             app_status_stop=$(app-stop "$app_name")
-            echo "[INFO] $(date '+%H:%M:%S'): Response from $app_name: $app_status_stop" >> $path_log
+            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Response from $app_name: $app_status_stop" >> $path_log
             app-status-response "$app_name"
         else
-            echo "[WARN] $(date '+%H:%M:%S'): Command not found: $command" >> $path_log
+            echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Command not found: $command" >> $path_log
         fi
     fi
 done &
@@ -5119,7 +5126,7 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
             links=($(printf "%s\n" "${rss[@]}" | grep "<link>https://kinozal.tv/details" | sed -r 's/<link>|<\/link>//g'))
             link=$(echo ${links[0]})
             if [ $link != $link_temp ]; then
-                echo "[INFO] $(date '+%H:%M:%S'): RSS data updated"  >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): RSS data updated"  >> $path_log
                 unset array
                 for l in ${links[@]}; do
                     if [ $l != $link_temp ]; then
@@ -5136,6 +5143,7 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                 count_post=0
                 count_skip=0
                 count_error=0
+                CURRENT_HOUR=$(echo $(date '+%H'))
                 for a in ${array[@]}; do
                     # Обновляем адрес на обратный прокси
                     original_url=$a
@@ -5154,24 +5162,73 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                         year=$(printf "%s\n" "${html[@]}" | grep -E -B 1 "class=lnks_tobrs" | head -n 1 | sed -r 's/.+<\/b> //; s/<.+//')
                         region=$(printf "%s\n" "${html[@]}" | grep -E "class=lnks_tobrs" | sed -r 's/.+tobrs>//; s/<.+//' | head -n 2 | tail -n 1 | sed -r 's/`|_|\"|&|;|quot//g; s/ё/е/g')
                         region_test=$(echo $region | grep "Россия")
+                        # Забираем размер и качество для истории
+                        size=$(printf "%s\n" "${html[@]}" | grep "floatright green" -m 1 | sed -r 's/.+n">//;s/\s.+//')
+                        format=$(printf "%s\n" "${html[@]}" | grep "Качество:" | sed -r "s/.+<\/b> //g; s/<br.+>//g" | sed -r "s/<.+//g")
+                        kz_id=$(echo $a | sed -r "s/^.+id=//g")
                         ### Фильтрация постов по рейтингу
                         if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
                             ((count_skip++))
-                            echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (rating): $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             continue
                         ### Фильтрация постов по году выхода
                         elif [[ $year < $FILTER_YEAR ]]; then
                             ((count_skip++))
-                            echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (year: $year)" >> $path_log
+                            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (year): $a (year: $year)" >> $path_log
                             continue
                         ### Фильтрация постов по региону
                         elif [[ $region_test ]]; then
                             ((count_skip++))
-                            echo "[INFO] $(date '+%H:%M:%S'): - Skip: $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (region): $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
+                            continue
+                        ### Фильтрация постов в ночное время с учетом часового пояса (c 00:00 до 08:00)
+                        elif [[ $CURRENT_HOUR -lt $START_POST_HOUR ]]; then
+                            ((count_skip++))
+                            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (night): $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb, time: $CURRENT_HOUR < $START_POST_HOUR)" >> $path_log
                             continue
                         else
+                            ### Фильтрация постов по истории
+                            addPost="false"
+                            # Создаем новый json файл для хранения истории постов
+                            if [ ! -f $path_post ]; then
+                                echo '[]' > "$path_post"
+                                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Created a new file for storing post history: $path_post" >> $path_log
+                                addPost="true"
+                            fi
+                            if [[ $addPost == "false" ]]; then
+                                # Ищем пост по имени
+                                selectPosts=$(jq "[.[] | select(.name == \"$name\")]" "$path_post")
+                                # Проверяем, что массив не пустой
+                                postsCount=$(echo "$selectPosts" | jq 'length')
+                                if echo "$selectPosts" | jq 'length > 0' | grep -q true; then
+                                    # Извлекаем все значения size из отфильтрованных данных и проверяем, что они меньше текущего
+                                    allPostSizes=$(echo "$selectPosts" | jq -r '[.[] | .size] | join(", ")')
+                                    checkSize=$(echo "$selectPosts" | jq -r '[.[] | .size | tonumber] | all(. < '"$size"')')
+                                    # Если все размеры меньше текущего, добавляем новый пост
+                                    if [ "$checkSize" == "true" ]; then
+                                        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): POST size is larger than others (count: $postsCount) in history: $size > $allPostSizes" >> $path_log
+                                        addPost="true"
+                                    else
+                                        ((count_skip++))
+                                        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): POST size is smaller than others (count: $postsCount) in history: $size < $allPostSizes" >> $path_log
+                                        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (size): $a (name: $name)" >> $path_log
+                                        continue
+                                    fi
+                                else
+                                    # Добавляем новый пост, если не найдено совпадений по имени
+                                    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): POST not found in history" >> $path_log
+                                    addPost="true"
+                                fi
+                            fi
+                            # Добавляем новый пост в файл
+                            if [[ $addPost == "true" ]]; then
+                                postData="{\"name\": \"$name\", \"id\": \"$kz_id\", \"size\": \"$size\", \"format\": \"$format\", \"year\": \"$year\", \"region\": \"$region\", \"kp\": \"$rating_kp\", \"imdb\": \"$rating_imdb\"}"
+                                echo "$postData" | jq --argjson new_entry "$postData" '. += [$new_entry]' "$path_post" > temp.json && mv temp.json "$path_post"
+                                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): POST added in history: $postData" >> $path_log
+                            fi
+                            ### Постим в канал
                             ((count_post++))
-                            echo "[OK]   $(date '+%H:%M:%S'): + Post: $a (year: $year, rating kp: $rating_kp, imdb: $rating_imdb and region: $region)" >> $path_log
+                            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): + Post: $a (year: $year, rating kp: $rating_kp, imdb: $rating_imdb and region: $region)" >> $path_log
                             data=$(read-html "$html" "$a" "Channel")
                             keyboard='{"inline_keyboard":['
                             ### Отдаем ссылки на 🟠 Кинопоиск, 🟡 IMDb и 🟣 Кинозал, если они были получены
@@ -5225,18 +5282,18 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                         fi
                     else
                         ((count_error++))
-                        echo "[ERRO] $(date '+%H:%M:%S'): ! HTML data not avaliable: $a" >> $path_log
+                        echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): ! HTML data not avaliable: $a" >> $path_log
                     fi
                 done
-                echo "[INFO] $(date '+%H:%M:%S'): All records: $count_all, post: $count_post, skip: $count_skip, error: $count_error" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): All records: $count_all, post: $count_post, skip: $count_skip, error: $count_error" >> $path_log
                 link_temp=$link
-                echo "[INFO] $(date '+%H:%M:%S'): Update last link: $link_temp" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Update last link: $link_temp" >> $path_log
             else
-                echo "[INFO] $(date '+%H:%M:%S'): RSS no new data (last link: $link_temp)" >> $path_log
+                echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): RSS no new data (last link: $link_temp)" >> $path_log
             fi
             sleep $TIMEOUT_SEC_POST
         else
-            echo "[ERRO] $(date '+%H:%M:%S'): ! RSS data not avaliable" >> $path_log
+            echo "[ERRO] $(date '+%d.%m.%Y %H:%M:%S'): ! RSS data not avaliable" >> $path_log
             sleep $TIMEOUT_SEC_ERROR
         fi
     done &
