@@ -106,13 +106,15 @@
 ### 13.12.2024-... (0.4.7):
 # + Поддержка публичного зеркала для проекта Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy)
 # + Анализ публикаций для канала Kinozal-News по размеру раздачи и отключение публикаций в ночное время
-# + Добавлена дата в логирование и откорректирована временная зона через конфиигурацию для контейнера
+# ~ Переработан поисковой запрос на свободный формат ввода года выхода и формата (без скобок и позиционирования в начале строка) а также добавлен тип (фильм/сериал) для фильтрации
+# ~ Добавлена дата в логирование и откорректирована временная зона через конфиигурацию для контейнера
+
+# + Добавить в меню управление VPN через проект VPNc api (https://github.com/lifailon/vpnc)
 
 ### Backlog:
-# + Поиск без скобок для фильтрации по разрешению и добавить категории поиска: фильм/сериал (например: люцифер 2019 1080 сериал)
 # + Поиск в TMDB через меню Telegram
-# + "ТОП раздач Кинозал" и "Новинки Кинозал" через меню Telegram
-# + Добавить в меню управление VPN через проект VPNc api (https://github.com/lifailon/vpnc)
+# + Добавить "ТОП раздач Кинозал" и "Новинки Кинозал" через меню Telegram
+# + Интегрировать Everything API в меню Plex для удаления файлов
 
 ###############################################################################
 
@@ -2574,24 +2576,40 @@ function url-encode-ru {
     echo "$encoded"
 }
 
+### Параметры поиска:
+# Дата (d=): 1900-2100
+# Разрешение (v=3002/3001/7): 720/1080/2160
+# Тип (c=1002/1001): фильм/сериал
+
 ### Поиск в кинозал по названию фильма или сериала + обработка доп параметров
 function get-search {
     search_name=$1
-    search_year_test=false
-    search_format_test=false
-    id_url="$KZ_ADDR/browse.php?" # формируем url
-    if [[ $search_name =~ ^[0-9]{4} ]]; then
-        search_year_test=true # указываем, что используется фильтрация по году (для вывода в $data)
-        search_year=$(echo $search_name | grep -Po "^[0-9]{4}") # забираем год
-        search_name=$(echo $search_name | sed -r "s/$search_year //") # удаляем год из имени
-        id_url+="&d=$search_year" # добавляем в url параметр год выхода
+    # Формируем базовый url
+    id_url="$KZ_ADDR/browse.php?"
+    # search_name="люцифер 2021 1080 сериал"
+    # Извлекаем год выхода и разрешение
+    filterYear=$(echo "$search_name" | grep -oE '\b(19[0-9]{2}|20[0-9]{2})\b')
+    filterFormat=$(echo "$search_name" | grep -oE '\b(720|1080|2160)\b')
+    filterType=$(echo "$search_name" | grep -oE '\b(фильм|сериал|Фильм|Сериал)\b')
+    # Обновляем поисковой запрос
+    search_name=$(echo "$search_name" | sed -E 's/\b(19[0-9]{2}|20[0-9]{2})\b//g; s/\b(720|1080|2160)\b//g; s/\b(фильм|сериал|Фильм|Сериал)\b//g; s/\s+/ /g; s/^\s+|\s+$//g')
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search name: $search_name" >> $path_log
+    # Формируем тело ответа
+    data="Поиск: *$search_name*\n"
+    # Фильтруем по году выхода
+    if [[ -n $filterYear ]]; then
+        # Извлекаем только первую дату
+        filterYear=${filterYear[0]}
+        # Добавляем в url параметр год выхода
+        id_url+="&d=$filterYear"
+        data+="Год выхода: *$filterYear*\n"
+    else
+        data+="Год выхода: *все года*\n"
     fi
-    if [[ $search_name =~ ^\(.+\) ]]; then
-        search_format_test=true
-        search_format_temp=$(echo $search_name | grep -Po "^\(.+\)" | sed -r "s/\(|\)//g") # забираем формат
-        search_name=$(echo $search_name | sed -r "s/\($search_format_temp\)\s//") # обновляем имя
-        # Проверяем пользовательский параметр (устанавливаем соответствующий параметр в url и обновляем пользовательский параметр для ответа)
-        case $search_format_temp in
+    # Фильтруем по формату
+    if [[ -n $filterFormat ]]; then
+        filterFormat=${filterFormat[0]}
+        case $filterFormat in
             "720")
                 search_format="&v=3002"
                 search_format_temp="HD (720)"
@@ -2605,39 +2623,44 @@ function get-search {
                 search_format_temp="4K (2160)"
             ;;
             *)
-                search_format=false
+                search_format="&v=0"
                 search_format_temp="Неправильно задан формат (доступны: 720, 1080 и 2160)."
             ;;
         esac
-        # Обновляем url, если параметр передан верно
-        if [[ $search_format != false ]]; then
-            id_url+=$search_format
-        fi
-    fi
-    # Повторяем проверку года выхода, если он был передан после формата
-    if [[ $search_name =~ ^[0-9]{4} ]]; then
-        search_year_test=true
-        search_year=$(echo $search_name | grep -Po "^[0-9]{4}")
-        search_name=$(echo $search_name | sed -r "s/$search_year //")
-        id_url+="&d=$search_year"
-    fi
-    # Кодируем запрос в url строку (для кириллицы)
-    search_name_encode=$(url-encode-ru "$search_name")
-    search_name_replace_space=$(echo $search_name_encode | sed "s/ /+/g")
-    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Url name: $search_name_replace_space" >> $path_log
-    id_url+="&s=$search_name_replace_space"
-    # Проверяем параметры для формирования тела ответа
-    data="Поиск: *$search_name*\n"
-    if [[ $search_year_test == true ]]; then
-        data+="Год выхода: *$search_year*\n"
-    else
-        data+="Год выхода: *все года*\n"
-    fi
-    if [[ $search_format_test == true ]]; then
+        id_url+=$search_format
         data+="Выбор формата: *$search_format_temp*\n"
+        
     else
         data+="Выбор формата: *все форматы*\n"
     fi
+    # Фильтруем по типу
+    if [[ -n $filterType ]]; then
+        filterType=${filterType[0]}
+        case $filterType in
+            [фФ]ильм)
+                search_type="&c=1002"
+                search_type_temp="только фильмы"
+            ;;
+            [сС]ериал)
+                search_type="&c=1001"
+                search_type_temp="только сериалы"
+            ;;
+            *)
+                search_type="&c=0"
+                search_type_temp="Неправильно задан тип фильтрации (доступны: фильм или сериал)."
+            ;;
+        esac
+        id_url+=$search_format
+        data+="Тип фильтрации: *$search_type_temp*\n"
+    else
+        data+="Тип фильтрации: *фильмы и сериалы*\n"
+    fi
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search param - Year: $filterYear, Format: $search_format, Type: $search_type." >> $path_log
+    # Кодируем запрос в url строку (для кириллицы) и добавляем его в базовый url
+    search_name_encode=$(url-encode-ru "$search_name")
+    search_name_replace_space=$(echo $search_name_encode | sed "s/ /+/g")
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Encode search name for url: $search_name_replace_space" >> $path_log
+    id_url+="&s=$search_name_replace_space"
     # Делаем запрос и создаем кнопки
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
