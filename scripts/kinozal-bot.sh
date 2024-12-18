@@ -3696,12 +3696,12 @@ function menu-plex-find {
 ### API Swagger Docs: http://$VPNC_ADDR/swagger/index.html
 
 ### Конфигурация VPNc:
-## Получить имя сетевого адаптера
-# Get-NetIPConfiguration | Where-Object InterfaceAlias -match "proton"
-## Название процесса:
+## Название процесса по частичному совпадению в названии
 # Get-Process *protonvpn*
-## Путь исполняемого файла по имени процесса:
+## Путь к исполняемому файлу по имени процесса
 # Get-Process *protonvpn* | Select-Object *path*
+## Имя сетевого адаптера
+# Get-NetIPConfiguration | Where-Object InterfaceAlias -match "proton"
 
 ## Бесплатные серверы Proton VPN не поддерживают трафик P2P, который использует qBittorrent
 
@@ -5265,7 +5265,7 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                         format=$(printf "%s\n" "${html[@]}" | grep "Качество:" | sed -r "s/.+<\/b> //g; s/<br.+>//g" | sed -r "s/<.+//g")
                         kz_id=$(echo $a | sed -r "s/^.+id=//g")
                         ### Фильтрация постов по рейтингу
-                        if [[ ($rating_kp == "—" || $rating_kp < $RATING_KP) && $rating_imdb < $RATING_IMDB ]]; then
+                        if [[ ($rating_kp == "—" || $rating_kp < $FILTER_RATING_KP) && $rating_imdb < $FILTER_RATING_IMDB ]]; then
                             ((count_skip++))
                             echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (rating): $a (rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             continue
@@ -5280,9 +5280,9 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (region): $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb)" >> $path_log
                             continue
                         ### Фильтрация постов в ночное время с учетом часового пояса (c 00:00 до 08:00)
-                        elif [[ $CURRENT_HOUR -lt $START_POST_HOUR ]]; then
+                        elif [[ $CURRENT_HOUR -lt $FILTER_START_POST_HOUR ]]; then
                             ((count_skip++))
-                            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (night): $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb, time: $CURRENT_HOUR < $START_POST_HOUR)" >> $path_log
+                            echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): - Skip (night): $a (region: $region, year: $year, rating kp: $rating_kp and imdb: $rating_imdb, time: $CURRENT_HOUR < $FILTER_START_POST_HOUR)" >> $path_log
                             continue
                         else
                             ### Фильтрация постов по истории
