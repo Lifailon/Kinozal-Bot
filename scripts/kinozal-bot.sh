@@ -103,15 +103,17 @@
 # ~ Отлажена проблема открытиия раздач в клиенте qBittorrent (длинное имя файла в callback для поиска в Plex)
 ### 13.12.2024-... (0.4.7):
 # + Поддержка публичного зеркала для проекта Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy)
-# + Добавлен механизм управления VPN (статус/включение/выключение) в меню Telegram через VPNc api (https://github.com/lifailon/vpnc)
+# + Добавлен механизм управления VPN (статус/включение/выключение) и другими процессами в меню Telegram через VPNc api (https://github.com/lifailon/vpnc)
+# + Остановка и запуск процесса qBittorrent (например, бесплатные серверы Proton VPN не поддерживают трафик P2P)
 # + Анализ публикаций для канала Kinozal-News по размеру раздачи и отключение публикаций в ночное время
 # ~ Переработан поисковой запрос на свободный формат ввода года выхода и формата (без скобок и позиционирования в начале строка) а также добавлен тип (фильм/сериал) для фильтрации
 # ~ Добавлена дата в логирование и откорректирована временная зона через конфиигурацию для контейнера
 
 ### Backlog:
+# + Реализовать выгрузку в Telegram видео-контента размером больше 50МБ через TDLib
 # + Поиск в TMDB через меню Telegram
 # + Добавить "ТОП раздач Кинозал" и "Новинки Кинозал" через меню Telegram
-# + Интегрировать Everything API в меню Plex для удаления файлов
+# + Расширить функционал удаленного управления через VPNc
 
 ###############################################################################
 
@@ -189,8 +191,8 @@
 # /tmdb_person <person_id> - Информация по актеру и ссылки на TMDB и IMDb
 ### 0.4.7:
 # /vpnc_status - статус подключения VPN
-# /vpnc_start - запуск процесса VPN
-# /vpnc_stop - остановка процесса VPN
+# /vpnc_start_procName - запуск процесса VPN (по умолчанию, из конфигурации) или по переданному имени
+# /vpnc_stop_procName - остановка процесса
 
 ###############################################################################
 
@@ -381,13 +383,55 @@ fi
 
 ################################### 🔵 🔵 🔵 Telegram 🔵 🔵 🔵 ####################################
 
+### Функция проверки доступности Telegram API
 function test-telegram {
     endpoint="getMe"
     url="https://api.telegram.org/bot$TG_TOKEN/$endpoint"
     curl -s $url -X "GET"
 }
 
-### Функция отправки сообщения в to Telegram
+### Функция чтения сообщений из Telegram
+function read-telegram {
+    endpoint="getUpdates"
+    url="https://api.telegram.org/bot$TG_TOKEN/$endpoint"
+    last_update_id=$(curl -s $url -X "GET" | jq ".result[-1].update_id")
+    messages=$(curl -s $url -X "GET" -d offset=$last_update_id -d limit=1)
+    type="bot_command"
+    ### Filtering callback query
+    result=$(echo $messages | jq .result[].callback_query)
+    ### Filtering messages by chat id and type message (only commands)
+    for TG in ${TG_CHAT_ARRAY[@]}; do
+        if [[ $result == "null" ]]; then
+            selected=$(echo $messages | jq ".result[] | select(.message.chat.id == $TG and .message.entities[0].type == \"$type\")")
+            if [[ -n "$selected" ]]; then
+                echo $selected | jq '{
+                    timestamp: .message.date,
+                    text: .message.text,
+                    user: .message.from.username,
+                    chat: .message.chat.id,
+                    update_id: .update_id,
+                    message_id: .callback_query.message.message_id
+                }' 
+                break
+            fi
+        else
+            selected=$(echo $messages | jq ".result[] | select(.callback_query.message.chat.id == $TG)")
+            if [[ -n "$selected" ]]; then
+                echo $selected | jq '{
+                    timestamp: .callback_query.message.date,
+                    text: .callback_query.data,
+                    user: .callback_query.message.from.username,
+                    chat: .callback_query.message.chat.id,
+                    update_id: .update_id,
+                    message_id: .callback_query.message.message_id
+                }'
+                break
+            fi
+        fi
+    done
+}
+
+### Функция отправки сообщения в Telegram
 function send-telegram {
     text=$1
     chat=$2
@@ -448,6 +492,10 @@ function edit-keyboard {
 }
 
 ### ⬆️⬆️⬆️ Функция отправка файла в Telegram ⬆️⬆️⬆️
+## API Docs:
+# https://core.telegram.org/bots/api#senddocument
+# https://telegram-bot-sdk.readme.io/reference/senddocument
+# Limit size: 50 MB
 function send-file {
     document=$1
     endpoint="sendDocument"
@@ -460,47 +508,6 @@ function send-file {
     else
         echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): cURL: sent file to telegram" >> $path_log
     fi
-}
-
-### Функция чтения сообщений из Telegram
-function read-telegram {
-    endpoint="getUpdates"
-    url="https://api.telegram.org/bot$TG_TOKEN/$endpoint"
-    last_update_id=$(curl -s $url -X "GET" | jq ".result[-1].update_id")
-    messages=$(curl -s $url -X "GET" -d offset=$last_update_id -d limit=1)
-    type="bot_command"
-    ### Filtering callback query
-    result=$(echo $messages | jq .result[].callback_query)
-    ### Filtering messages by chat id and type message (only commands)
-    for TG in ${TG_CHAT_ARRAY[@]}; do
-        if [[ $result == "null" ]]; then
-            selected=$(echo $messages | jq ".result[] | select(.message.chat.id == $TG and .message.entities[0].type == \"$type\")")
-            if [[ -n "$selected" ]]; then
-                echo $selected | jq '{
-                    timestamp: .message.date,
-                    text: .message.text,
-                    user: .message.from.username,
-                    chat: .message.chat.id,
-                    update_id: .update_id,
-                    message_id: .callback_query.message.message_id
-                }' 
-                break
-            fi
-        else
-            selected=$(echo $messages | jq ".result[] | select(.callback_query.message.chat.id == $TG)")
-            if [[ -n "$selected" ]]; then
-                echo $selected | jq '{
-                    timestamp: .callback_query.message.date,
-                    text: .callback_query.data,
-                    user: .callback_query.message.from.username,
-                    chat: .callback_query.message.chat.id,
-                    update_id: .update_id,
-                    message_id: .callback_query.message.message_id
-                }'
-                break
-            fi
-        fi
-    done
 }
 
 ################################## 🟢 🟢 🟢 qBittorrent 🟢 🟢 🟢 ##################################
@@ -3695,18 +3702,12 @@ function menu-plex-find {
 ### API на базе ASP .NET Core: https://github.com/Lifailon/vpnc
 ### API Swagger Docs: http://$VPNC_ADDR/swagger/index.html
 
-### Конфигурация VPNc:
-## Название процесса по частичному совпадению в названии
-# Get-Process *protonvpn*
-## Путь к исполняемому файлу по имени процесса
-# Get-Process *protonvpn* | Select-Object *path*
-## Имя сетевого адаптера
-# Get-NetIPConfiguration | Where-Object InterfaceAlias -match "proton"
-
-## Бесплатные серверы Proton VPN не поддерживают трафик P2P, который использует qBittorrent
-
 function vpnc-status {
-    vpncData=$(curl -s "$VPNC_ADDR/api/status")
+    vpncData=$(
+        curl -s -X GET "$VPNC_ADDR/api/status" \
+          -H "X-API-KEY: $VPNC_KEY" \
+          --max-time 5
+    )
     if [[ -n $vpncData ]]; then
         country=$(echo $vpncData | jq -r .country)
         timeZone=$(echo $vpncData | jq -r .timeZone)
@@ -3726,9 +3727,10 @@ function vpnc-status {
     fi
     keyboard='{"inline_keyboard":['
     keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/vpnc_status\"}],"
-    keyboard+="[{\"text\":\"🔒 Включить VPN\",\"callback_data\":\"\/vpnc_start\"},"
-    keyboard+="{\"text\":\"⛔️ Выключить VPN\",\"callback_data\":\"\/vpnc_stop\"}],"
-    # Включить 🟢🔴qBittorrent и Wi-Fi
+    keyboard+="[{\"text\":\"🔒 Включить VPN\",\"callback_data\":\"\/vpnc_start_$VPNC_NAME\"},"
+    keyboard+="{\"text\":\"⛔️ Выключить VPN\",\"callback_data\":\"\/vpnc_stop_$VPNC_NAME\"}],"
+    keyboard+="[{\"text\":\"🟢 Start qBittorrent\",\"callback_data\":\"\/vpnc_start_qbittorrent\"},"
+    keyboard+="{\"text\":\"🔴 Stop qBittorrent\",\"callback_data\":\"\/vpnc_stop_qbittorrent\"}],"
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
     keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
@@ -3741,11 +3743,37 @@ function vpnc-status {
 }
 
 function vpnc-start {
-    curl -s "$VPNC_ADDR/api/start"
+    procName=$1
+    # Если передается не qbittorrent, то запускаем процесс по умолчанию из vpnc.conf
+    if [[ $procName == "qbittorrent" ]]; then
+        procPath="C:\Program Files\qBittorrent\qbittorrent.exe"
+    else
+        procPath=""
+    fi
+    vpncData=$(
+        curl -s -X POST "$VPNC_ADDR/api/start" \
+          -H "X-API-KEY: $VPNC_KEY" \
+          -H "path: $procPath" \
+          -d '' \
+          --max-time 5
+    )
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): VPNc response: $vpncData" >> $path_log
 }
 
 function vpnc-stop {
-    curl -s "$VPNC_ADDR/api/stop"
+    procName=$1
+    if [[ ! $procName == "qbittorrent" ]]; then
+        procName=""
+    fi
+    vpncData=$(
+        curl -s -X POST "$VPNC_ADDR/api/stop" \
+          -H "X-API-KEY: $VPNC_KEY" \
+          -H "name: $procName" \
+          -H "wildcard: true" \
+          -d '' \
+          --max-time 5
+    )
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): VPNc response: $vpncData" >> $path_log
 }
 
 ###############################################################################
@@ -5189,14 +5217,16 @@ while :
         elif [[ $command == /vpnc_status ]]; then
             echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_status" >> $path_log
             vpnc-status
-        elif [[ $command == /vpnc_start ]]; then
-            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_start" >> $path_log
-            vpnc-start
+        elif [[ $command == /vpnc_start_* ]]; then
+            proc_name=$(echo $command | sed "s/\/vpnc_start_//")
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_start for $proc_name" >> $path_log
+            vpnc-start "$proc_name"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             vpnc-status
-        elif [[ $command == /vpnc_stop ]]; then
-            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_stop" >> $path_log
-            vpnc-stop
+        elif [[ $command == /vpnc_stop_* ]]; then
+            proc_name=$(echo $command | sed "s/\/vpnc_stop_//")
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_stop for $proc_name" >> $path_log
+            vpnc-stop "$proc_name"
             sleep $TIMEOUT_SEC_UPDATE_STATUS
             vpnc-status
         else
