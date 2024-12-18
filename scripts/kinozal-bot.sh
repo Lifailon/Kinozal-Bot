@@ -1,16 +1,15 @@
 #!/bin/bash
 
-# © 2023-2024 by Lifailon
+# Copyright Lifailon (Alex Kup) © 2023-2025
 # Source GitHub: https://github.com/Lifailon/Kinozal-Bot
-# Publication on Habr: https://habr.com/ru/articles/782028
-# Active Telegram Channel: @kinozal_news
-# Telegram Bot (access by id): @lifailon_ps_bot (Kinozal-Bot)
+# License MIT: https://github.com/Lifailon/Kinozal-Bot/blob/rsa/LICENSE
+# Telegram Channel: @kinozal_news
 
 ###############################################################################
 
 ### Stack:
-# Kinozal.tv (only HTML)
-# Telegram api (https://core.telegram.org/bots/api)
+# Kinozal.tv HTML (https://kinozal.tv)
+# Telegram REST api (https://core.telegram.org/bots/api)
 # qBittorrent WebUI api (https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1))
 # Transmission RPC api (https://github.com/transmission/transmission/blob/main/docs/rpc-spec.md)
 # Plex Media Server api (no official api documentation)
@@ -26,24 +25,24 @@
 # KZ_ADDR="https://kinozal.me"
 
 ### Proxy:
-### Например, VPN Hotspot Shield в режиме Split Tunneling через Proxy HandyCache для Windows
+## Например, VPN Hotspot Shield в режиме Split Tunneling через Proxy HandyCache для Windows
 # PROXY="True"
 # PROXY_ADDR="http://192.168.3.100:9090"
 # PROXY_USER="kinozal"
 # PROXY_PASS="proxy"
 
 ### Reverse Proxy:
-### Скачайте исполняемый файл froxy (https://github.com/Lifailon/froxy/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal
+## Скачайте исполняемый файл froxy (https://github.com/Lifailon/froxy/releases) и запустите обратный прокси сервер на машине с доступом к Kinozal
 # froxy --local 192.168.3.100:8443 --remote https://kinozal.tv
-### Запуск в контейнере
+## Запуск в контейнере:
 # docker pull lifailon/froxy:latest
 # docker run -d --name froxy -e SOCKS=0 -e FORWARD=0 -e LOCAL="*:8443" -e REMOTE="https://kinozal.tv" -e USER="false" -e PASSWORD="false" -p 8443:8443 --restart=unless-stopped lifailon/froxy
-### Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
+## Отключите в конфигурации использование Proxy-сервера и замените адрес Кинозал на адрес обратного прокси сервера:
 # PROXY="False"
 # KZ_ADDR="http://192.168.3.100:8443"
 
 ### Kinozal-Proxy (public mirror):
-### Разверните проект из исходного кода Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy) на бессерверной платформе Vercel
+## Разверните функцию из исходного кода Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy) на бессерверной платформе Vercel
 # PROXY="False"
 # KZ_ADDR="kinozal.vercel.app"
 
@@ -102,14 +101,12 @@
 # + Добавлен фильтр для канала (исключен Российского кинематограф)
 # ~ Добавлен поиск в Kinobox по имени для канала, если в раздаче отсутствует id Kinopoisk
 # ~ Отлажена проблема открытиия раздач в клиенте qBittorrent (длинное имя файла в callback для поиска в Plex)
-
 ### 13.12.2024-... (0.4.7):
 # + Поддержка публичного зеркала для проекта Kinozal-Proxy (https://github.com/Lifailon/Kinozal-Proxy)
+# + Добавлен механизм управления VPN (статус/включение/выключение) в меню Telegram через VPNc api (https://github.com/lifailon/vpnc)
 # + Анализ публикаций для канала Kinozal-News по размеру раздачи и отключение публикаций в ночное время
 # ~ Переработан поисковой запрос на свободный формат ввода года выхода и формата (без скобок и позиционирования в начале строка) а также добавлен тип (фильм/сериал) для фильтрации
 # ~ Добавлена дата в логирование и откорректирована временная зона через конфиигурацию для контейнера
-
-# + Добавить в меню управление VPN через проект VPNc api (https://github.com/lifailon/vpnc)
 
 ### Backlog:
 # + Поиск в TMDB через меню Telegram
@@ -190,6 +187,10 @@
 # /tmdb_season_episodes <tmdb_id> <season_number> - Список серий в указанном сезоне
 # /tmdb_select_episode <tmdb_id> <season_number> <episode_number> - Информация по выбранной серии и список приглашенных актеров
 # /tmdb_person <person_id> - Информация по актеру и ссылки на TMDB и IMDb
+### 0.4.7:
+# /vpnc_status - статус подключения VPN
+# /vpnc_start - запуск процесса VPN
+# /vpnc_stop - остановка процесса VPN
 
 ###############################################################################
 
@@ -205,6 +206,7 @@
 # / add_url - ➕🌐 Добавить торрент по url-адресу
 # / plex_info - 🟠 Plex
 # / find - 🔍 Поиск в Plex
+# / vpnc_status - 🛡 VPN
 
 ###############################################################################
 
@@ -215,20 +217,19 @@
 # /search_title Рокки 2
 # /search_title Рокки 4
 
-### Поиск с фильтрацией по году выхода:
-# /search_title 1979 Рокки
-# /search_title 1985 Рокки
+### Поиск с фильтрацией по типу (фильм или сериал):
+# /search_title Рокки 2 фильм
 
-### Поиск с фильтрацией по формату разрешения:
-# /search_title (720) Рокки
-# /search_title (1080) Рокки
-# /search_title (2160) Рокки
+### Поиск фильмов с фильтрацией по году выхода:
+# /search_title 1979 Рокки фильм
+# /search_title Рокки 1985 фильм
 
-### Поиск с фильтрацией по формату разрешения и году выхода:
-# /search_title 1985 (2160) Рокки
-# /search_title (2160) 1985 Рокки
+### Поиск фильмов с фильтрацией по году выхода и формату разрешения (HD/FullHD/4K):
+# /search_title Рокки фильм 1979 720
+# /search_title Рокки фильм 1979 1080
+# /search_title Рокки фильм 1979 2160
 
-### Поиск актера в базе Кинозал по имени:
+### Поиск актера по имени в базе Кинозал:
 # /search_actor "Алан"
 # /search_actor "Сильвестр"
 
@@ -2850,113 +2851,6 @@ function get-actor {
     fi
 }
 
-################################### ▶️ ▶️ ▶️ Kinobox ▶️ ▶️ ▶️ #####################################
-### Kinobox api: https://kinobox.tv/api
-
-function kinobox-players {
-    source_player=$1
-    id_player=$2
-    if [[ $source_player == "kinopoisk" ]]; then
-        players=$(curl -s -X GET "https://kinobox.tv/api/players?kinopoisk=$id_player" -H "accept: application/json")
-    elif [[ $source_player == "imdb" ]]; then
-        players=$(curl -s -X GET "https://kinobox.tv/api/players?imdb=$id_player" -H "accept: application/json")
-    fi
-    echo $players | jq ".[] | select(.source != null and .iframeUrl != null) | {
-        provider: .source,
-        url: .iframeUrl
-    }"
-}
-# kinobox-players kinopoisk 1142153
-# kinobox-players imdb tt7587890
-
-################################## 🟡 🟡 🟡 Kinopoisk 🟡 🟡 🟡 ####################################
-### Kinopoisk unofficial api
-### API documentation: https://api.kinopoisk.dev/documentation
-
-### Функции кодирования для передачи в параметр функции get-actor-kinopoisk
-function percent-encode {
-    str=$1
-    echo -n "$str" | iconv -t utf8 | od -An -tx1 | tr ' ' % | tr -d '\n'
-}
-
-# percent-encode "Маколей Калкин"
-
-# Функция декодирования кириллицы
-function percent-decode {
-    encoded=$1
-    url_encoded="${encoded//+/ }"
-    printf '%b' "${url_encoded//%/\\x}"
-}
-
-# percent-decode "%d0%9c%d0%b0%d0%ba%d0%be%d0%bb%d0%b5%d0%b9%20%d0%9a%d0%b0%d0%bb%d0%ba%d0%b8%d0%bd"
-
-### Получить информацию о выбранном актере из Кинопоиск API
-function get-actor-kinopoisk {
-    actor_name=$1
-    actor_encode=$(percent-encode $actor_name)
-    curl -s -X 'GET' \
-        "https://api.kinopoisk.dev/v1.4/person/search?page=1&limit=1&query=$actor_encode" \
-        -H "accept: application/json" \
-        -H "X-API-KEY: $KINOPOISK_TOKEN" | jq .
-}
-
-### Описание Кинопоиск по id + трейлеры + список названий Сиквелов и Приквелов (свойство movie_similar) для передачи в поиск Кинозал (/search_title) 🟡
-### Описание Кинозал обрабатывается в конечной точке /kinozal_description
-function get-movie-kinopoisk-id {
-    movie_id=$1
-    movie_data=$(curl -s -X 'GET' \
-        "https://api.kinopoisk.dev/v1.4/movie/$movie_id?page=1&limit=1" \
-        -H "accept: application/json" \
-        -H "X-API-KEY: $KINOPOISK_TOKEN")
-    movie_name=$(echo $movie_data | jq -r .name)
-    movie_alternative_name=$(echo $movie_data | jq -r .alternativeName)
-    country=$(echo $movie_data | jq -r .audience[].country)
-    country=$(echo $country | sed -r "s/\s/, /g")
-    movie_year=$(echo $movie_data | jq -r .year)
-    movie_premiere_world=$(echo $movie_data | jq -r .premiere.world) 
-    movie_premiere_world=$(date -d $movie_premiere_world +"%d.%m.%Y")
-    movie_premiere_russia=$(echo $movie_data | jq -r .premiere.russia)
-    movie_premiere_russia=$(date -d $movie_premiere_russia +"%d.%m.%Y")
-    movie_rating_kp=$(echo $movie_data | jq -r .rating.kp)
-    movie_rating_imdb=$(echo $movie_data | jq -r .rating.imdb)
-    movie_votes_kp=$(echo $movie_data | jq -r .votes.kp)
-    movie_votes_imdb=$(echo $movie_data | jq -r .votes.imdb)
-    movie_genres=$(echo $movie_data | jq -r .genres[].name)
-    movie_genres=$(echo $movie_genres | sed -r "s/\s/, /g")
-    movie_description=$(echo $movie_data | jq -r .description)
-    movie_trailer=$(echo $movie_data | jq -r .videos.trailers[].url)
-    movie_sequels=$(echo $movie_data | jq -r .sequelsAndPrequels[].name | tr '\n' ',' | sed "s/,/, /g" | sed -r "s/, $//")
-    movie_similar=$(echo $movie_data | jq -r .similarMovies[].name)
-    data="*Название:* $movie_name ($movie_alternative_name)\n"
-    data+="*Страна:* $country\n"
-    data+="*Год:* $movie_year\n"
-    data+="*Премьера в Мире:* $movie_premiere_world\n"
-    data+="*Премьера в России:* $movie_premiere_russia\n"
-    data+="*Рейтинг Кинопоиск:* $movie_rating_kp ($movie_votes_kp)\n"
-    data+="*Рейтинг IMDb:* $movie_rating_imdb ($movie_votes_imdb)\n"
-    data+="*Жанр:* $movie_genres\n\n"
-    data+="*Описание:* $movie_description\n\n"
-    data+="*Сиквелы и Приквелы:* $movie_sequels\n\n"
-    data+="*Трейлеры:*\n"
-    data+="$movie_trailer"
-    encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
-    IFS=$'\n'
-    keyboard='{"inline_keyboard":['
-    for movie_sim in $movie_similar; do
-        movie_callback=$(echo $movie_sim | cut -c "1-50")
-        keyboard+="[{\"text\":\"$movie_sim\",\"callback_data\":\"/search_title $movie_callback\"}],"
-    done
-    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $GLOBAL_ID_FIND\"},"
-    keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
-    keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
-    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
-    if [[ $message_id_temp != "null" ]]; then
-        edit-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard" "$message_id_temp"
-    else
-        send-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard"
-    fi
-}
-
 ####################################### 🔷🔷🔷 TMDB 🔷🔷🔷 ########################################
 
 ### Поиск по IMDb id
@@ -3797,9 +3691,173 @@ function menu-plex-find {
     fi
 }
 
+########################### 🛡 🛡 🛡 VPNc 🛡 🛡 🛡 #############################
+### API на базе ASP .NET Core: https://github.com/Lifailon/vpnc
+### API Swagger Docs: http://$VPNC_ADDR/swagger/index.html
+
+### Конфигурация VPNc:
+## Получить имя сетевого адаптера
+# Get-NetIPConfiguration | Where-Object InterfaceAlias -match "proton"
+## Название процесса:
+# Get-Process *protonvpn*
+## Путь исполняемого файла по имени процесса:
+# Get-Process *protonvpn* | Select-Object *path*
+
+## Бесплатные серверы Proton VPN не поддерживают трафик P2P, который использует qBittorrent
+
+function vpnc-status {
+    vpncData=$(curl -s "$VPNC_ADDR/api/status")
+    if [[ -n $vpncData ]]; then
+        country=$(echo $vpncData | jq -r .country)
+        timeZone=$(echo $vpncData | jq -r .timeZone)
+        region=$(echo $vpncData | jq -r .region)
+        city=$(echo $vpncData | jq -r .city)
+        data="*Процесс*: $(echo $vpncData | jq -r .processName)\n"
+        data+="*Статус процесса*: $(echo $vpncData | jq -r .processStatus)\n"
+        data+="*Время работы процесса*: $(echo $vpncData | jq -r .processUptime)\n"
+        data+="*Время работы системы*: $(echo $vpncData | jq -r .systemUptime)\n"
+        data+="*Статус VPN интерфейса*: $(echo $vpncData | jq -r .interfaceStatus)\n"
+        data+="*Статус интернета*: $(echo $vpncData | jq -r .pingStatus)\n"
+        data+="*Регион*: $country ($timeZone)"
+        dataLog=$(echo $data | sed -r "s/\\\n/, /g; s/\*//g")
+        echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): $dataLog" >> $path_log
+    else
+        data="Сервер недоступен"
+    fi
+    keyboard='{"inline_keyboard":['
+    keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/vpnc_status\"}],"
+    keyboard+="[{\"text\":\"🔒 Включить VPN\",\"callback_data\":\"\/vpnc_start\"},"
+    keyboard+="{\"text\":\"⛔️ Выключить VPN\",\"callback_data\":\"\/vpnc_stop\"}],"
+    # Включить 🟢🔴qBittorrent и Wi-Fi
+    keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
+    keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
+    keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $data)" "$CHAT" "$keyboard"
+    fi
+}
+
+function vpnc-start {
+    curl -s "$VPNC_ADDR/api/start"
+}
+
+function vpnc-stop {
+    curl -s "$VPNC_ADDR/api/stop"
+}
+
 ###############################################################################
-################################## Debug end ##################################
+############################## Debug end console ##############################
 ###############################################################################
+
+################################### ▶️ ▶️ ▶️ Kinobox ▶️ ▶️ ▶️ #####################################
+### Kinobox api: https://kinobox.tv/api
+
+function kinobox-players {
+    source_player=$1
+    id_player=$2
+    if [[ $source_player == "kinopoisk" ]]; then
+        players=$(curl -s -X GET "https://kinobox.tv/api/players?kinopoisk=$id_player" -H "accept: application/json")
+    elif [[ $source_player == "imdb" ]]; then
+        players=$(curl -s -X GET "https://kinobox.tv/api/players?imdb=$id_player" -H "accept: application/json")
+    fi
+    echo $players | jq ".[] | select(.source != null and .iframeUrl != null) | {
+        provider: .source,
+        url: .iframeUrl
+    }"
+}
+# kinobox-players kinopoisk 1142153
+# kinobox-players imdb tt7587890
+
+################################## 🟡 🟡 🟡 Kinopoisk 🟡 🟡 🟡 ####################################
+### Kinopoisk unofficial api
+### API documentation: https://api.kinopoisk.dev/documentation
+
+### Функции кодирования для передачи в параметр функции get-actor-kinopoisk
+function percent-encode {
+    str=$1
+    echo -n "$str" | iconv -t utf8 | od -An -tx1 | tr ' ' % | tr -d '\n'
+}
+
+# percent-encode "Маколей Калкин"
+
+# Функция декодирования кириллицы
+function percent-decode {
+    encoded=$1
+    url_encoded="${encoded//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
+}
+
+# percent-decode "%d0%9c%d0%b0%d0%ba%d0%be%d0%bb%d0%b5%d0%b9%20%d0%9a%d0%b0%d0%bb%d0%ba%d0%b8%d0%bd"
+
+### Получить информацию о выбранном актере из Кинопоиск API
+function get-actor-kinopoisk {
+    actor_name=$1
+    actor_encode=$(percent-encode $actor_name)
+    curl -s -X 'GET' \
+        "https://api.kinopoisk.dev/v1.4/person/search?page=1&limit=1&query=$actor_encode" \
+        -H "accept: application/json" \
+        -H "X-API-KEY: $KINOPOISK_TOKEN" | jq .
+}
+
+### Описание Кинопоиск по id + трейлеры + список названий Сиквелов и Приквелов (свойство movie_similar) для передачи в поиск Кинозал (/search_title) 🟡
+### Описание Кинозал обрабатывается в конечной точке /kinozal_description
+function get-movie-kinopoisk-id {
+    movie_id=$1
+    movie_data=$(curl -s -X 'GET' \
+        "https://api.kinopoisk.dev/v1.4/movie/$movie_id?page=1&limit=1" \
+        -H "accept: application/json" \
+        -H "X-API-KEY: $KINOPOISK_TOKEN")
+    movie_name=$(echo $movie_data | jq -r .name)
+    movie_alternative_name=$(echo $movie_data | jq -r .alternativeName)
+    country=$(echo $movie_data | jq -r .audience[].country)
+    country=$(echo $country | sed -r "s/\s/, /g")
+    movie_year=$(echo $movie_data | jq -r .year)
+    movie_premiere_world=$(echo $movie_data | jq -r .premiere.world) 
+    movie_premiere_world=$(date -d $movie_premiere_world +"%d.%m.%Y")
+    movie_premiere_russia=$(echo $movie_data | jq -r .premiere.russia)
+    movie_premiere_russia=$(date -d $movie_premiere_russia +"%d.%m.%Y")
+    movie_rating_kp=$(echo $movie_data | jq -r .rating.kp)
+    movie_rating_imdb=$(echo $movie_data | jq -r .rating.imdb)
+    movie_votes_kp=$(echo $movie_data | jq -r .votes.kp)
+    movie_votes_imdb=$(echo $movie_data | jq -r .votes.imdb)
+    movie_genres=$(echo $movie_data | jq -r .genres[].name)
+    movie_genres=$(echo $movie_genres | sed -r "s/\s/, /g")
+    movie_description=$(echo $movie_data | jq -r .description)
+    movie_trailer=$(echo $movie_data | jq -r .videos.trailers[].url)
+    movie_sequels=$(echo $movie_data | jq -r .sequelsAndPrequels[].name | tr '\n' ',' | sed "s/,/, /g" | sed -r "s/, $//")
+    movie_similar=$(echo $movie_data | jq -r .similarMovies[].name)
+    data="*Название:* $movie_name ($movie_alternative_name)\n"
+    data+="*Страна:* $country\n"
+    data+="*Год:* $movie_year\n"
+    data+="*Премьера в Мире:* $movie_premiere_world\n"
+    data+="*Премьера в России:* $movie_premiere_russia\n"
+    data+="*Рейтинг Кинопоиск:* $movie_rating_kp ($movie_votes_kp)\n"
+    data+="*Рейтинг IMDb:* $movie_rating_imdb ($movie_votes_imdb)\n"
+    data+="*Жанр:* $movie_genres\n\n"
+    data+="*Описание:* $movie_description\n\n"
+    data+="*Сиквелы и Приквелы:* $movie_sequels\n\n"
+    data+="*Трейлеры:*\n"
+    data+="$movie_trailer"
+    encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
+    IFS=$'\n'
+    keyboard='{"inline_keyboard":['
+    for movie_sim in $movie_similar; do
+        movie_callback=$(echo $movie_sim | cut -c "1-50")
+        keyboard+="[{\"text\":\"$movie_sim\",\"callback_data\":\"/search_title $movie_callback\"}],"
+    done
+    keyboard+="[{\"text\":\"⬅️ Назад\",\"callback_data\":\"\/search_id $GLOBAL_ID_FIND\"},"
+    keyboard+="{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"}],"
+    keyboard+="[{\"text\":\"👤 Профиль Кинозал\",\"callback_data\":\"\/profile\"},"
+    keyboard+="{\"text\":\"🗂 Торрент файлы\",\"callback_data\":\"\/torrent_files\"}]]}"
+    if [[ $message_id_temp != "null" ]]; then
+        edit-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard" "$message_id_temp"
+    else
+        send-keyboard "$(echo -e $encoded_data)" "$CHAT" "$keyboard"
+    fi
+}
 
 ################################## 🔎 🔎 🔎 Everything 🔎 🔎 🔎 ###################################
 ### HTTP API documentation: https://www.voidtools.com/support/everything/http
@@ -4249,6 +4307,8 @@ log-rotate
 
 ###############################################################################
 ################################# Thread 1️⃣ ##################################
+###############################################################################
+
 ### Включить для проверки доступности Telegram и Internet при каждой интерации цикла основного потока
 CHECK_TG_AND_INTERNET="False"
 ### Логировать количество интераций цикла в минуту (производительность)
@@ -5125,15 +5185,30 @@ while :
             app_status_stop=$(app-stop "$app_name")
             echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Response from $app_name: $app_status_stop" >> $path_log
             app-status-response "$app_name"
+        ###### 🛡 🛡 🛡 VPNc 🛡 🛡 🛡
+        elif [[ $command == /vpnc_status ]]; then
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_status" >> $path_log
+            vpnc-status
+        elif [[ $command == /vpnc_start ]]; then
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_start" >> $path_log
+            vpnc-start
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            vpnc-status
+        elif [[ $command == /vpnc_stop ]]; then
+            echo "[OK]   $(date '+%d.%m.%Y %H:%M:%S'): <<< Response on /vpnc_stop" >> $path_log
+            vpnc-stop
+            sleep $TIMEOUT_SEC_UPDATE_STATUS
+            vpnc-status
         else
             echo "[WARN] $(date '+%d.%m.%Y %H:%M:%S'): Command not found: $command" >> $path_log
         fi
     fi
 done &
-###############################################################################
 
 ###############################################################################
 ################################# Thread 2️⃣ ##################################
+###############################################################################
+
 ### Channel News (post news to channel from kinozal)
 if [[ $TG_CHANNEL_USE = "True" ]]; then
     link_temp="null"
@@ -5326,4 +5401,3 @@ fi
 if [[ $docker == true ]]; then
     tail -f $path_log
 fi
-###############################################################################
