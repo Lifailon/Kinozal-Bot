@@ -1,0 +1,12 @@
+[Unit]
+Description=Telegram bot for Kinozal torrent tracker, remote managment qBittorrent, Transmission and Plex Media Server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/podman start -a kinozal-bot
+ExecStop=/usr/bin/podman stop -t 10 kinozal-bot
+
+[Install]
+WantedBy=default.target
