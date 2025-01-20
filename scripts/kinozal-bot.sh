@@ -109,10 +109,11 @@
 # ~ Переработан поисковой запрос на свободный формат ввода года выхода и формата (без скобок и позиционирования в начале строка) а также добавлен тип (фильм/сериал) для фильтрации
 # ~ Добавлена дата в логирование и откорректирована временная зона через конфиигурацию для контейнера
 
-### Backlog 2025 (0.4.8):
-# + Реализовать выгрузку видео-контента размером больше 50МБ в Telegram через TDLib (необходима скомпилированная обертка для отправки файлов)
-# + Расширить функционал удаленного управления через VPNc
-# + Поиск в TMDB через меню Telegram
+### Backlog:
+# Улучшить анализ раздач для канала
+# Добавить кнопки для получения списков топ раздач и новинок из Кинозал
+# Поиск в TMDB через меню Telegram
+# Расширить функционал удаленного управления через VPNc
 
 ###############################################################################
 
@@ -2604,7 +2605,11 @@ function get-search {
     filterType=$(echo "$search_name" | grep -oE '\b(фильм|сериал|Фильм|Сериал)\b')
     # Обновляем поисковой запрос
     search_name=$(echo "$search_name" | sed -E 's/\b(19[0-9]{2}|20[0-9]{2})\b//g; s/\b(720|1080|2160)\b//g; s/\b(фильм|сериал|Фильм|Сериал)\b//g; s/\s+/ /g; s/^\s+|\s+$//g')
-    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search name: $search_name" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search request from Telegram: $search_name" >> $path_log
+    # Кодируем запрос в url строку (для кириллицы) и добавляем его в базовый url первым параметром
+    search_name_encode=$(url-encode-ru "$search_name")
+    search_name_replace_space=$(echo $search_name_encode | sed "s/ /+/g")
+    id_url+="&s=$search_name_replace_space"
     # Формируем тело ответа
     data="Поиск: *$search_name*\n"
     # Фильтруем по году выхода
@@ -2661,17 +2666,13 @@ function get-search {
                 search_type_temp="Неправильно задан тип фильтрации (доступны: фильм или сериал)."
             ;;
         esac
-        id_url+=$search_format
+        id_url+=$search_type
         data+="Тип фильтрации: *$search_type_temp*\n"
     else
         data+="Тип фильтрации: *фильмы и сериалы*\n"
     fi
-    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search param - Year: $filterYear, Format: $search_format, Type: $search_type." >> $path_log
-    # Кодируем запрос в url строку (для кириллицы) и добавляем его в базовый url
-    search_name_encode=$(url-encode-ru "$search_name")
-    search_name_replace_space=$(echo $search_name_encode | sed "s/ /+/g")
-    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Encode search name for url: $search_name_replace_space" >> $path_log
-    id_url+="&s=$search_name_replace_space"
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search param: [Year: $filterYear, Format: $search_format, Type: $search_type]" >> $path_log
+    echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search url: $id_url" >> $path_log
     # Делаем запрос и создаем кнопки
     if [[ $PROXY == "True" ]]; then
         URL_PROXY=$(echo $PROXY_ADDR | sed -r "s/:\/\//:\/\/$PROXY_USER:$PROXY_PASS@/")
