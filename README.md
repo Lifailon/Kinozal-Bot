@@ -41,16 +41,16 @@ Telegram бот, который позволяет автоматизирова�
 - [📚 Stack](#-stack)
 - [🍿 Реализовано](#-реализовано)
 - [🚀 Примеры использования](#-примеры-использования)
-- [📑 Зависимости](#-зависимости)
+- [⚡ Зависимости](#-зависимости)
 - [⚙️ Настройка](#️-настройка)
 - [🔌 Подключение и управление](#-подключение-и-управление)
 - [🐧 Служба (unit)](#-служба-unit)
 - [🐳 Контейнер](#-контейнер)
   - [Docker](#docker)
   - [Podman](#podman)
-  - [Мониторинг и управление](#мониторинг-и-управление)
+  - [Мониторинг](#мониторинг)
 - [📌 Меню бота](#-меню-бота)
-- [💁‍♂️ Список команд](#️-список-команд)
+- [🙋‍♂️ Список команд](#️-список-команд)
 - [🎉 Другие проекты](#-другие-проекты)
 
 ---
@@ -165,7 +165,7 @@ Telegram бот, который позволяет автоматизирова�
 
 ---
 
-## 📑 Зависимости
+## ⚡ Зависимости
 
 Установите **[jq](https://github.com/jqlang/jq)**:
 
@@ -481,30 +481,26 @@ cd ~/kinozal-bot
 - Создайте [dockerfile](https://github.com/Lifailon/Kinozal-Bot/blob/rsa/dockerfile) с содержимым:
 
 ```dockerfile
-# Базовый легковесный образ
 FROM alpine:latest
-# Устанавливаем рабочую директорию как в конфигурации для локального запуска 
 WORKDIR /home/lifailon/kinozal-bot
-# Установка зависимостей
-RUN apk add --no-cache bash coreutils curl grep sed gawk jq
-# Копируем скрипт и конфигурацию
+RUN apk add --no-cache bash coreutils curl grep sed gawk jq tzdata
+ENV TZ=Etc/GMT-3
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY kinozal-bot.sh .
 COPY kinozal-bot.conf .
-# Права на запуск скрипта
 RUN chmod +x kinozal-bot.sh
-# Запускаем потоки сервера и логируем вывод работы бота в консоль
 CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]
 ```
 
-💡 Рабочая директория (**WORKDIR**) соответствует параметру `path` в конфигурации и используются для синхронизации между локальным запуском (для отладки) и в контейнере, по этому **измените путь на свой**.
+💡 Рабочая директория (`WORKDIR`) соответствует параметру `path` в конфигурации и используются для синхронизации между локальным запуском (для отладки) и в контейнере, по этому **измените путь на свой**.
 
 ### Docker
 
 Соберите образ и запустите контейнер в Docker:
 
 ```shell
-root docker build -t kinozal-bot .
-root docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/lifailon/kinozal-bot/torrents --restart=unless-stopped kinozal-bot
+sudo docker build -t kinozal-bot .
+sudo docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/lifailon/kinozal-bot/torrents --restart=unless-stopped kinozal-bot
 ```
 
 Размер образа составляет 20 МБайт. Режим `unless-stopped` отвечает за перезапуск контейнера в случае перезагрузки системы или другого сбоя, за исключением остановки контейнера с помощью команды: `docker stop kinozal-bot`.
@@ -513,7 +509,7 @@ root docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/ho
 
 ### Podman
 
-Так как бот для своей работы не требует `root` прав, то проще и правильнее запустить контейнер в системе [Podman](https://github.com/containers/podman):
+Так как бот для своей работы не требует `root` прав (использование команды `sudo`), то проще и правильнее запустить контейнер в системе [Podman](https://github.com/containers/podman):
 
 ```shell
 podman build -f dockerfile -t kinozal-bot .
@@ -536,33 +532,45 @@ loginctl enable-linger $(whoami)
 systemctl --user enable kinozal-bot-podman.service
 ```
 
-### Мониторинг и управление
+### Мониторинг
 
-Вы можете управлять запуском контейнара с помощью команд: `<docker/podman> <start/restart/stop> kinozal-bot`. Для просмотра журналов контейнера используется команда: `logs kinozal-bot`.
+Вы можете управлять запуском контейнара с помощью команд:
 
-Что бы не вызывать каждый раз команду `logs` для просмотра логов контейнера или других журналов, установите терминальный пользовательский интерфейс [lazyjournal](https://github.com/Lifailon/lazyjournal) для быстрого мониторинга и фильтрации логов контейнеров *Docker* и *Podman* или юнитов `systemd`.
+```shell
+<docker/podman> <start/restart/stop> kinozal-bot
+```
 
-Для удобного мониторинга контейнеров через веб-интерфейс, используйте [Dozzle](https://github.com/amir20/dozzle).
+Для просмотра журналов контейнера используется команда: `<docker/podman> logs kinozal-bot`.
+
+Что бы не вызывать каждый раз команду `logs` для просмотра логов контейнера или других журналов, установите терминальный пользовательский интерфейс [lazyjournal](https://github.com/Lifailon/lazyjournal) для быстрого мониторинга и фильтрации логов контейнеров *Docker* и *Podman*, юнитов `systemd` или лог-файлов в системе.
+
+Пример чтения локального файла `kinozal-bot.log`:
+
+![Image alt](image/settings/lazyjournal-read-log-file.jpg)
+
+> В примере используются запросы с разными фильтрами для поиска в базе Кинозал.
+
+Для мониторинга журналов контейнеров через веб-интерфейс, используйте [Dozzle](https://github.com/amir20/dozzle).
 
 ![Image alt](image/settings/docker-dozzle.jpg)
 
 Команда для быстрого удаления контейнера и образа:
 
 ```shell
-root docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
+sudo docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
 ```
 
-Вы также можете сохранить образ контейнера с помощью одной команды, что удобно, в случае переустановки системы или переноса бота на другую машину (тем самым не нужно заполнять конфигурацию и собирать образ заново):
+Вы также можете сохранить образ контейнера с помощью одной команды. Это удобно, в случае переустановки системы или переноса бота на другую машину (больше не понадобится заполнять конфигурацию и собирать образ заново):
 
 ```shell
-root docker save -o kinozal-bot.tar kinozal-bot
+sudo docker save -o kinozal-bot.tar kinozal-bot
 ```
 
-На новой системе остается только загрузить образ из файла и запустить контейнер:
+На другой системе необходимо только загрузить файл образа и запустить контейнер:
 
 ```shell
-root docker load -i kinozal-bot.tar
-root docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
+sudo docker load -i kinozal-bot.tar
+sudo docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
 ```
 
 ## 📌 Меню бота
@@ -588,7 +596,7 @@ vpnc_status - 🛡 VPN
 
 ---
 
-## 💁‍♂️ Список команд
+## 🙋‍♂️ Список команд
 
 Список всех доступных команд (за исключением `/search_title`, `/search_actor`, `/add_hash` и `/add_url`) **автоматизирован** через меню интерфейса бота с помощью кнопок.
 
@@ -740,6 +748,8 @@ vpnc_status - 🛡 VPN
 - ✨ [TorAPI](https://github.com/Lifailon/TorAPI/blob/main/README_RU.md) - неофициальный и публичный API (**backend**) для торрент трекеров RuTracker, Kinozal, RuTor и NoNameClub. Используется для быстрого и централизованного поиска раздач, получения торрент файлов, магнитных ссылок и подробной информации о раздаче по названию фильма, сериала или идентификатору раздачи, а также предоставляет новостную RSS ленту для всех провайдеров с фильтрацией по категориям.
 
 - 🔎 [LibreKinopoisk](https://github.com/Lifailon/LibreKinopoisk) - расширение для Google Chrome, [Mozilla Firefox](https://addons.mozilla.org/ru/firefox/addon/librekinopoisk) и мобильных устройств, которое добавляет кнопки на сайт [Кинопоиск](http://kinopoisk.ru) и в контекстное меню браузера, а также реализует интерфейс [TorAPI](https://github.com/Lifailon/TorAPI) для быстрого поиска фильмов и сериалов в открытых источниках в стиле [Jackett](https://github.com/Jackett/Jackett) без необходимости в VPN и настройки сервера.
+
+- 📖 [lazyjournal](https://github.com/Lifailon/lazyjournal) - терминальный пользовательский интерфейс для `journalctl` (инструмент для чтения логов из системы [systemd-journald](https://github.com/systemd/systemd/tree/main/src/journal)), логов в файловой системе (включая архивные, например, `Apache` или `Nginx`), а также контейнеров `Docker` и `Podman` для быстрого просмотра и фильтрации в режиме реального времени с поддержкой нечеткого поиска, регулярных выражений (в стиле `fzf` и `grep`) и покраской вывода, написанный на языке `Go` с использованием библиотеки [gocui](https://github.com/awesome-gocui/gocui).
 
 - 📡 [Froxy](https://github.com/Lifailon/froxy/blob/main/README_RU.md) - кроссплатформенная утилита командной строки для реализации SOCKS, HTTP и обратного прокси сервера на базе **.NET**. Поддерживается протокол **SOCKS5** для туннелирования TCP трафика и **HTTP** протокол для прямого (классического) проксирования любого **HTTPS** трафика (`CONNECT` запросы), а также **TCP**, **UDP** и **HTTP/HTTPS** протоколы для обратоного проксирования. Для переадресации веб-траффика через обратный прокси поддерживаются `GET` и `POST` запросы с передачей заголовков и тела запроса от клиента, что позволяет использовать `API` запросы и проходить авторизацию на сайтах (передача cookie).
 
