@@ -2480,7 +2480,7 @@ function get-links {
         ]' | sed -r "s/]/],/g; s/&.+/\"}],/g")
     fi
     ### Main menu
-    keyboard+="[{\"text\":\"🔎 Повторить поиск\",\"callback_data\":\"\/research\"},"
+    keyboard+="[{\"text\":\"🔄 Повторить поиск 🔎\",\"callback_data\":\"\/research\"},"
     # if [[ $type == "find" ]]; then
     #     keyboard+="[{\"text\":\"💬 Описание Кинозал\",\"callback_data\":\"\/kinozal_description $id_find\"},"
     # elif [[ $type == "description" ]]; then
@@ -3715,7 +3715,7 @@ function vpnc-status {
     )
     if [[ -n $vpncData ]]; then
         country=$(echo $vpncData | jq -r .country)
-        timeZone=$(echo $vpncData | jq -r .timeZone)
+        timeZone=$(echo $vpncData | jq -r .timeZone | sed -r "s/\//, /g" | sed -r "s/_/ /g")
         region=$(echo $vpncData | jq -r .region)
         city=$(echo $vpncData | jq -r .city)
         data="*Процесс*: $(echo $vpncData | jq -r .processName)\n"
@@ -3734,8 +3734,10 @@ function vpnc-status {
     keyboard+="[{\"text\":\"🔄 Обновить статус\",\"callback_data\":\"\/vpnc_status\"}],"
     keyboard+="[{\"text\":\"🔒 Включить VPN\",\"callback_data\":\"\/vpnc_start_$VPNC_NAME\"},"
     keyboard+="{\"text\":\"⛔️ Выключить VPN\",\"callback_data\":\"\/vpnc_stop_$VPNC_NAME\"}],"
-    keyboard+="[{\"text\":\"🟢 Start qBittorrent\",\"callback_data\":\"\/vpnc_start_qbittorrent\"},"
-    keyboard+="{\"text\":\"🔴 Stop qBittorrent\",\"callback_data\":\"\/vpnc_stop_qbittorrent\"}],"
+    keyboard+="[{\"text\":\"▶ qBittorrent 🟢\",\"callback_data\":\"\/vpnc_start_qbittorrent\"},"
+    keyboard+="{\"text\":\"⏹ qBittorrent 🔴\",\"callback_data\":\"\/vpnc_stop_qbittorrent\"}],"
+    keyboard+="[{\"text\":\"▶ Transmission 🔲\",\"callback_data\":\"\/vpnc_start_transmission\"},"
+    keyboard+="{\"text\":\"⏹ Transmission 🔲\",\"callback_data\":\"\/vpnc_stop_transmission\"}],"
     keyboard+="[{\"text\":\"🟢 qBittorrent\",\"callback_data\":\"\/status\"},"
     keyboard+="{\"text\":\"🔲 Transmission\",\"callback_data\":\"\/trans_status\"}],"
     keyboard+="[{\"text\":\"🟠 Plex\",\"callback_data\":\"\/plex_info\"},"
@@ -3752,6 +3754,8 @@ function vpnc-start {
     # Если передается не qbittorrent, то запускаем процесс по умолчанию из vpnc.conf
     if [[ $procName == "qbittorrent" ]]; then
         procPath="C:\Program Files\qBittorrent\qbittorrent.exe"
+    elif [[ $procName == "transmission" ]]; then
+        procPath="C:\Program Files\Transmission\transmission-qt.exe"
     else
         procPath=""
     fi
@@ -3767,7 +3771,7 @@ function vpnc-start {
 
 function vpnc-stop {
     procName=$1
-    if [[ ! $procName == "qbittorrent" ]]; then
+    if [[ ! $procName == "qbittorrent" && ! $procName == "transmission" ]]; then
         procName=""
     fi
     vpncData=$(
