@@ -2380,7 +2380,8 @@ function read-html {
         if [ -n "$link_kp" ]; then
             data+=$(echo "*Кинопоиск*: $link_kp \n")
             kp_id=$(echo $link_kp | sed -r "s/.+\///g")
-            data+=$(echo "*Kinobox*: https://kinomix.web.app/#$kp_id \n")
+            # data+=$(echo "*Kinobox*: https://kinomix.web.app/#$kp_id \n")
+            data+=$(echo "*Kinobox*: https://kinohost.web.app/film/$kp_id \n")
         fi
         if [ -n "$link_imdb" ]; then
             data+=$(echo "*IMDb*: $link_imdb \n")
@@ -2606,7 +2607,7 @@ function get-search {
     # Обновляем поисковой запрос
     search_name=$(echo "$search_name" | sed -E 's/\b(19[0-9]{2}|20[0-9]{2})\b//g; s/\b(720|1080|2160)\b//g; s/\b(фильм|сериал|Фильм|Сериал)\b//g; s/\s+/ /g; s/^\s+|\s+$//g')
     echo "[INFO] $(date '+%d.%m.%Y %H:%M:%S'): Search request from Telegram: $search_name" >> $path_log
-    # Кодируем запрос в url строку (для кириллицы) и добавляем его в базовый url первым параметром
+    # Кодируем запрос в url строку (для кириллицы) и добавляем его в базовый url
     search_name_encode=$(url-encode-ru "$search_name")
     search_name_replace_space=$(echo $search_name_encode | sed "s/ /+/g")
     id_url+="&s=$search_name_replace_space"
@@ -5400,9 +5401,11 @@ if [[ $TG_CHANNEL_USE = "True" ]]; then
                             if [[ -z $kp_id ]]; then
                                 # Оставляем только имя и производим поиск
                                 name_only=$(echo $name | sed -r "s/\(.+//g")
-                                url_km="https://kinomix.web.app/?q=$name_only"
+                                # url_km="https://kinomix.web.app/?q=$name_only"
+                                url_km="https://kinohost.web.app/search?query=$name_only"
                             else
-                                url_km="https://kinomix.web.app/#$kp_id"
+                                # url_km="https://kinomix.web.app/#$kp_id"
+                                url_km="https://kinohost.web.app/film/$kp_id"
                             fi
                             keyboard+="{\"text\":\"▶️ Смотреть онлайн\",\"url\":\"$url_km\"}]]}"
                             encoded_data=$(echo -ne "$data" | od -An -tx1 | tr -d ' \n' | sed 's/../%&/g')
