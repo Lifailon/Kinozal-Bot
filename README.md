@@ -352,7 +352,10 @@ TMDB_TOKEN="XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXX"
 8. Путь для хранения торрент файлов, *cookie* (временные файлы, которые используются для авторизации в *Кинозал* и *qBittorrent*), а также лог-файлов и его размер (поддерживается ротация) на сервере **задаются в конфигурации**:
 
 ```shell
+# /home/<username>/kinozal-bot
 path="/home/lifailon/kinozal-bot"
+# Путь при запуске в контейнере
+# path="/kinozal-bot"
 log_size_mbyte=10
 ```
 
@@ -482,38 +485,54 @@ cd ~/kinozal-bot
 
 ```dockerfile
 FROM alpine:latest
-WORKDIR /home/lifailon/kinozal-bot
+WORKDIR /kinozal-bot
 RUN apk add --no-cache bash coreutils curl grep sed gawk jq tzdata
 ENV TZ=Etc/GMT-3
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY kinozal-bot.sh .
-COPY kinozal-bot.conf .
 RUN chmod +x kinozal-bot.sh
 CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]
 ```
-
-💡 Рабочая директория (`WORKDIR`) соответствует параметру `path` в конфигурации и используются для синхронизации между локальным запуском (для отладки) и в контейнере, по этому **измените путь на свой**.
 
 ### Docker
 
 Соберите образ и запустите контейнер в Docker:
 
 ```shell
-sudo docker build -t kinozal-bot .
-sudo docker run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/lifailon/kinozal-bot/torrents --restart=unless-stopped kinozal-bot
+docker build -t kinozal-bot .
+docker run -d \
+    --name kinozal-bot \
+    --restart=unless-stopped \
+    --label com.centurylinklabs.watchtower.enable=false \
+    -v ./torrents:/kinozal-bot/torrents \
+    kinozal-bot
 ```
 
-Размер образа составляет 20 МБайт. Режим `unless-stopped` отвечает за перезапуск контейнера в случае перезагрузки системы или другого сбоя, за исключением остановки контейнера с помощью команды: `docker stop kinozal-bot`.
+Или загрузите образ из [Docker Hub](https://hub.docker.com/r/lifailon/kinozal-bot):
+
+```shell
+docker run -d \
+    --name kinozal-bot \
+    --restart=unless-stopped \
+    -v ./torrents:/kinozal-bot/torrents \
+    -v ./kinozal-bot.conf:/kinozal-bot/kinozal-bot.conf \
+    lifailon/kinozal-bot:latest
+```
+
+Размер образа составляет 20 МБайт. Режим `unless-stopped` отвечает за перезапуск контейнера в случае перезагрузки системы или другого сбоя, за исключением ручной остановки.
 
 При создании контейнера используется механизм **bind mount** (`-v` `путь в системе`**:**`путь в контейнере`), это удобно для синхронизации и хранения торрент файлов (`.torrent`) с локальной системой, тем самым при запуске бота в контейнере или локальной системе будет доступ к одному и томуже составу торрент файлов, а после удаления контейнера и образа файлы будут сохранены в системе.
 
 ### Podman
 
-Так как бот для своей работы не требует `root` прав (использование команды `sudo`), то проще и правильнее запустить контейнер в системе [Podman](https://github.com/containers/podman):
+Так как бот для своей работы не требует прав `root` (использование команды `sudo`), то вы можете запустить контейнер в [Podman](https://github.com/containers/podman):
 
 ```shell
 podman build -f dockerfile -t kinozal-bot .
-podman run -d --name kinozal-bot -v /home/lifailon/kinozal-bot/torrents:/home/lifailon/kinozal-bot/torrents kinozal-bot
+podman run -d \
+    --name kinozal-bot \
+    -v ./torrents:/kinozal-bot/torrents \
+    kinozal-bot
 ```
 
 Так как *Podman* не использует службы для своей работы, для автоматического запуска бота при перезагрузке системы возможно создать пользовательскую службу:
@@ -557,21 +576,23 @@ systemctl --user enable kinozal-bot-podman.service
 Команда для быстрого удаления контейнера и образа:
 
 ```shell
-sudo docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine
+docker stop kinozal-bot && docker rm kinozal-bot && docker rmi kinozal-bot && docker rmi alpine || docker rmi lifailon/kinozal-bot:latest
 ```
 
+<!--
 Вы также можете сохранить образ контейнера с помощью одной команды. Это удобно, в случае переустановки системы или переноса бота на другую машину (больше не понадобится заполнять конфигурацию и собирать образ заново):
 
 ```shell
-sudo docker save -o kinozal-bot.tar kinozal-bot
+docker save -o kinozal-bot.tar kinozal-bot
 ```
 
 На другой системе необходимо только загрузить файл образа и запустить контейнер:
 
 ```shell
-sudo docker load -i kinozal-bot.tar
-sudo docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
+docker load -i kinozal-bot.tar
+docker run -d --name kinozal-bot --restart=unless-stopped kinozal-bot
 ```
+-->
 
 ## 📌 Меню бота
 
