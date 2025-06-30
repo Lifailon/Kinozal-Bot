@@ -14,8 +14,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Копируем скрипт
 COPY kinozal-bot.sh .
 
-# Монтируем конфигурацию при запуске контейнера (-v ./torrents:/kinozal-bot/torrents)
+# Не копируем конфигурацию
 # COPY kinozal-bot.conf .
+# Монтируем при запуске контейнера с помощью: --volume ./kinozal-bot.conf:/kinozal-bot/kinozal-bot.conf
 
 # Права на запуск скрипта
 RUN chmod +x kinozal-bot.sh

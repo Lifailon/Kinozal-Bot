@@ -7,6 +7,7 @@
 <p align="center">
     <a href="https://github.com/Lifailon/Kinozal-Bot"><img title="GitHub Top Language"src="https://img.shields.io/github/languages/top/Lifailon/KInozal-Bot?label=bash&color=green"></a>
     <a href="https://github.com/Lifailon/Kinozal-Bot/releases"><img title="GitHub Release"src="https://img.shields.io/github/v/release/Lifailon/Kinozal-Bot?logo=github&label=version&color=blue"></a>
+    <a href="https://hub.docker.com/r/lifailon/kinozal-bot"><img title="Docker Hub" src="https://img.shields.io/docker/image-size/lifailon/kinozal-bot/latest?logo=docker&color=blue&label=Docker+Hub"></a>
     <a href="https://github.com/Lifailon/Kinozal-Bot/blob/rsa/LICENSE"><img title="GitHub License"src="https://img.shields.io/github/license/Lifailon/Kinozal-Bot?logo=markdown&color=white"></a>
 </p>
 
@@ -505,10 +506,13 @@ docker run -d \
     --restart=unless-stopped \
     --label com.centurylinklabs.watchtower.enable=false \
     -v ./torrents:/kinozal-bot/torrents \
+    -v ./kinozal-bot.conf:/kinozal-bot/kinozal-bot.conf \
     kinozal-bot
 ```
 
 Или загрузите образ из [Docker Hub](https://hub.docker.com/r/lifailon/kinozal-bot):
+
+> Образ собран на системе с архитектурой `aarch64` в режиме `all`.
 
 ```shell
 docker run -d \
@@ -519,9 +523,9 @@ docker run -d \
     lifailon/kinozal-bot:latest
 ```
 
-Размер образа составляет 20 МБайт. Режим `unless-stopped` отвечает за перезапуск контейнера в случае перезагрузки системы или другого сбоя, за исключением ручной остановки.
+Размер образа составляет 9 MiB. Режим `unless-stopped` отвечает за перезапуск контейнера в случае перезагрузки системы или другого сбоя, за исключением ручной остановки.
 
-При создании контейнера используется механизм **bind mount** (`-v` `путь в системе`**:**`путь в контейнере`), это удобно для синхронизации и хранения торрент файлов (`.torrent`) с локальной системой, тем самым при запуске бота в контейнере или локальной системе будет доступ к одному и томуже составу торрент файлов, а после удаления контейнера и образа файлы будут сохранены в системе.
+При запуске контейнера используется механизм **bind mount** (`-v` `путь в системе`**:**`путь в контейнере`), это удобно для хранения конфигурации (не сохраняя ее в образе) и синхронизации торрент файлов (`.torrent`) с хостовой системой, тем самым при запуске бота в контейнере или локальной системе будет доступ к одному и томуже составу торрент файлов, а после удаления контейнера и образа файлы будут сохранены в системе.
 
 ### Podman
 
