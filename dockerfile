@@ -20,5 +20,8 @@ COPY kinozal-bot.sh .
 # Права на запуск скрипта
 RUN chmod +x kinozal-bot.sh
 
-# Запускаем потоки сервера и логируем вывод работы бота в консоль
+# Запускаем сервер и логируем вывод работы бота в консоль
 ENTRYPOINT ["bash", "-c", "./kinozal-bot.sh start bot docker"]
+
+# Запуск двух потоков (бот и канал)
+# ENTRYPOINT ["bash", "-c", "./kinozal-bot.sh start all docker"]

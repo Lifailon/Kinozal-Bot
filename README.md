@@ -491,7 +491,7 @@ ENV TZ=Etc/GMT-3
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 COPY kinozal-bot.sh .
 RUN chmod +x kinozal-bot.sh
-CMD ["bash", "-c", "./kinozal-bot.sh start bot docker"]
+ENTRYPOINT ["bash", "-c", "./kinozal-bot.sh start bot docker"]
 ```
 
 ### Docker
